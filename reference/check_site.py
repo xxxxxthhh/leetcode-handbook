@@ -45,8 +45,16 @@ TIER_EXCEPTIONS = {
     11: ((0, 2, 1), "§5 选题：207/210 已是最小形态，再简化就没有拓扑可言，故无热身"),
     12: ((0, 4, 1), "§5 选题：并查集模板本身就是热身；261/323 为 🔒 但属必会"),
     14: ((0, 3, 2), "§5 选题：56 本身即最小形态；变体 252/253 拆成两行"),
+    16: ((1, 4, 2), "§5 选题：线性/环形/背包/可达性是四种独立状态定义"),
+    18: ((0, 1, 2), "§5 选题：300 之前没有更简单的 LIS 可作热身；全章围绕一道母题展开"),
 }
 BAND = {"热身": (1, 1), "标准": (2, 3), "变体": (1, 2)}
+
+# ⭐认脸默认只能挂在官方 Hard 上。例外同样逐条登记，不许静默放行。
+STAR_EXCEPTIONS = {
+    72: "LeetCode 已把 Edit Distance 从 Hard 下调为 Medium，"
+        "但 skeleton §5 指定它按「认脸级讲解」处理，⭐ 表达的是投入深度而非官方难度",
+}
 
 
 class Report(object):
@@ -217,8 +225,9 @@ def check_links(no, html, rep, seen_curated):
             rep.err(where, "题 {} 的 🔒 标记与官方 paid_only={} 不符".format(num, meta["paid_only"]))
         if not diff or diff.group(1) != meta["difficulty"]:
             rep.err(where, "题 {} 的难度徽章与官方 {} 不符".format(num, meta["difficulty"]))
-        if star and meta["difficulty"] != "Hard":
-            rep.err(where, "题 {} 标了 ⭐认脸 但官方难度是 {}".format(num, meta["difficulty"]))
+        if star and meta["difficulty"] != "Hard" and int(num) not in STAR_EXCEPTIONS:
+            rep.err(where, "题 {} 标了 ⭐认脸 但官方难度是 {}；"
+                           "若为有意取舍，请登记进 STAR_EXCEPTIONS".format(num, meta["difficulty"]))
 
 
 def check_quiz_sources(no, html, rep):

@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>18 子序列 DP · 算法面试阈值手册</title>
+<meta name="description" content="LIS 两解法：O(n²) DP 与「耐心排序 + 二分」">
+<link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"></noscript>
+<link rel="stylesheet" href="../assets/handbook.css">
+<script src="../assets/theme.js"></script>
+</head>
+<body>
+<button class="theme-toggle" type="button" aria-label="切换深色/浅色模式" title="切换深色/浅色模式">
+  <span class="sun" aria-hidden="true">☀️</span><span class="moon" aria-hidden="true">🌙</span>
+</button>
+<div class="wrap">
+<nav class="crumb"><a href="../index.html">← 目录</a> · <a href="../cheatsheet.html">决策树速查</a></nav>
+
+<header class="ch">
+  <div class="bars" aria-hidden="true"><span class="h1"></span><span class="h2"></span><span class="h4"></span><span class="h6"></span><span class="h3"></span><span class="h5 w"></span><span class="h2 f"></span><span class="h1 f"></span></div>
+  <div class="kicker">Pattern 18 · Subsequence DP (LIS)</div>
+  <h1>18 子序列 DP
+    <span class="zh">LIS 两解法：O(n²) DP 与「耐心排序 + 二分」</span>
+  </h1>
+  <div class="meta"><span>面试频率 <b>中</b></span><span>题目 <b>3 道</b></span><span>模板 <b>2 个</b></span><span>⭐认脸 <b>1 道</b></span></div>
+</header>
+
+<section id="s1">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§1 Mental Model 一句话心智模型</span></div>
+  <h2>先记住这一句</h2>
+<div class="oneliner"><b>LIS 的状态定义是「以 i 结尾的最长上升子序列」——「以 i 结尾」这四个字是全章的钥匙。O(n²) 是两层循环回头看；O(n log n) 是用一个 tails 数组做二分。</b></div>
+<p>面试的标准打法：<b>先讲 O(n²) 的状态定义与转移，再说「还能用耐心排序 + 二分做到 O(n log n)」，然后写后者</b>。只写快的说不清来龙去脉，只写慢的显得没准备。</p>
+<p><code>tails</code> 那个数组必须讲清楚一件事：<code>tails[k]</code> 是「长度为 k+1 的上升子序列中最小的结尾」，<b>它本身通常不是任何一条真实的 LIS</b>——只有它的长度是对的。面试官很爱追问这一点，答不上来会被认为是背的。</p>
+
+</section>
+
+<section id="s2">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§2 Recognition Signals 识别信号</span></div>
+  <h2>看到什么，想到本章</h2>
+<div class="tbl-scroll"><table class="sig-tbl"><thead><tr><th>题面出现…</th><th>想到</th></tr></thead><tbody><tr><td>「最长上升 / 递增<b>子序列</b>」（不要求连续）</td><td>LIS（模板 A 或 B）</td></tr><tr><td>「最长数对链 / 俄罗斯套娃信封」</td><td>先排序，再对另一个维度求 LIS</td></tr><tr><td>「最长可整除子集 / 最长字符串链」</td><td>排序后把「能否接上」换成整除 / 差一个字母</td></tr><tr><td>「有多少个最长上升子序列」</td><td>再开一个 <code>count</code> 数组（673）</td></tr><tr><td>「最少用几个不升序列覆盖」</td><td>Dilworth 定理，答案等于 LIS 长度</td></tr><tr><td>「子序列」+「最长 / 最多」且只有一个序列</td><td>本章；两个序列是第 17 章的 LCS</td></tr></tbody></table></div>
+<div class="routing"><div class="rt-head">分流条件 · 决策树同源</div><p><b>连续</b>才是滑动窗口（第 03 章）或前缀和（第 13 章），<b>子序列</b>（可以跳着取）才是本章——这两个字是最关键的分流点。只求「最大和的连续子数组」是 Kadane（第 15 章）。两个序列之间的公共子序列（LCS）是第 17 章的双序列表；本章只有一个序列，转移要回头看所有更早的元素。</p></div>
+
+</section>
+
+<section id="s3">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§3 Template 模板代码</span></div>
+  <h2>可默写的那几行</h2>
+<p class="legend"><i class="bone">■ 【骨架】</i> 不变，闭着眼默写　<i class="slot">■ 【插槽】</i> 随题变化，写题前先问自己填什么</p>
+<div class="tpl">
+  <div class="tpl-head">模板 A · O(n²) LIS<span class="note">先能讲清它，再谈优化</span></div>
+  <pre><code>def length_of_lis(nums):
+    if not nums:
+        return 0
+    dp = [1] * len(nums)                    <span class="cm bone"># 【骨架】dp[i] = **以 i 结尾**的最长长度</span>
+    for i in range(len(nums)):              <span class="cm bone"># 【骨架】</span>
+        for j in range(i):                  <span class="cm bone"># 【骨架】回头看所有更早的元素</span>
+            if nums[j] &lt; nums[i]:           <span class="cm slot"># 【插槽】能否接在 j 后面:严格上升 / 非降 / 整除</span>
+                dp[i] = max(dp[i], dp[j] + 1)   <span class="cm slot"># 【插槽】接上之后怎么更新</span>
+    return max(dp)                          <span class="cm slot"># 【插槽】答案在所有结尾里取最大,不是 dp[-1]</span></code></pre>
+  <div class="tpl-foot">默写口诀：<b>以 i 结尾、回头看 j、能接就接、答案取 max(dp)</b>。「以 i 结尾」决定了答案是 <code>max(dp)</code> 而不是 <code>dp[-1]</code>。</div>
+</div>
+<div class="tpl">
+  <div class="tpl-head">模板 B · 耐心排序 + 二分<span class="note">O(n log n)，面试主推</span></div>
+  <pre><code>import bisect
+
+def length_of_lis_fast(nums):
+    tails = []                              <span class="cm bone"># 【骨架】tails[k] = 长度为 k+1 的上升子序列的最小结尾</span>
+    for x in nums:                          <span class="cm bone"># 【骨架】</span>
+        i = bisect.bisect_left(tails, x)    <span class="cm slot"># 【插槽】bisect_left 严格上升;bisect_right 允许相等</span>
+        if i == len(tails):                 <span class="cm bone"># 【骨架】比所有结尾都大 -&gt; 接出更长的一条</span>
+            tails.append(x)
+        else:
+            tails[i] = x                    <span class="cm bone"># 【骨架】否则用它替换掉那个更大的结尾</span>
+    return len(tails)                       <span class="cm slot"># 【插槽】只有长度可信,tails 本身不是某条 LIS</span></code></pre>
+  <div class="tpl-foot">严格上升用 <code>bisect_left</code>（相等的会被替换掉），允许相等用 <code>bisect_right</code>。一个字母的差别，354 就靠它。</div>
+</div>
+
+</section>
+
+<section id="s4">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§4 Problems 题目分层</span></div>
+  <h2>从建直觉到扭模板</h2>
+<div class="tier">
+  <div class="tier-head"><span class="t">标准</span><span class="d">模板直接套</span><span class="c">1 道</span></div>
+  <ul class="plist">
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/longest-increasing-subsequence/" target="_blank" rel="noopener">300 Longest Increasing Subsequence</a><span class="badge diff">Medium</span></div>
+    <div class="p-note">本章的母题。两种解法都要会：先讲 O(n²) 的状态定义，再写 O(n log n)。本章刻意没有热身题——300 之前没有更简单的 LIS 可讲。</div>
+  </li>
+  </ul>
+</div>
+<div class="tier">
+  <div class="tier-head"><span class="t">变体</span><span class="d">模板要扭，坑的来源</span><span class="c">2 道</span></div>
+  <ul class="plist">
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/number-of-longest-increasing-subsequence/" target="_blank" rel="noopener">673 Number of Longest Increasing Subsequence</a><span class="badge diff">Medium</span></div>
+    <div class="p-note">在模板 A 上再挂一个 <code>cnt</code> 数组，分「发现更长」（方案数继承）和「等长的另一条路」（方案数累加）两种情况。两种情况写反是唯一的坑，模板测试里留了 <code>[2,2,2,2,2]</code> 这条断言。</div>
+  </li>
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/russian-doll-envelopes/" target="_blank" rel="noopener">354 Russian Doll Envelopes</a><span class="badge star" title="hard，认脸即可">⭐ 认脸</span><span class="badge diff">Hard</span></div>
+    <div class="p-note">⭐认脸。宽升序、<b>宽相同时高降序</b>，然后对高求 LIS。高要降序是为了让同宽的信封无法互相嵌套——说得出这一句就够。</div>
+  </li>
+  </ul>
+</div>
+
+</section>
+
+<section id="s5">
+  <div class="sec-tag"><span class="cell" style="background:var(--warn)"></span><span class="lab">§5 Pitfalls &amp; Self-check 常见翻车点 + 自测</span></div>
+  <h2>会写不等于不翻车</h2>
+<ol class="pits">
+<li><span class="pt">答案写成 <code>dp[-1]</code></span>——状态是「以 i 结尾」，最优的那条未必在末尾结束。必须 <code>max(dp)</code>。</li>
+<li><span class="pt">把 <code>tails</code> 当成 LIS 本身</span>——<code>tails</code> 只保证长度正确，内容通常不是任何一条真实的上升子序列。要还原具体序列得额外记前驱下标。</li>
+<li><span class="pt"><code>bisect_left</code> 和 <code>bisect_right</code> 用反</span>——严格上升用 <code>bisect_left</code>；写成 <code>bisect_right</code>，<code>[7,7,7,7]</code> 会返回 4 而不是 1。</li>
+<li><span class="pt">354 排序时高也用升序</span>——宽相同的信封若按高升序排，它们之间会被当成可嵌套，答案偏大。必须高降序。</li>
+<li><span class="pt">把「连续子数组」当子序列做</span>——LIS 允许跳着取，<code>[10, 9, 2, 5, 3, 7]</code> 的答案是 3（2, 3, 7）而不是相邻的那段。读题时先确认要不要连续，见 §2 分流条件。</li>
+</ol>
+<h3>自测 · 30 秒识别模式</h3>
+<div class="quiz">
+<article class="q" data-answer="18">
+  <p class="qprompt"><span class="qtype">30 秒识别</span>Q1 · <a href="https://leetcode.com/problems/largest-divisible-subset/" target="_blank" rel="noopener">368 Largest Divisible Subset</a>：从一组互不相同的正整数里，选出最大的子集，使其中任意两个数都能互相整除。你的第一反应是哪个模式？</p>
+  <div class="opts"><button class="opt" type="button" data-ch="18">18 子序列 DP</button><button class="opt" type="button" data-ch="9">09 回溯</button><button class="opt" type="button" data-ch="17">17 二维 DP 与背包</button></div>
+  <details><summary>看答案</summary><div class="answer"><p>LIS 变体（模板 A）。先排序，把「能否接在 j 后面」的条件从 <code>nums[j] &lt; nums[i]</code> 换成 <code>nums[i] % nums[j] == 0</code>，骨架一行没动。要返回子集本身，所以还得记前驱下标。</p></div></details>
+</article>
+<article class="q" data-answer="18">
+  <p class="qprompt"><span class="qtype">30 秒识别</span>Q2 · <a href="https://leetcode.com/problems/longest-string-chain/" target="_blank" rel="noopener">1048 Longest String Chain</a>：若在字符串 A 中插入一个字母能得到 B，则 A 是 B 的前身。求最长的词链长度。你的第一反应是哪个模式？</p>
+  <div class="opts"><button class="opt" type="button" data-ch="18">18 子序列 DP</button><button class="opt" type="button" data-ch="17">17 二维 DP 与背包</button><button class="opt" type="button" data-ch="1">01 哈希</button></div>
+  <details><summary>看答案</summary><div class="answer"><p>LIS 变体。按<b>长度</b>排序后，「能否接上」变成「删掉一个字母是否相等」。用哈希表按「前身」直接转移比两层循环更快，但状态定义还是「以某个词结尾的最长链」。</p></div></details>
+</article>
+<article class="q" data-answer="15">
+  <p class="qprompt"><span class="qtype">30 秒识别</span>Q3 · <a href="https://leetcode.com/problems/maximum-subarray/" target="_blank" rel="noopener">53 Maximum Subarray</a>：求<b>连续</b>子数组的最大和。你的第一反应是哪个模式？</p>
+  <div class="opts"><button class="opt" type="button" data-ch="18">18 子序列 DP</button><button class="opt" type="button" data-ch="15">15 贪心</button><button class="opt" type="button" data-ch="3">03 滑动窗口</button></div>
+  <details><summary>看答案</summary><div class="answer"><p><b>贪心 / Kadane，不是本章</b>——「连续」两个字直接排除了子序列 DP。LIS 要回头看所有更早的元素（O(n²)），而连续的只需要看前一个（<code>cur = max(x, cur + x)</code>，O(n)）。见 §2 分流条件与第 15 章。</p></div></details>
+</article>
+<p class="quiz-note">每章自测都会<b>混入恰好一道非本章题</b>，防止「读哪章选哪章」的条件反射；题面也一律取自本章未收录的题，避免凭记忆而非凭信号作答。</p>
+</div>
+</section>
+
+<nav class="next">
+  <a href="17-dp-2d.html">← 17 二维 DP 与背包</a>
+  <a href="../cheatsheet.html">决策树速查 →</a>
+</nav>
+
+</div>
+<script src="../assets/quiz.js" defer></script>
+</body>
+</html>

@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>15 贪心 · 算法面试阈值手册</title>
+<meta name="description" content="先说出「局部最优不毁全局」的那个性质，再动手">
+<link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"></noscript>
+<link rel="stylesheet" href="../assets/handbook.css">
+<script src="../assets/theme.js"></script>
+</head>
+<body>
+<button class="theme-toggle" type="button" aria-label="切换深色/浅色模式" title="切换深色/浅色模式">
+  <span class="sun" aria-hidden="true">☀️</span><span class="moon" aria-hidden="true">🌙</span>
+</button>
+<div class="wrap">
+<nav class="crumb"><a href="../index.html">← 目录</a> · <a href="../cheatsheet.html">决策树速查</a></nav>
+
+<header class="ch">
+  <div class="bars" aria-hidden="true"><span class="h1"></span><span class="h2"></span><span class="h4"></span><span class="h6"></span><span class="h3"></span><span class="h5 w"></span><span class="h2 f"></span><span class="h1 f"></span></div>
+  <div class="kicker">Pattern 15 · Greedy</div>
+  <h1>15 贪心
+    <span class="zh">先说出「局部最优不毁全局」的那个性质，再动手</span>
+  </h1>
+  <div class="meta"><span>面试频率 <b>高</b></span><span>题目 <b>6 道</b></span><span>模板 <b>2 个</b></span><span>⭐认脸 <b>0 道</b></span></div>
+</header>
+
+<section id="s1">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§1 Mental Model 一句话心智模型</span></div>
+  <h2>先记住这一句</h2>
+<div class="oneliner"><b>能贪的题都有一条「局部最优不会毁掉全局最优」的性质。先把这句话说出来，再动手——说不出来，八成该用 DP。</b></div>
+<p>贪心的代码短得可疑：通常就是一个循环加一两个变量。难度全在<b>为什么对</b>。面试里的标准动作是三步：说出贪心性质 → 自己举一个反例试着推翻它 → 再写代码。跳过前两步直接写，写对了也说不清，写错了更找不到原因。</p>
+<p>本章第一题 53 Maximum Subarray 恰好站在贪心和 DP 的边界上：<code>cur = max(x, cur + x)</code> 既能读成「要不要另起炉灶」的贪心决策，也能读成 <code>dp[i] = max(nums[i], dp[i-1] + nums[i])</code> 的状态转移。两种说法在面试里都对，能同时说出来最好。</p>
+
+</section>
+
+<section id="s2">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§2 Recognition Signals 识别信号</span></div>
+  <h2>看到什么，想到本章</h2>
+<div class="tbl-scroll"><table class="sig-tbl"><thead><tr><th>题面出现…</th><th>想到</th></tr></thead><tbody><tr><td>「能否到达 / 最少几步到达」且每一步的选择不影响后面的结构</td><td>维护「目前能到的最远」</td></tr><tr><td>「加油站能否绕一圈」「从哪个位置出发」</td><td>总量判可行 + 局部失败点跳过</td></tr><tr><td>「划分标签 / 最少分成几段」</td><td>先记每个元素最后出现的位置（模板 B）</td></tr><tr><td>「按顺序发牌 / 分成若干连续组」</td><td>排序 + <code>Counter</code> 依次消费</td></tr><tr><td>「最大子数组和」</td><td>Kadane：另起炉灶还是接着上一段（模板 A）</td></tr><tr><td>题面在问「最优值」而你能一句话说清每步该选谁</td><td>先试贪心，说不清就退回 DP</td></tr></tbody></table></div>
+<div class="routing"><div class="rt-head">分流条件 · 决策树同源</div><p><b>需要回头改之前的选择</b>，就不是贪心而是 DP（第 16、17 章）：零钱兑换（322）用面额从大到小贪心在 <code>coins=[1,3,4], amount=6</code> 上就是错的。要列出<b>全部方案</b>是回溯（第 09 章）。以区间为对象的贪心（435、452）识别信号来自「区间」这个形状，模板放在第 14 章。另外记住「连续子数组」的三岔口：求<b>最大和</b> → 本章的 Kadane；求<b>满足某约束的最长 / 最短</b> → 滑动窗口（第 03 章）；求<b>和恰好为 K 的个数</b> → 前缀和 + 哈希（第 13 章）。</p></div>
+
+</section>
+
+<section id="s3">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§3 Template 模板代码</span></div>
+  <h2>可默写的那几行</h2>
+<p class="legend"><i class="bone">■ 【骨架】</i> 不变，闭着眼默写　<i class="slot">■ 【插槽】</i> 随题变化，写题前先问自己填什么</p>
+<div class="tpl">
+  <div class="tpl-head">模板 A · 一路维护一个量<span class="note">Kadane / 可达最远</span></div>
+  <pre><code>def max_subarray(nums):
+    best = cur = nums[0]                    <span class="cm bone"># 【骨架】cur = 以当前元素结尾的最优值</span>
+    for x in nums[1:]:                      <span class="cm bone"># 【骨架】</span>
+        cur = max(x, cur + x)               <span class="cm slot"># 【插槽】决策:另起炉灶,还是接着上一段</span>
+        best = max(best, cur)               <span class="cm slot"># 【插槽】答案:全局最优 / 最后一项 / 计数</span>
+    return best</code></pre>
+  <div class="tpl-foot">默写口诀：<b>一个 <code>cur</code> 一个 <code>best</code>，每步只问一句该不该重来</b>。55、45、134 都是它换了个维护量。</div>
+</div>
+<div class="tpl">
+  <div class="tpl-head">模板 B · 先扫一遍再分段<span class="note">划分 / 分组类</span></div>
+  <pre><code>def partition_labels(s):
+    last = {c: i for i, c in enumerate(s)}  <span class="cm slot"># 【插槽】贪心依据:每个元素最后出现在哪</span>
+    out, start, end = [], 0, 0
+    for i, c in enumerate(s):               <span class="cm bone"># 【骨架】</span>
+        end = max(end, last[c])             <span class="cm bone"># 【骨架】当前段被迫延伸到这里</span>
+        if i == end:                        <span class="cm bone"># 【骨架】走到边界了,收一段</span>
+            out.append(end - start + 1)     <span class="cm slot"># 【插槽】答案:段长 / 段数 / 段的内容</span>
+            start = i + 1                   <span class="cm bone"># 【骨架】</span>
+    return out</code></pre>
+  <div class="tpl-foot">这类题的共性：<b>先用一次遍历拿到贪心依据</b>（最后出现位置、频次），第二次遍历才做决策。一遍就想贪完通常会漏。</div>
+</div>
+
+</section>
+
+<section id="s4">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§4 Problems 题目分层</span></div>
+  <h2>从建直觉到扭模板</h2>
+<div class="tier">
+  <div class="tier-head"><span class="t">热身</span><span class="d">建直觉，easy 为主</span><span class="c">1 道</span></div>
+  <ul class="plist">
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/maximum-subarray/" target="_blank" rel="noopener">53 Maximum Subarray</a><span class="badge diff">Medium</span></div>
+    <div class="p-note">Kadane。它同时是本章的入口和第 16 章的预告，见 §1 第二段。全负数组是必检边界：<code>cur</code> 初值要用 <code>nums[0]</code> 而不是 0。</div>
+  </li>
+  </ul>
+</div>
+<div class="tier">
+  <div class="tier-head"><span class="t">标准</span><span class="d">模板直接套</span><span class="c">3 道</span></div>
+  <ul class="plist">
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/jump-game/" target="_blank" rel="noopener">55 Jump Game</a><span class="badge diff">Medium</span></div>
+    <div class="p-note">维护 <code>reach</code>（能到的最远下标），一旦 <code>i &gt; reach</code> 就失败。贪心性质：能到 i 就能到 i 之前的所有位置，所以只需要记最远的那个。</div>
+  </li>
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/jump-game-ii/" target="_blank" rel="noopener">45 Jump Game II</a><span class="badge diff">Medium</span></div>
+    <div class="p-note">求最少步数：把「当前这一跳能覆盖的范围」当成一层，走到层边界就步数 +1。本质是 BFS 分层的贪心写法，别和 55 的骨架混着写。</div>
+  </li>
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/gas-station/" target="_blank" rel="noopener">134 Gas Station</a><span class="badge diff">Medium</span></div>
+    <div class="p-note">两个独立结论：总油量 &lt; 总消耗则无解；从 start 出发在 i 处失败，则 <code>start..i</code> 中任何一个都不能作为起点，直接跳到 <code>i + 1</code>。两句话说清就等于做完了。</div>
+  </li>
+  </ul>
+</div>
+<div class="tier">
+  <div class="tier-head"><span class="t">变体</span><span class="d">模板要扭，坑的来源</span><span class="c">2 道</span></div>
+  <ul class="plist">
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/partition-labels/" target="_blank" rel="noopener">763 Partition Labels</a><span class="badge diff">Medium</span></div>
+    <div class="p-note">模板 B 原题。先记 <code>last[c]</code>，再扫一遍在 <code>i == end</code> 处切分。「每个字母只能出现在一段里」这个约束直接翻译成了 <code>end = max(end, last[c])</code>。</div>
+  </li>
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/hand-of-straights/" target="_blank" rel="noopener">846 Hand of Straights</a><span class="badge diff">Medium</span></div>
+    <div class="p-note">排序后从最小的牌起手，每次必须凑满 <code>groupSize</code> 张连续的。用 <code>Counter</code> 而不是在列表里删元素——后者是 O(n²)。</div>
+  </li>
+  </ul>
+</div>
+
+</section>
+
+<section id="s5">
+  <div class="sec-tag"><span class="cell" style="background:var(--warn)"></span><span class="lab">§5 Pitfalls &amp; Self-check 常见翻车点 + 自测</span></div>
+  <h2>会写不等于不翻车</h2>
+<ol class="pits">
+<li><span class="pt">不证明就贪</span>——先说清「为什么局部最优不会毁掉全局」。说不出来时，把它当 DP 写，复杂度差一点但不会错。面试官问「你怎么知道这样贪是对的」时答不上来，比写慢更致命。</li>
+<li><span class="pt">Kadane 的初值</span>——<code>best = cur = 0</code> 在全负数组上会返回 0（相当于允许空子数组）。题目要求非空时必须用 <code>nums[0]</code> 起手。</li>
+<li><span class="pt">55 和 45 混用骨架</span>——「能否到达」维护一个 <code>reach</code> 就够；「最少几步」必须分层，用 <code>curEnd</code> / <code>farthest</code> 两个变量。把 45 写成 55 的样子会得到步数偏小的错误答案。</li>
+<li><span class="pt">134 只判总量</span>——总量够只说明<b>有解</b>，不告诉你从哪起步。两个结论要一起用。</li>
+<li><span class="pt">对「找零钱」类问题贪心</span>——只有在面额构成特定体系（如 1/5/10/25）时贪心才对。LeetCode 的 322 面额是任意的，必须 DP——见 §2 分流条件。</li>
+</ol>
+<h3>自测 · 30 秒识别模式</h3>
+<div class="quiz">
+<article class="q" data-answer="15">
+  <p class="qprompt"><span class="qtype">30 秒识别</span>Q1 · <a href="https://leetcode.com/problems/assign-cookies/" target="_blank" rel="noopener">455 Assign Cookies</a>：每个孩子有胃口值、每块饼干有尺寸，一块饼干最多给一个孩子，求最多能满足几个孩子。你的第一反应是哪个模式？</p>
+  <div class="opts"><button class="opt" type="button" data-ch="15">15 贪心</button><button class="opt" type="button" data-ch="8">08 堆 / Top-K</button><button class="opt" type="button" data-ch="2">02 双指针</button></div>
+  <details><summary>看答案</summary><div class="answer"><p>贪心。两边都排序，用最小的饼干去满足最小的胃口。贪心性质：把大饼干留给胃口大的孩子不会更差——这句话就是证明。</p></div></details>
+</article>
+<article class="q" data-answer="15">
+  <p class="qprompt"><span class="qtype">30 秒识别</span>Q2 · <a href="https://leetcode.com/problems/best-time-to-buy-and-sell-stock-ii/" target="_blank" rel="noopener">122 Best Time to Buy and Sell Stock II</a>：股票可以当天买卖、交易次数不限，求最大利润。你的第一反应是哪个模式？</p>
+  <div class="opts"><button class="opt" type="button" data-ch="15">15 贪心</button><button class="opt" type="button" data-ch="16">16 一维 DP</button><button class="opt" type="button" data-ch="3">03 滑动窗口</button></div>
+  <details><summary>看答案</summary><div class="answer"><p>贪心。把所有上涨段的差值加起来即可（<code>max(0, p[i] - p[i-1])</code> 求和）。对比 121（只能买卖一次）要维护历史最低价——交易次数这个约束一放开，DP 就退化成贪心。</p></div></details>
+</article>
+<article class="q" data-answer="16">
+  <p class="qprompt"><span class="qtype">30 秒识别</span>Q3 · <a href="https://leetcode.com/problems/coin-change/" target="_blank" rel="noopener">322 Coin Change</a>：给定任意面额的硬币，求凑出目标金额所需的<b>最少硬币数</b>。你的第一反应是哪个模式？</p>
+  <div class="opts"><button class="opt" type="button" data-ch="15">15 贪心</button><button class="opt" type="button" data-ch="16">16 一维 DP</button><button class="opt" type="button" data-ch="9">09 回溯</button></div>
+  <details><summary>看答案</summary><div class="answer"><p><b>一维 DP，不是本章</b>——面额从大到小贪心在 <code>coins=[1,3,4], amount=6</code> 上会给出 3 枚（4+1+1），正确答案是 2 枚（3+3）。「贪心失效」的教科书反例，也是 §2 分流条件的由来。见第 16 章。</p></div></details>
+</article>
+<p class="quiz-note">每章自测都会<b>混入恰好一道非本章题</b>，防止「读哪章选哪章」的条件反射；题面也一律取自本章未收录的题，避免凭记忆而非凭信号作答。</p>
+</div>
+</section>
+
+<nav class="next">
+  <a href="14-intervals.html">← 14 区间</a>
+  <a href="16-dp-1d.html">16 一维 DP →</a>
+</nav>
+
+</div>
+<script src="../assets/quiz.js" defer></script>
+</body>
+</html>

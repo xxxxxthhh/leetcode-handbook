@@ -37,6 +37,18 @@
       "slug": "last-stone-weight",
       "title": "Last Stone Weight"
     },
+    "1048": {
+      "difficulty": "Medium",
+      "paid_only": false,
+      "slug": "longest-string-chain",
+      "title": "Longest String Chain"
+    },
+    "1049": {
+      "difficulty": "Medium",
+      "paid_only": false,
+      "slug": "last-stone-weight-ii",
+      "title": "Last Stone Weight II"
+    },
     "105": {
       "difficulty": "Medium",
       "paid_only": false,
@@ -61,11 +73,23 @@
       "slug": "balanced-binary-tree",
       "title": "Balanced Binary Tree"
     },
+    "1143": {
+      "difficulty": "Medium",
+      "paid_only": false,
+      "slug": "longest-common-subsequence",
+      "title": "Longest Common Subsequence"
+    },
     "121": {
       "difficulty": "Easy",
       "paid_only": false,
       "slug": "best-time-to-buy-and-sell-stock",
       "title": "Best Time to Buy and Sell Stock"
+    },
+    "122": {
+      "difficulty": "Medium",
+      "paid_only": false,
+      "slug": "best-time-to-buy-and-sell-stock-ii",
+      "title": "Best Time to Buy and Sell Stock II"
     },
     "124": {
       "difficulty": "Hard",
@@ -115,11 +139,23 @@
       "slug": "clone-graph",
       "title": "Clone Graph"
     },
+    "134": {
+      "difficulty": "Medium",
+      "paid_only": false,
+      "slug": "gas-station",
+      "title": "Gas Station"
+    },
     "138": {
       "difficulty": "Medium",
       "paid_only": false,
       "slug": "copy-list-with-random-pointer",
       "title": "Copy List with Random Pointer"
+    },
+    "139": {
+      "difficulty": "Medium",
+      "paid_only": false,
+      "slug": "word-break",
+      "title": "Word Break"
     },
     "141": {
       "difficulty": "Easy",
@@ -150,6 +186,12 @@
       "paid_only": false,
       "slug": "3sum",
       "title": "3Sum"
+    },
+    "152": {
+      "difficulty": "Medium",
+      "paid_only": false,
+      "slug": "maximum-product-subarray",
+      "title": "Maximum Product Subarray"
     },
     "153": {
       "difficulty": "Medium",
@@ -186,6 +228,12 @@
       "paid_only": false,
       "slug": "remove-nth-node-from-end-of-list",
       "title": "Remove Nth Node From End of List"
+    },
+    "198": {
+      "difficulty": "Medium",
+      "paid_only": false,
+      "slug": "house-robber",
+      "title": "House Robber"
     },
     "199": {
       "difficulty": "Medium",
@@ -234,6 +282,12 @@
       "paid_only": false,
       "slug": "course-schedule-ii",
       "title": "Course Schedule II"
+    },
+    "213": {
+      "difficulty": "Medium",
+      "paid_only": false,
+      "slug": "house-robber-ii",
+      "title": "House Robber II"
     },
     "215": {
       "difficulty": "Medium",
@@ -355,17 +409,35 @@
       "slug": "longest-substring-without-repeating-characters",
       "title": "Longest Substring Without Repeating Characters"
     },
+    "300": {
+      "difficulty": "Medium",
+      "paid_only": false,
+      "slug": "longest-increasing-subsequence",
+      "title": "Longest Increasing Subsequence"
+    },
     "303": {
       "difficulty": "Easy",
       "paid_only": false,
       "slug": "range-sum-query-immutable",
       "title": "Range Sum Query - Immutable"
     },
+    "309": {
+      "difficulty": "Medium",
+      "paid_only": false,
+      "slug": "best-time-to-buy-and-sell-stock-with-cooldown",
+      "title": "Best Time to Buy and Sell Stock with Cooldown"
+    },
     "310": {
       "difficulty": "Medium",
       "paid_only": false,
       "slug": "minimum-height-trees",
       "title": "Minimum Height Trees"
+    },
+    "322": {
+      "difficulty": "Medium",
+      "paid_only": false,
+      "slug": "coin-change",
+      "title": "Coin Change"
     },
     "323": {
       "difficulty": "Medium",
@@ -385,11 +457,23 @@
       "slug": "top-k-frequent-elements",
       "title": "Top K Frequent Elements"
     },
+    "354": {
+      "difficulty": "Hard",
+      "paid_only": false,
+      "slug": "russian-doll-envelopes",
+      "title": "Russian Doll Envelopes"
+    },
     "36": {
       "difficulty": "Medium",
       "paid_only": false,
       "slug": "valid-sudoku",
       "title": "Valid Sudoku"
+    },
+    "368": {
+      "difficulty": "Medium",
+      "paid_only": false,
+      "slug": "largest-divisible-subset",
+      "title": "Largest Divisible Subset"
     },
     "377": {
       "difficulty": "Medium",
@@ -427,6 +511,12 @@
       "slug": "split-array-largest-sum",
       "title": "Split Array Largest Sum"
     },
+    "416": {
+      "difficulty": "Medium",
+      "paid_only": false,
+      "slug": "partition-equal-subset-sum",
+      "title": "Partition Equal Subset Sum"
+    },
     "417": {
       "difficulty": "Medium",
       "paid_only": false,
@@ -457,6 +547,18 @@
       "slug": "find-all-anagrams-in-a-string",
       "title": "Find All Anagrams in a String"
     },
+    "45": {
+      "difficulty": "Medium",
+      "paid_only": false,
+      "slug": "jump-game-ii",
+      "title": "Jump Game II"
+    },
+    "455": {
+      "difficulty": "Easy",
+      "paid_only": false,
+      "slug": "assign-cookies",
+      "title": "Assign Cookies"
+    },
     "46": {
       "difficulty": "Medium",
       "paid_only": false,
@@ -468,6 +570,12 @@
       "paid_only": false,
       "slug": "group-anagrams",
       "title": "Group Anagrams"
+    },
+    "494": {
+      "difficulty": "Medium",
+      "paid_only": false,
+      "slug": "target-sum",
+      "title": "Target Sum"
     },
     "496": {
       "difficulty": "Easy",
@@ -487,11 +595,23 @@
       "slug": "n-queens",
       "title": "N-Queens"
     },
+    "518": {
+      "difficulty": "Medium",
+      "paid_only": false,
+      "slug": "coin-change-ii",
+      "title": "Coin Change II"
+    },
     "523": {
       "difficulty": "Medium",
       "paid_only": false,
       "slug": "continuous-subarray-sum",
       "title": "Continuous Subarray Sum"
+    },
+    "53": {
+      "difficulty": "Medium",
+      "paid_only": false,
+      "slug": "maximum-subarray",
+      "title": "Maximum Subarray"
     },
     "543": {
       "difficulty": "Easy",
@@ -541,11 +661,23 @@
       "slug": "subtree-of-another-tree",
       "title": "Subtree of Another Tree"
     },
+    "62": {
+      "difficulty": "Medium",
+      "paid_only": false,
+      "slug": "unique-paths",
+      "title": "Unique Paths"
+    },
     "621": {
       "difficulty": "Medium",
       "paid_only": false,
       "slug": "task-scheduler",
       "title": "Task Scheduler"
+    },
+    "64": {
+      "difficulty": "Medium",
+      "paid_only": false,
+      "slug": "minimum-path-sum",
+      "title": "Minimum Path Sum"
     },
     "643": {
       "difficulty": "Easy",
@@ -558,6 +690,12 @@
       "paid_only": false,
       "slug": "find-k-closest-elements",
       "title": "Find K Closest Elements"
+    },
+    "673": {
+      "difficulty": "Medium",
+      "paid_only": false,
+      "slug": "number-of-longest-increasing-subsequence",
+      "title": "Number of Longest Increasing Subsequence"
     },
     "684": {
       "difficulty": "Medium",
@@ -577,6 +715,12 @@
       "slug": "max-area-of-island",
       "title": "Max Area of Island"
     },
+    "70": {
+      "difficulty": "Easy",
+      "paid_only": false,
+      "slug": "climbing-stairs",
+      "title": "Climbing Stairs"
+    },
     "703": {
       "difficulty": "Easy",
       "paid_only": false,
@@ -588,6 +732,12 @@
       "paid_only": false,
       "slug": "binary-search",
       "title": "Binary Search"
+    },
+    "72": {
+      "difficulty": "Medium",
+      "paid_only": false,
+      "slug": "edit-distance",
+      "title": "Edit Distance"
     },
     "721": {
       "difficulty": "Medium",
@@ -619,11 +769,23 @@
       "slug": "search-a-2d-matrix",
       "title": "Search a 2D Matrix"
     },
+    "746": {
+      "difficulty": "Easy",
+      "paid_only": false,
+      "slug": "min-cost-climbing-stairs",
+      "title": "Min Cost Climbing Stairs"
+    },
     "76": {
       "difficulty": "Hard",
       "paid_only": false,
       "slug": "minimum-window-substring",
       "title": "Minimum Window Substring"
+    },
+    "763": {
+      "difficulty": "Medium",
+      "paid_only": false,
+      "slug": "partition-labels",
+      "title": "Partition Labels"
     },
     "77": {
       "difficulty": "Medium",
@@ -667,6 +829,12 @@
       "slug": "largest-rectangle-in-histogram",
       "title": "Largest Rectangle in Histogram"
     },
+    "846": {
+      "difficulty": "Medium",
+      "paid_only": false,
+      "slug": "hand-of-straights",
+      "title": "Hand of Straights"
+    },
     "853": {
       "difficulty": "Medium",
       "paid_only": false,
@@ -696,6 +864,12 @@
       "paid_only": false,
       "slug": "online-stock-span",
       "title": "Online Stock Span"
+    },
+    "91": {
+      "difficulty": "Medium",
+      "paid_only": false,
+      "slug": "decode-ways",
+      "title": "Decode Ways"
     },
     "973": {
       "difficulty": "Medium",

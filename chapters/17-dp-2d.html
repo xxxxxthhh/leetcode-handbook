@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>17 二维 DP 与背包 · 算法面试阈值手册</title>
+<meta name="description" content="两个维度各自「取到 i / 容量 j」；背包 = 选或不选">
+<link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"></noscript>
+<link rel="stylesheet" href="../assets/handbook.css">
+<script src="../assets/theme.js"></script>
+</head>
+<body>
+<button class="theme-toggle" type="button" aria-label="切换深色/浅色模式" title="切换深色/浅色模式">
+  <span class="sun" aria-hidden="true">☀️</span><span class="moon" aria-hidden="true">🌙</span>
+</button>
+<div class="wrap">
+<nav class="crumb"><a href="../index.html">← 目录</a> · <a href="../cheatsheet.html">决策树速查</a></nav>
+
+<header class="ch">
+  <div class="bars" aria-hidden="true"><span class="h1"></span><span class="h2"></span><span class="h4"></span><span class="h6"></span><span class="h3"></span><span class="h5 w"></span><span class="h2 f"></span><span class="h1 f"></span></div>
+  <div class="kicker">Pattern 17 · 2-D DP &amp; Knapsack</div>
+  <h1>17 二维 DP 与背包
+    <span class="zh">两个维度各自「取到 i / 容量 j」；背包 = 选或不选</span>
+  </h1>
+  <div class="meta"><span>面试频率 <b>高</b></span><span>题目 <b>6 道</b></span><span>模板 <b>2 个</b></span><span>⭐认脸 <b>1 道</b></span></div>
+</header>
+
+<section id="s1">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§1 Mental Model 一句话心智模型</span></div>
+  <h2>先记住这一句</h2>
+<div class="oneliner"><b>二维 DP = 两个维度各自「取到 i / 取到 j」。01 背包是它的特例：对每个物品只问一句「选还是不选」，压成一维之后，容量必须倒序遍历。</b></div>
+<p>双序列题（LCS、编辑距离、正则匹配）的表格永远长一个样：<code>dp[i][j]</code> 表示「a 的前 i 个和 b 的前 j 个」的答案。<b>对上了走对角线，没对上各退一步</b>——这两句话覆盖了本章一半的题。</p>
+<p>背包的一维压缩是本章唯一需要死记的细节：<b>01 背包倒序、完全背包正序</b>。原因是倒序时 <code>dp[t - x]</code> 还停留在「上一件物品」的状态，正序时它已经被本轮更新过，等于允许同一件物品用多次。</p>
+
+</section>
+
+<section id="s2">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§2 Recognition Signals 识别信号</span></div>
+  <h2>看到什么，想到本章</h2>
+<div class="tbl-scroll"><table class="sig-tbl"><thead><tr><th>题面出现…</th><th>想到</th></tr></thead><tbody><tr><td>「两个字符串 / 两个数组」比较、匹配、对齐</td><td><code>dp[i][j]</code> 双序列表（模板 A）</td></tr><tr><td>「网格里从左上走到右下」（路径数 / 最小路径和）</td><td><code>dp[i][j] = 上 + 左</code></td></tr><tr><td>「能否把数组分成和相等的两半」</td><td>01 背包布尔版（模板 B）</td></tr><tr><td>「加减号 / 分成两组」凑出目标</td><td>先转成子集和，再套背包（494）</td></tr><tr><td>「编辑距离 / 最长公共子序列 / 通配符匹配」</td><td>模板 A，只换「对上/没对上」的转移</td></tr><tr><td>「带冷冻期 / 手续费的股票」</td><td>状态机 DP：<code>dp[i][持有 or 空仓]</code></td></tr></tbody></table></div>
+<div class="routing"><div class="rt-head">分流条件 · 决策树同源</div><p>状态只需要一个下标、且只依赖前一两项 → 第 16 章。「最长上升<b>子序列</b>」虽然也在比较元素大小，但只有一个序列、转移要回头看所有更早的元素，自成一套 → 第 18 章。要列出全部方案而不是计数 → 回溯（第 09 章）。「路径」这个词也要分三处：网格里<b>只能右 / 下</b>走 → 本章（方向受限、不可能有环，纯 DP）；能四向移动、求<b>最少步数</b> → 第 10 章的 BFS；树上的路径和 → 第 07 章的递归。</p></div>
+
+</section>
+
+<section id="s3">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§3 Template 模板代码</span></div>
+  <h2>可默写的那几行</h2>
+<p class="legend"><i class="bone">■ 【骨架】</i> 不变，闭着眼默写　<i class="slot">■ 【插槽】</i> 随题变化，写题前先问自己填什么</p>
+<div class="tpl">
+  <div class="tpl-head">模板 A · 双序列 / 网格 DP<span class="note">LCS、编辑距离、路径数</span></div>
+  <pre><code>def lcs(a, b):
+    m, n = len(a), len(b)
+    dp = [[0] * (n + 1) for _ in range(m + 1)]          <span class="cm bone"># 【骨架】多开一行一列当边界,省掉特判</span>
+    for i in range(1, m + 1):                           <span class="cm bone"># 【骨架】</span>
+        for j in range(1, n + 1):                       <span class="cm bone"># 【骨架】</span>
+            if a[i - 1] == b[j - 1]:                    <span class="cm slot"># 【插槽】两个维度"对上了"的条件</span>
+                dp[i][j] = dp[i - 1][j - 1] + 1         <span class="cm slot"># 【插槽】对上了怎么转移(走对角线)</span>
+            else:
+                dp[i][j] = max(dp[i - 1][j], dp[i][j - 1])  <span class="cm slot"># 【插槽】没对上:各退一步取最优</span>
+    return dp[m][n]                                     <span class="cm slot"># 【插槽】答案在右下角</span></code></pre>
+  <div class="tpl-foot">默写口诀：<b>多开一圈边界、对上走对角、没对上各退一步</b>。边界怎么初始化取决于题意：路径数填 1，编辑距离填 <code>i</code> / <code>j</code>，LCS 填 0。</div>
+</div>
+<div class="tpl">
+  <div class="tpl-head">模板 B · 01 背包（一维）<span class="note">选或不选，容量倒序</span></div>
+  <pre><code>def can_partition(nums):
+    total = sum(nums)
+    if total % 2:                           <span class="cm slot"># 【插槽】问题先转化成"能否凑出某个目标"</span>
+        return False
+    target = total // 2
+    dp = [False] * (target + 1)             <span class="cm bone"># 【骨架】dp[t] = 能否恰好凑出 t</span>
+    dp[0] = True                            <span class="cm bone"># 【骨架】什么都不选就能凑出 0</span>
+    for x in nums:                          <span class="cm bone"># 【骨架】外层枚举物品</span>
+        for t in range(target, x - 1, -1):  <span class="cm bone"># 【骨架】容量**倒序** —— 保证每个物品只用一次</span>
+            dp[t] = dp[t] or dp[t - x]      <span class="cm slot"># 【插槽】布尔可行性 / 计数 / 最大价值</span>
+    return dp[target]</code></pre>
+  <div class="tpl-foot"><b>01 背包倒序、完全背包正序</b>——这一行的方向就是「每件用一次」和「每件可无限用」的全部差别，见翻车点①。</div>
+</div>
+
+</section>
+
+<section id="s4">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§4 Problems 题目分层</span></div>
+  <h2>从建直觉到扭模板</h2>
+<div class="tier">
+  <div class="tier-head"><span class="t">热身</span><span class="d">建直觉，easy 为主</span><span class="c">1 道</span></div>
+  <ul class="plist">
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/unique-paths/" target="_blank" rel="noopener">62 Unique Paths</a><span class="badge diff">Medium</span></div>
+    <div class="p-note">最干净的二维表：<code>dp[i][j] = dp[i-1][j] + dp[i][j-1]</code>。先用它把「多开一圈边界」的习惯建立起来，后面的题都省事。</div>
+  </li>
+  </ul>
+</div>
+<div class="tier">
+  <div class="tier-head"><span class="t">标准</span><span class="d">模板直接套</span><span class="c">3 道</span></div>
+  <ul class="plist">
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/longest-common-subsequence/" target="_blank" rel="noopener">1143 Longest Common Subsequence</a><span class="badge diff">Medium</span></div>
+    <div class="p-note">模板 A 原题。它是 72、583、1092 的共同母题——把这张表画明白，剩下几道只是换转移。</div>
+  </li>
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/partition-equal-subset-sum/" target="_blank" rel="noopener">416 Partition Equal Subset Sum</a><span class="badge diff">Medium</span></div>
+    <div class="p-note">模板 B 原题。转化是第一步：分成两个和相等的子集 ⇔ 能否凑出 <code>sum / 2</code>。和为奇数直接返回 False，省一次 DP。</div>
+  </li>
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/target-sum/" target="_blank" rel="noopener">494 Target Sum</a><span class="badge diff">Medium</span></div>
+    <div class="p-note">加减号转子集和：设正号组的和为 P，则 <code>P - (sum - P) = target</code>，即 <code>P = (sum + target) / 2</code>。奇偶性不对或超界直接返回 0——这两个判断漏掉就会数组越界。</div>
+  </li>
+  </ul>
+</div>
+<div class="tier">
+  <div class="tier-head"><span class="t">变体</span><span class="d">模板要扭，坑的来源</span><span class="c">2 道</span></div>
+  <ul class="plist">
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/best-time-to-buy-and-sell-stock-with-cooldown/" target="_blank" rel="noopener">309 Best Time to Buy and Sell Stock with Cooldown</a><span class="badge diff">Medium</span></div>
+    <div class="p-note">状态机 DP：<code>hold</code>（持有）/ <code>sold</code>（今天刚卖）/ <code>rest</code>（空仓且非冷冻）。画出三个状态之间的箭头再写代码，比硬推转移方程快得多。</div>
+  </li>
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/edit-distance/" target="_blank" rel="noopener">72 Edit Distance</a><span class="badge star" title="hard，认脸即可">⭐ 认脸</span><span class="badge diff">Medium</span></div>
+    <div class="p-note">⭐认脸。三种操作对应三个来向：删（上）、插（左）、换（对角）。说得出这句就够。</div>
+  </li>
+  </ul>
+</div>
+
+</section>
+
+<section id="s5">
+  <div class="sec-tag"><span class="cell" style="background:var(--warn)"></span><span class="lab">§5 Pitfalls &amp; Self-check 常见翻车点 + 自测</span></div>
+  <h2>会写不等于不翻车</h2>
+<ol class="pits">
+<li><span class="pt">背包遍历方向记反</span>——01 背包一维版容量必须<b>倒序</b>。写成正序，<code>[1, 5, 11, 5]</code> 会因为 5 被重复使用而误判。完全背包（零钱兑换）反过来正是要正序。</li>
+<li><span class="pt">循环顺序决定组合还是排列</span>——外层物品、内层容量 = <b>组合数</b>（518）；外层容量、内层物品 = <b>排列数</b>（377）。两者的代码只差一次缩进，答案完全不同。</li>
+<li><span class="pt">边界行列没初始化</span>——编辑距离的第 0 行是「全插入」、第 0 列是「全删除」，不能都填 0。多开一圈的意义就在于把边界写进表里，而不是在循环里写 <code>if i == 0</code>。</li>
+<li><span class="pt">494 忘了奇偶与越界判断</span>——<code>(sum + target)</code> 为奇数、或 <code>|target| &gt; sum</code> 时无解。少了这两句会得到负的容量或错误答案。</li>
+<li><span class="pt">空间压缩压过头</span>——模板 A 也能压成一维（滚动一行），但得小心 <code>dp[i-1][j-1]</code> 被覆盖，需要一个临时变量存左上角。面试里先写二维，被追问再说压缩方案。</li>
+</ol>
+<h3>自测 · 30 秒识别模式</h3>
+<div class="quiz">
+<article class="q" data-answer="17">
+  <p class="qprompt"><span class="qtype">30 秒识别</span>Q1 · <a href="https://leetcode.com/problems/minimum-path-sum/" target="_blank" rel="noopener">64 Minimum Path Sum</a>：在一个数字网格里从左上走到右下，每次只能向右或向下，求路径数字和的最小值。你的第一反应是哪个模式？</p>
+  <div class="opts"><button class="opt" type="button" data-ch="17">17 二维 DP 与背包</button><button class="opt" type="button" data-ch="16">16 一维 DP</button><button class="opt" type="button" data-ch="10">10 图的 BFS/DFS</button></div>
+  <details><summary>看答案</summary><div class="answer"><p>二维 DP（模板 A）。<code>dp[i][j] = grid[i][j] + min(上, 左)</code>，和 62 是同一张表换了转移。看到「网格 + 只能右/下」就是二维 DP，不是图搜索——方向受限意味着没有环，不需要 <code>visited</code>。</p></div></details>
+</article>
+<article class="q" data-answer="17">
+  <p class="qprompt"><span class="qtype">30 秒识别</span>Q2 · <a href="https://leetcode.com/problems/last-stone-weight-ii/" target="_blank" rel="noopener">1049 Last Stone Weight II</a>：一堆石头两两相撞，剩下差值继续撞，求最后可能剩下的最小重量。你的第一反应是哪个模式？</p>
+  <div class="opts"><button class="opt" type="button" data-ch="17">17 二维 DP 与背包</button><button class="opt" type="button" data-ch="8">08 堆 / Top-K</button><button class="opt" type="button" data-ch="15">15 贪心</button></div>
+  <details><summary>看答案</summary><div class="answer"><p>01 背包（模板 B）。把石头分成两堆、让两堆重量尽量接近 —— 即在 <code>sum/2</code> 容量内能凑出的最大重量，答案是 <code>sum - 2 * best</code>。对比 1046（每次取最重的两块）才是堆：那道题按固定规则模拟，这道题要你自己分组。</p></div></details>
+</article>
+<article class="q" data-answer="16">
+  <p class="qprompt"><span class="qtype">30 秒识别</span>Q3 · <a href="https://leetcode.com/problems/word-break/" target="_blank" rel="noopener">139 Word Break</a>：给一个字符串和一个词典，判断字符串能否拆成若干个词典里的单词。你的第一反应是哪个模式？</p>
+  <div class="opts"><button class="opt" type="button" data-ch="17">17 二维 DP 与背包</button><button class="opt" type="button" data-ch="16">16 一维 DP</button><button class="opt" type="button" data-ch="9">09 回溯</button></div>
+  <details><summary>看答案</summary><div class="answer"><p><b>一维 DP，不是本章</b>——虽然出现了「字符串 + 词典」两样东西，但状态只需要一个下标：<code>dp[t]</code> = 前 t 个字符能否拆完。词典是候选集合不是第二个序列，凑不出第二个维度。见第 16 章。</p></div></details>
+</article>
+<p class="quiz-note">每章自测都会<b>混入恰好一道非本章题</b>，防止「读哪章选哪章」的条件反射；题面也一律取自本章未收录的题，避免凭记忆而非凭信号作答。</p>
+</div>
+</section>
+
+<nav class="next">
+  <a href="16-dp-1d.html">← 16 一维 DP</a>
+  <a href="18-dp-subsequence.html">18 子序列 DP →</a>
+</nav>
+
+</div>
+<script src="../assets/quiz.js" defer></script>
+</body>
+</html>
