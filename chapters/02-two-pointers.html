@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>02 双指针 · 算法面试阈值手册</title>
+<meta name="description" content="有序或对称结构里，两端 / 快慢协同收缩搜索空间">
+<link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"></noscript>
+<link rel="stylesheet" href="../assets/handbook.css">
+<script src="../assets/theme.js"></script>
+</head>
+<body>
+<button class="theme-toggle" type="button" aria-label="切换深色/浅色模式" title="切换深色/浅色模式">
+  <span class="sun" aria-hidden="true">☀️</span><span class="moon" aria-hidden="true">🌙</span>
+</button>
+<div class="wrap">
+<nav class="crumb"><a href="../index.html">← 目录</a> · <a href="../cheatsheet.html">决策树速查</a></nav>
+
+<header class="ch">
+  <div class="bars" aria-hidden="true"><span class="h1"></span><span class="h2"></span><span class="h4"></span><span class="h6"></span><span class="h3"></span><span class="h5 w"></span><span class="h2 f"></span><span class="h1 f"></span></div>
+  <div class="kicker">Pattern 02 · Two Pointers</div>
+  <h1>02 双指针
+    <span class="zh">有序或对称结构里，两端 / 快慢协同收缩搜索空间</span>
+  </h1>
+  <div class="meta"><span>面试频率 <b>极高</b></span><span>题目 <b>5 道</b></span><span>模板 <b>2 个</b></span><span>⭐认脸 <b>1 道</b></span></div>
+</header>
+
+<section id="s1">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§1 Mental Model 一句话心智模型</span></div>
+  <h2>先记住这一句</h2>
+<div class="oneliner"><b>双指针的前提是「移动一步能一次排除掉一整批候选」——有序给了相向指针这个权力，速度差给了快慢指针这个权力。</b></div>
+<p>相向双指针为什么对：数组有序时，<code>nums[l] + nums[r]</code> 太小，那么 <code>nums[l]</code> 配右边任何数都太小，<b>这一整行候选一次性作废</b>，<code>l</code> 才敢往前走。任何相向双指针题，你都应该能说出这句「作废了谁」——说不出来就是在碰运气。</p>
+<p>同向快慢指针是另一件事：一个负责看、一个负责写（原地覆盖），或者一个走两步、一个走一步（找中点、判环）。它不要求有序，要求的是<b>两个指针的相对关系本身就是答案</b>。</p>
+
+</section>
+
+<section id="s2">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§2 Recognition Signals 识别信号</span></div>
+  <h2>看到什么，想到本章</h2>
+<div class="tbl-scroll"><table class="sig-tbl"><thead><tr><th>题面出现…</th><th>想到</th></tr></thead><tbody><tr><td>「已排序数组」+ 找一对 / 三个数满足条件</td><td>相向双指针（模板 A）</td></tr><tr><td>「回文 / 对称 / 首尾比较」</td><td>相向双指针（模板 A）</td></tr><tr><td>「容器 / 面积 / 两根柱子」</td><td>相向 + 短板先动（模板 A 的度量换成面积）</td></tr><tr><td>「原地去重 / 移除元素 / 把某类挪到前面」</td><td>同向快慢（模板 B）</td></tr><tr><td>「3Sum / 4Sum / 最接近的三数之和」</td><td>排序 + 固定 k−2 个 + 相向</td></tr><tr><td>链表「找中点 / 判环 / 倒数第 n 个」</td><td>快慢指针，模板在第 06 章</td></tr></tbody></table></div>
+<div class="routing"><div class="rt-head">分流条件 · 决策树同源</div><p>「两数之和」在<b>无序</b>数组上是哈希（第 01 章），排序后才轮到双指针——如果题目没给有序、也不允许排序（要原下标），就别硬套。「连续子数组满足某条件」左右指针都从左端出发、且窗口内状态要维护，那是滑动窗口（第 03 章），不是相向双指针。</p></div>
+
+</section>
+
+<section id="s3">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§3 Template 模板代码</span></div>
+  <h2>可默写的那几行</h2>
+<p class="legend"><i class="bone">■ 【骨架】</i> 不变，闭着眼默写　<i class="slot">■ 【插槽】</i> 随题变化，写题前先问自己填什么</p>
+<div class="tpl">
+  <div class="tpl-head">模板 A · 相向双指针<span class="note">覆盖 167 / 15 / 11 / 125</span></div>
+  <pre><code>def two_sum_sorted(nums, target):
+    l, r = 0, len(nums) - 1                 <span class="cm bone"># 【骨架】两端起步</span>
+    while l &lt; r:                            <span class="cm bone"># 【骨架】相遇即结束</span>
+        cur = nums[l] + nums[r]             <span class="cm slot"># 【插槽】当前候选的度量:和 / 面积 / 是否相等</span>
+        if cur == target:                   <span class="cm slot"># 【插槽】命中条件</span>
+            return [l, r]                   <span class="cm slot"># 【插槽】答案形式</span>
+        if cur &lt; target:                    <span class="cm slot"># 【插槽】谁动:小了就让左边变大</span>
+            l += 1                          <span class="cm bone"># 【骨架】</span>
+        else:
+            r -= 1                          <span class="cm bone"># 【骨架】</span>
+    return []</code></pre>
+  <div class="tpl-foot">默写口诀：<b>两端起步、小了动左、大了动右</b>。换题时只改三个插槽：度量是什么、命中条件是什么、谁该动。</div>
+</div>
+<div class="tpl">
+  <div class="tpl-head">模板 B · 同向快慢<span class="note">原地覆盖类</span></div>
+  <pre><code>def remove_val(nums, val):
+    slow = 0                                <span class="cm bone"># 【骨架】slow = 下一个要写入的位置</span>
+    for fast in range(len(nums)):           <span class="cm bone"># 【骨架】fast 负责看,slow 负责写</span>
+        if nums[fast] != val:               <span class="cm slot"># 【插槽】保留条件:去重 / 非零 / 满足谓词</span>
+            nums[slow] = nums[fast]         <span class="cm bone"># 【骨架】</span>
+            slow += 1                       <span class="cm bone"># 【骨架】</span>
+    return slow                             <span class="cm slot"># 【插槽】答案:新长度 / 就地改好的数组</span></code></pre>
+  <div class="tpl-foot">记住分工：<b>fast 负责看，slow 负责写</b>。返回值是新长度，<code>nums[slow:]</code> 之后的内容按题目要求可以是任何值。</div>
+</div>
+
+</section>
+
+<section id="s4">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§4 Problems 题目分层</span></div>
+  <h2>从建直觉到扭模板</h2>
+<div class="tier">
+  <div class="tier-head"><span class="t">热身</span><span class="d">建直觉，easy 为主</span><span class="c">1 道</span></div>
+  <ul class="plist">
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/valid-palindrome/" target="_blank" rel="noopener">125 Valid Palindrome</a><span class="badge diff">Easy</span></div>
+    <div class="p-note">相向双指针的最小形态。真正的坑在预处理：<code>isalnum()</code> 过滤 + <code>lower()</code>，别先拼出一个干净字符串再比较——面试官想看的是 O(1) 空间。</div>
+  </li>
+  </ul>
+</div>
+<div class="tier">
+  <div class="tier-head"><span class="t">标准</span><span class="d">模板直接套</span><span class="c">3 道</span></div>
+  <ul class="plist">
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/two-sum-ii-input-array-is-sorted/" target="_blank" rel="noopener">167 Two Sum II - Input Array Is Sorted</a><span class="badge diff">Medium</span></div>
+    <div class="p-note">模板 A 原题（注意题目返回的是 1-indexed）。被问「为什么不用哈希」时答：数组有序，双指针 O(1) 空间且不需要额外查表。</div>
+  </li>
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/3sum/" target="_blank" rel="noopener">15 3Sum</a><span class="badge diff">Medium</span></div>
+    <div class="p-note">排序 + 固定第一个数 + 相向。<b>去重是全题唯一难点</b>，见翻车点①；<code>nums[i] &gt; 0</code> 时提前 break 是常见加分点。</div>
+  </li>
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/container-with-most-water/" target="_blank" rel="noopener">11 Container With Most Water</a><span class="badge diff">Medium</span></div>
+    <div class="p-note">度量从「和」换成「面积」。核心是证明「移动短板」不会漏掉答案：移动长板，宽必减、高不可能超过原短板，面积一定不增——说出这句就过关了。</div>
+  </li>
+  </ul>
+</div>
+<div class="tier">
+  <div class="tier-head"><span class="t">变体</span><span class="d">模板要扭，坑的来源</span><span class="c">1 道</span></div>
+  <ul class="plist">
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/trapping-rain-water/" target="_blank" rel="noopener">42 Trapping Rain Water</a><span class="badge star" title="hard，认脸即可">⭐ 认脸</span><span class="badge diff">Hard</span></div>
+    <div class="p-note">⭐认脸。一句话：每格存水 = 左右最大值中较小者 − 自身高度。说得出这句，再指一下单调栈解法（第 04 章）就够。</div>
+  </li>
+  </ul>
+</div>
+
+</section>
+
+<section id="s5">
+  <div class="sec-tag"><span class="cell" style="background:var(--warn)"></span><span class="lab">§5 Pitfalls &amp; Self-check 常见翻车点 + 自测</span></div>
+  <h2>会写不等于不翻车</h2>
+<ol class="pits">
+<li><span class="pt">3Sum 的三处去重</span>——固定位 <code>if i and nums[i] == nums[i-1]: continue</code>；命中后左指针跳过重复；右指针同理。只写一处就会出现重复三元组——这是 3Sum 最常见的 WA。</li>
+<li><span class="pt"><code>while l &lt; r</code> 还是 <code>l &lt;= r</code></span>——要一对<b>不同</b>元素用 <code>&lt;</code>；在有序数组上二分式地找单个位置才可能用 <code>&lt;=</code>。回文判断用 <code>&lt;</code> 即可，中间那个字符不需要和自己比。</li>
+<li><span class="pt">排序破坏原下标</span>——题目要返回<b>原始下标</b>时（如第 01 章的 1 Two Sum）不能排序，只能哈希。3Sum 之所以能排序，是因为它要的是值不是下标。</li>
+<li><span class="pt">短板先动写反</span>——11 题里必须移动<b>较短</b>的那根。写成移动较长的，样例 <code>[1,8,6,2,5,4,8,3,7]</code> 会给出 8 而不是 49。</li>
+</ol>
+<h3>自测 · 30 秒识别模式</h3>
+<div class="quiz">
+<article class="q" data-answer="2">
+  <p class="qprompt"><span class="qtype">30 秒识别</span>Q1 · <a href="https://leetcode.com/problems/squares-of-a-sorted-array/" target="_blank" rel="noopener">977 Squares of a Sorted Array</a>：给一个<b>已排序</b>（含负数）的数组，返回每个数平方后的有序数组。你的第一反应是哪个模式？</p>
+  <div class="opts"><button class="opt" type="button" data-ch="2">02 双指针</button><button class="opt" type="button" data-ch="1">01 哈希</button><button class="opt" type="button" data-ch="3">03 滑动窗口</button></div>
+  <details><summary>看答案</summary><div class="answer"><p>双指针。平方后最大值只可能出现在两端，所以从两端向中间收、<b>从后往前填结果</b>。看到「已排序」+「结果也要有序」就该想到相向指针，而不是排序后再排一次。</p></div></details>
+</article>
+<article class="q" data-answer="2">
+  <p class="qprompt"><span class="qtype">30 秒识别</span>Q2 · <a href="https://leetcode.com/problems/remove-duplicates-from-sorted-array/" target="_blank" rel="noopener">26 Remove Duplicates from Sorted Array</a>：在已排序数组上原地去重，返回去重后的长度。你的第一反应是哪个模式？</p>
+  <div class="opts"><button class="opt" type="button" data-ch="2">02 双指针</button><button class="opt" type="button" data-ch="1">01 哈希</button><button class="opt" type="button" data-ch="4">04 栈与单调栈</button></div>
+  <details><summary>看答案</summary><div class="answer"><p>双指针（模板 B）。保留条件从 <code>!= val</code> 换成 <code>!= nums[slow-1]</code>，骨架一行没变。用 <code>set</code> 也能去重，但破坏顺序、且不是原地。</p></div></details>
+</article>
+<article class="q" data-answer="3">
+  <p class="qprompt"><span class="qtype">30 秒识别</span>Q3 · 给定正整数数组和 target，求和 ≥ target 的<b>最短连续子数组</b>长度。你的第一反应是哪个模式？</p>
+  <div class="opts"><button class="opt" type="button" data-ch="2">02 双指针</button><button class="opt" type="button" data-ch="3">03 滑动窗口</button><button class="opt" type="button" data-ch="13">13 前缀和</button></div>
+  <details><summary>看答案</summary><div class="answer"><p><b>滑动窗口，不是本章</b>——两个指针都从左端出发、右扩左缩，窗口内要维护「当前和」这个状态。相向双指针从两端起步、不维护状态，是完全不同的两件事。见第 03 章。</p></div></details>
+</article>
+<p class="quiz-note">每章自测都会<b>混入恰好一道非本章题</b>，防止「读哪章选哪章」的条件反射；题面也一律取自本章未收录的题，避免凭记忆而非凭信号作答。</p>
+</div>
+</section>
+
+<nav class="next">
+  <a href="01-hash.html">← 01 哈希</a>
+  <a href="03-sliding-window.html">03 滑动窗口 →</a>
+</nav>
+
+</div>
+<script src="../assets/quiz.js" defer></script>
+</body>
+</html>

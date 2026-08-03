@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>01 哈希 · 算法面试阈值手册</title>
+<meta name="description" content="用空间换「我见过你吗」的 O(1) 回答">
+<link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"></noscript>
+<link rel="stylesheet" href="../assets/handbook.css">
+<script src="../assets/theme.js"></script>
+</head>
+<body>
+<button class="theme-toggle" type="button" aria-label="切换深色/浅色模式" title="切换深色/浅色模式">
+  <span class="sun" aria-hidden="true">☀️</span><span class="moon" aria-hidden="true">🌙</span>
+</button>
+<div class="wrap">
+<nav class="crumb"><a href="../index.html">← 目录</a> · <a href="../cheatsheet.html">决策树速查</a></nav>
+
+<header class="ch">
+  <div class="bars" aria-hidden="true"><span class="h1"></span><span class="h2"></span><span class="h4"></span><span class="h6"></span><span class="h3"></span><span class="h5 w"></span><span class="h2 f"></span><span class="h1 f"></span></div>
+  <div class="kicker">Pattern 01 · Hash Map / Set</div>
+  <h1>01 哈希
+    <span class="zh">用空间换「我见过你吗」的 O(1) 回答</span>
+  </h1>
+  <div class="meta"><span>面试频率 <b>极高</b></span><span>题目 <b>6 道</b></span><span>模板 <b>2 个</b></span><span>⭐认脸 <b>0 道</b></span></div>
+</header>
+
+<section id="s1">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§1 Mental Model 一句话心智模型</span></div>
+  <h2>先记住这一句</h2>
+<div class="oneliner"><b>哈希表就一句话：花 O(n) 的空间，把「我见过你吗」变成 O(1) 的回答。</b></div>
+<p>写题时你真正在做的动作只有三种：<b>见过没有</b>（<code>set</code>）、<b>见过几次</b>（<code>Counter</code>）、<b>见过的东西挂在哪</b>（<code>dict</code> → 下标 / 列表）。先想清楚要问哪一种，代码几乎是自动的。</p>
+<p>它的典型用法是把一层循环换成一次查表：暴力解里那个「回头去前面找有没有某个数」的内层循环，就是哈希表的入口。代价是内存，以及<b>顺序信息全丢了</b>——需要顺序的题（第 K 大、区间和）得另找工具。</p>
+
+</section>
+
+<section id="s2">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§2 Recognition Signals 识别信号</span></div>
+  <h2>看到什么，想到本章</h2>
+<div class="tbl-scroll"><table class="sig-tbl"><thead><tr><th>题面出现…</th><th>想到</th></tr></thead><tbody><tr><td>「是否存在 / 有没有重复 / 出现过吗」</td><td><code>set</code></td></tr><tr><td>「出现次数 / 频率 / 众数 / anagram」</td><td><code>Counter</code></td></tr><tr><td>「两数之和 / 配对 / 补数」且数组<b>无序</b></td><td><code>dict</code> 存「我需要的另一半」（模板 A）</td></tr><tr><td>「分组 / 归类 / 把同类放一起」</td><td><code>dict[签名] → list</code>（模板 B）</td></tr><tr><td>题目要求 O(n)，而你的暴力解是两层循环在「回头找」</td><td>哈希把内层循环换成一次查表</td></tr><tr><td>「最长连续序列」但<b>不要求元素相邻</b></td><td><code>set</code> + 只从序列起点向右扩</td></tr></tbody></table></div>
+<div class="routing"><div class="rt-head">分流条件 · 决策树同源</div><p>同样是「两数之和」，数组<b>无序</b>才用哈希；<b>已排序</b>就该用双指针（第 02 章），省掉 O(n) 空间。「子数组和恰好为 K」表面像哈希，实际主语是前缀和（第 13 章），哈希只是配件。「频率最高的 K 个」先用 Counter 数完，选 K 个的动作属于堆（第 08 章）。</p></div>
+
+</section>
+
+<section id="s3">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§3 Template 模板代码</span></div>
+  <h2>可默写的那几行</h2>
+<p class="legend"><i class="bone">■ 【骨架】</i> 不变，闭着眼默写　<i class="slot">■ 【插槽】</i> 随题变化，写题前先问自己填什么</p>
+<div class="tpl">
+  <div class="tpl-head">模板 A · 配对<span class="note">边走边问「另一半来过吗」</span></div>
+  <pre><code>def two_sum(nums, target):
+    seen = {}                               <span class="cm bone"># 【骨架】值 -&gt; 下标,记录"我来过"</span>
+    for i, x in enumerate(nums):            <span class="cm bone"># 【骨架】</span>
+        need = target - x                   <span class="cm slot"># 【插槽】"另一半"怎么算</span>
+        if need in seen:                    <span class="cm bone"># 【骨架】先查后存,否则会拿自己配自己</span>
+            return [seen[need], i]          <span class="cm slot"># 【插槽】答案形式:下标对 / 计数 / True</span>
+        seen[x] = i                         <span class="cm bone"># 【骨架】</span>
+    return []</code></pre>
+  <div class="tpl-foot">默写口诀：<b>先查后存</b>。顺序反了，<code>[3,3]</code> 这种用例会拿自己配自己。</div>
+</div>
+<div class="tpl">
+  <div class="tpl-head">模板 B · 分组<span class="note">给每个元素算一个签名</span></div>
+  <pre><code>from collections import defaultdict
+
+def group_by_signature(words):
+    buckets = defaultdict(list)             <span class="cm bone"># 【骨架】签名 -&gt; 同组成员</span>
+    for w in words:                         <span class="cm bone"># 【骨架】</span>
+        key = tuple(sorted(w))              <span class="cm slot"># 【插槽】签名怎么算:排序 / 计数向量 / 归一化</span>
+        buckets[key].append(w)              <span class="cm bone"># 【骨架】</span>
+    return list(buckets.values())           <span class="cm slot"># 【插槽】要分组本身 / 组数 / 最大的那组</span></code></pre>
+  <div class="tpl-foot">全部难度都在<b>签名怎么设计</b>：字母排序、26 维计数向量、行列宫编号……骨架一个字都不用改。</div>
+</div>
+
+</section>
+
+<section id="s4">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§4 Problems 题目分层</span></div>
+  <h2>从建直觉到扭模板</h2>
+<div class="tier">
+  <div class="tier-head"><span class="t">热身</span><span class="d">建直觉，easy 为主</span><span class="c">2 道</span></div>
+  <ul class="plist">
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/two-sum/" target="_blank" rel="noopener">1 Two Sum</a><span class="badge diff">Easy</span></div>
+    <div class="p-note">模板 A 原题。面试里它的价值不在题本身，而在你能否一口说出「为什么先查后存」。</div>
+  </li>
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/contains-duplicate/" target="_blank" rel="noopener">217 Contains Duplicate</a><span class="badge diff">Easy</span></div>
+    <div class="p-note"><code>set</code> 的最小用法。顺手记住变体：<code>len(set(nums)) &lt; len(nums)</code> 一行解决。</div>
+  </li>
+  </ul>
+</div>
+<div class="tier">
+  <div class="tier-head"><span class="t">标准</span><span class="d">模板直接套</span><span class="c">3 道</span></div>
+  <ul class="plist">
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/valid-anagram/" target="_blank" rel="noopener">242 Valid Anagram</a><span class="badge diff">Easy</span></div>
+    <div class="p-note"><code>Counter(s) == Counter(t)</code>。面试官常追问排序解法 O(n log n) 与计数解法 O(n) 的取舍，以及 Unicode 字符集下 26 长度数组会失效。</div>
+  </li>
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/group-anagrams/" target="_blank" rel="noopener">49 Group Anagrams</a><span class="badge diff">Medium</span></div>
+    <div class="p-note">模板 B 原题。签名用 <code>tuple(sorted(w))</code> 或 26 维计数元组——后者 O(n·k)，前者 O(n·k log k)，说得出这个差别就够了。</div>
+  </li>
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/longest-consecutive-sequence/" target="_blank" rel="noopener">128 Longest Consecutive Sequence</a><span class="badge diff">Medium</span></div>
+    <div class="p-note">全章最值得琢磨的一道：把数组塞进 <code>set</code>，<b>只从「左边没有邻居」的数开始向右扩</b>。这一条剪枝把 O(n²) 压回 O(n)，见翻车点④。</div>
+  </li>
+  </ul>
+</div>
+<div class="tier">
+  <div class="tier-head"><span class="t">变体</span><span class="d">模板要扭，坑的来源</span><span class="c">1 道</span></div>
+  <ul class="plist">
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/valid-sudoku/" target="_blank" rel="noopener">36 Valid Sudoku</a><span class="badge diff">Medium</span></div>
+    <div class="p-note">签名思维的另一面：一个格子同时属于行、列、宫三个 <code>set</code>，用 <code>(i // 3, j // 3)</code> 当宫的键。骨架不变，键变了。</div>
+  </li>
+  </ul>
+</div>
+
+</section>
+
+<section id="s5">
+  <div class="sec-tag"><span class="cell" style="background:var(--warn)"></span><span class="lab">§5 Pitfalls &amp; Self-check 常见翻车点 + 自测</span></div>
+  <h2>会写不等于不翻车</h2>
+<ol class="pits">
+<li><span class="pt">先查后存的顺序</span>——模板 A 里 <code>if need in seen</code> 必须在 <code>seen[x] = i</code> 之前。反过来写，<code>[3,3]</code> target=6 会返回 <code>[0,0]</code>。</li>
+<li><span class="pt">存值还是存下标</span>——题目要下标就存下标，要判断存在用 <code>set</code> 就够。别默认写 <code>dict</code>——<code>set</code> 的意图更清楚，读代码的人一眼知道你不关心位置。</li>
+<li><span class="pt"><code>Counter</code> 的删空问题</span>——滑动窗口里用 <code>Counter</code> 当窗口状态时，减到 0 的键<b>不会自动消失</b>，<code>len(cnt)</code> 会把它算进去。要么 <code>del</code>，要么改用「不同字符数」计数器。</li>
+<li><span class="pt">128 从每个数往两边扩</span>——对每个数都向左右扩展是 O(n²)（退化用例：<code>[1,2,3,...,n]</code>）。正确写法是先判断 <code>x - 1 not in s</code>，只有序列起点才进入扩展循环。</li>
+<li><span class="pt">不可哈希的键</span>——<code>list</code> 不能当键，<code>tuple</code> 可以；<code>dict</code> 不能，<code>frozenset</code> 可以。分组题里签名一律用元组。</li>
+</ol>
+<h3>自测 · 30 秒识别模式</h3>
+<div class="quiz">
+<article class="q" data-answer="1">
+  <p class="qprompt"><span class="qtype">30 秒识别</span>Q1 · <a href="https://leetcode.com/problems/ransom-note/" target="_blank" rel="noopener">383 Ransom Note</a>：判断能否用杂志上的字母拼出勒索信（每个字母只能用一次）。你的第一反应是哪个模式？</p>
+  <div class="opts"><button class="opt" type="button" data-ch="1">01 哈希</button><button class="opt" type="button" data-ch="3">03 滑动窗口</button><button class="opt" type="button" data-ch="15">15 贪心</button></div>
+  <details><summary>看答案</summary><div class="answer"><p>哈希。「每个字母只能用一次」= 计数比较，<code>Counter(note) &lt;= Counter(magazine)</code>。看到「次数够不够」就是 Counter，不是滑窗——它根本不要求连续。</p></div></details>
+</article>
+<article class="q" data-answer="1">
+  <p class="qprompt"><span class="qtype">30 秒识别</span>Q2 · <a href="https://leetcode.com/problems/contains-duplicate-ii/" target="_blank" rel="noopener">219 Contains Duplicate II</a>：判断数组中是否存在两个相同的数，且它们的下标之差不超过 k。你的第一反应是哪个模式？</p>
+  <div class="opts"><button class="opt" type="button" data-ch="1">01 哈希</button><button class="opt" type="button" data-ch="3">03 滑动窗口</button><button class="opt" type="button" data-ch="2">02 双指针</button></div>
+  <details><summary>看答案</summary><div class="answer"><p>哈希。存「值 → 最近一次出现的下标」，边走边比较距离。注意它<b>不是</b>滑窗——虽然有 k，但要问的是「见过吗」而不是「窗口内是否合法」；当然用定长窗口的 <code>set</code> 也能做，两种说法面试官都认。</p></div></details>
+</article>
+<article class="q" data-answer="2">
+  <p class="qprompt"><span class="qtype">30 秒识别</span>Q3 · 给两个<b>已排序</b>的数组，把第二个合并进第一个（原地，第一个数组尾部有足够空位）。你的第一反应是哪个模式？</p>
+  <div class="opts"><button class="opt" type="button" data-ch="1">01 哈希</button><button class="opt" type="button" data-ch="2">02 双指针</button><button class="opt" type="button" data-ch="13">13 前缀和</button></div>
+  <details><summary>看答案</summary><div class="answer"><p><b>双指针，不是本章</b>——数组已排序，用哈希既浪费空间又丢掉顺序这个最有价值的条件。见 §2 分流条件：有序是双指针的入场券（第 02 章）。</p></div></details>
+</article>
+<p class="quiz-note">每章自测都会<b>混入恰好一道非本章题</b>，防止「读哪章选哪章」的条件反射；题面也一律取自本章未收录的题，避免凭记忆而非凭信号作答。</p>
+</div>
+</section>
+
+<nav class="next">
+  <a href="00-intro.html">← 导读</a>
+  <a href="02-two-pointers.html">02 双指针 →</a>
+</nav>
+
+</div>
+<script src="../assets/quiz.js" defer></script>
+</body>
+</html>

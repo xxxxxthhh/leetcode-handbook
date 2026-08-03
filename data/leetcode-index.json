@@ -1,11 +1,59 @@
 {
   "fetched_at": "2026-08-04",
   "problems": {
+    "1": {
+      "difficulty": "Easy",
+      "paid_only": false,
+      "slug": "two-sum",
+      "title": "Two Sum"
+    },
+    "1004": {
+      "difficulty": "Medium",
+      "paid_only": false,
+      "slug": "max-consecutive-ones-iii",
+      "title": "Max Consecutive Ones III"
+    },
+    "11": {
+      "difficulty": "Medium",
+      "paid_only": false,
+      "slug": "container-with-most-water",
+      "title": "Container With Most Water"
+    },
+    "121": {
+      "difficulty": "Easy",
+      "paid_only": false,
+      "slug": "best-time-to-buy-and-sell-stock",
+      "title": "Best Time to Buy and Sell Stock"
+    },
+    "125": {
+      "difficulty": "Easy",
+      "paid_only": false,
+      "slug": "valid-palindrome",
+      "title": "Valid Palindrome"
+    },
+    "128": {
+      "difficulty": "Medium",
+      "paid_only": false,
+      "slug": "longest-consecutive-sequence",
+      "title": "Longest Consecutive Sequence"
+    },
+    "15": {
+      "difficulty": "Medium",
+      "paid_only": false,
+      "slug": "3sum",
+      "title": "3Sum"
+    },
     "155": {
       "difficulty": "Medium",
       "paid_only": false,
       "slug": "min-stack",
       "title": "Min Stack"
+    },
+    "167": {
+      "difficulty": "Medium",
+      "paid_only": false,
+      "slug": "two-sum-ii-input-array-is-sorted",
+      "title": "Two Sum II - Input Array Is Sorted"
     },
     "20": {
       "difficulty": "Easy",
@@ -13,17 +61,89 @@
       "slug": "valid-parentheses",
       "title": "Valid Parentheses"
     },
+    "209": {
+      "difficulty": "Medium",
+      "paid_only": false,
+      "slug": "minimum-size-subarray-sum",
+      "title": "Minimum Size Subarray Sum"
+    },
+    "217": {
+      "difficulty": "Easy",
+      "paid_only": false,
+      "slug": "contains-duplicate",
+      "title": "Contains Duplicate"
+    },
+    "219": {
+      "difficulty": "Easy",
+      "paid_only": false,
+      "slug": "contains-duplicate-ii",
+      "title": "Contains Duplicate II"
+    },
     "239": {
       "difficulty": "Hard",
       "paid_only": false,
       "slug": "sliding-window-maximum",
       "title": "Sliding Window Maximum"
     },
+    "242": {
+      "difficulty": "Easy",
+      "paid_only": false,
+      "slug": "valid-anagram",
+      "title": "Valid Anagram"
+    },
+    "26": {
+      "difficulty": "Easy",
+      "paid_only": false,
+      "slug": "remove-duplicates-from-sorted-array",
+      "title": "Remove Duplicates from Sorted Array"
+    },
+    "3": {
+      "difficulty": "Medium",
+      "paid_only": false,
+      "slug": "longest-substring-without-repeating-characters",
+      "title": "Longest Substring Without Repeating Characters"
+    },
+    "36": {
+      "difficulty": "Medium",
+      "paid_only": false,
+      "slug": "valid-sudoku",
+      "title": "Valid Sudoku"
+    },
+    "383": {
+      "difficulty": "Easy",
+      "paid_only": false,
+      "slug": "ransom-note",
+      "title": "Ransom Note"
+    },
     "402": {
       "difficulty": "Medium",
       "paid_only": false,
       "slug": "remove-k-digits",
       "title": "Remove K Digits"
+    },
+    "42": {
+      "difficulty": "Hard",
+      "paid_only": false,
+      "slug": "trapping-rain-water",
+      "title": "Trapping Rain Water"
+    },
+    "424": {
+      "difficulty": "Medium",
+      "paid_only": false,
+      "slug": "longest-repeating-character-replacement",
+      "title": "Longest Repeating Character Replacement"
+    },
+    "438": {
+      "difficulty": "Medium",
+      "paid_only": false,
+      "slug": "find-all-anagrams-in-a-string",
+      "title": "Find All Anagrams in a String"
+    },
+    "49": {
+      "difficulty": "Medium",
+      "paid_only": false,
+      "slug": "group-anagrams",
+      "title": "Group Anagrams"
     },
     "496": {
       "difficulty": "Easy",
@@ -43,11 +163,23 @@
       "slug": "subarray-sum-equals-k",
       "title": "Subarray Sum Equals K"
     },
+    "567": {
+      "difficulty": "Medium",
+      "paid_only": false,
+      "slug": "permutation-in-string",
+      "title": "Permutation in String"
+    },
     "739": {
       "difficulty": "Medium",
       "paid_only": false,
       "slug": "daily-temperatures",
       "title": "Daily Temperatures"
+    },
+    "76": {
+      "difficulty": "Hard",
+      "paid_only": false,
+      "slug": "minimum-window-substring",
+      "title": "Minimum Window Substring"
     },
     "84": {
       "difficulty": "Hard",
@@ -61,11 +193,23 @@
       "slug": "car-fleet",
       "title": "Car Fleet"
     },
+    "88": {
+      "difficulty": "Easy",
+      "paid_only": false,
+      "slug": "merge-sorted-array",
+      "title": "Merge Sorted Array"
+    },
     "901": {
       "difficulty": "Medium",
       "paid_only": false,
       "slug": "online-stock-span",
       "title": "Online Stock Span"
+    },
+    "977": {
+      "difficulty": "Easy",
+      "paid_only": false,
+      "slug": "squares-of-a-sorted-array",
+      "title": "Squares of a Sorted Array"
     }
   },
   "source": "https://leetcode.com/api/problems/all/",
