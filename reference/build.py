@@ -273,7 +273,8 @@ def render_intro():
                 '  <div class="stat"><div class="n">{}</div><div class="l">{}</div></div>'.format(
                     fill(n), fill(t)) for n, t in s["cards"]))
         if "nolist" in s:
-            body += ('<div class="callout no">\n<p><b>明确不覆盖：</b></p>\n<ul>\n{}\n</ul>\n</div>\n'
+            # 引导句已经说了「本书明确不覆盖：」，这里不再重复一遍标题
+            body += ('<div class="callout no">\n<ul>\n{}\n</ul>\n</div>\n'
                      ).format("\n".join("  <li>{}</li>".format(fill(x)) for x in s["nolist"]))
         if "list" in s:
             body += "<ul>\n{}\n</ul>\n".format(
