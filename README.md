@@ -52,7 +52,8 @@ python3 reference/check_all.py
 | `python3 reference/run_templates.py [章号…]` | 把每章模板原样 `exec`，再跑它的测试用例 |
 | `python3 reference/build.py [--out DIR]` | 渲染全部页面 |
 | `python3 reference/check_site.py [--site DIR]` | 站级校验，跑在渲染产物 HTML 上 |
-| `python3 reference/mutation_test.py` | 往内容层注入 13 种真实错误，确认校验器都能抓到 |
+| `python3 reference/check_vs_spec.py` | 逐章逐层比对 `spec/skeleton.md` §5 的选题清单 |
+| `python3 reference/mutation_test.py` | 往内容层注入 15 种真实错误，确认校验器都能抓到 |
 
 ## 三条设计约束
 
@@ -62,6 +63,8 @@ python3 reference/check_all.py
    所以「书上的模板跑不通」在结构上不可能发生。
 3. **校验器跑在渲染产物上，mutation 打在数据层。** 否则校验的只是生成器的 happy path，
    而 mutation test 会变成空的——改数据、重新生成，校验器永远看不见差别。
+   唯一的例外是速查页「关键词索引出自各章 §2」那一条：两边同源，它跑不出红，
+   留着只是为了拦住「以后有人手写一份索引」，不算被 mutation 验证过的检查。
 
 ## 已知的两处与 spec 的偏差
 
