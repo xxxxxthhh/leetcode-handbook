@@ -17,11 +17,15 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 
 import content  # noqa: E402
+from content import intro, tree  # noqa: E402
 from reference import build, check_site  # noqa: E402
 
 
-def _first(ch_no=4):
-    return next(c for c in content.CHAPTERS if c["no"] == ch_no)
+def build_site(out):
+    """渲染到临时目录，并把 assets/ 一起带过去——否则站内链接检查会把
+    「临时目录里没有样式表」误报成死链。临时站点必须是真站点的忠实副本。"""
+    build.main(out, quiet=True)
+    shutil.copytree(os.path.join(ROOT, "assets"), os.path.join(out, "assets"))
 
 
 def m_wrong_slug(chs):
@@ -79,6 +83,21 @@ def m_quiz_answer_not_in_options(chs):
     next(c for c in chs if c["no"] == 4)["quiz"][0]["options"] = [3, 13, 8]
 
 
+def m_tree_duplicate_leaf(chs):
+    """决策树里两条分支指向同一章（改章号时最容易犯）。"""
+    tree.TREE[1][2][0] = (tree.TREE[1][2][0][0], 1)
+
+
+def m_tree_missing_pattern(chs):
+    """决策树漏掉一个模式。"""
+    del tree.TREE[2][2][0]
+
+
+def m_dead_internal_link(chs):
+    """正文里链到一个不存在的页面。"""
+    intro.SECTIONS[0]["tail"] = ["详见 [某个不存在的页](../appendix.html)。"]
+
+
 MUTATIONS = [
     ("链接 slug 凭记忆手写", m_wrong_slug, "slug 是"),
     ("链接题名与官方不符", m_wrong_title, "官方题名是"),
@@ -90,11 +109,16 @@ MUTATIONS = [
     ("模板超过 2 个", m_three_templates, "模板 3 个"),
     ("§2 缺少分流条件", m_missing_routing, "缺少分流条件"),
     ("自测正确答案不在选项里", m_quiz_answer_not_in_options, "不在选项"),
+    ("决策树两条分支同一章", m_tree_duplicate_leaf, "重复叶子"),
+    ("决策树漏掉一个模式", m_tree_missing_pattern, "未覆盖模式"),
+    ("正文链到不存在的页", m_dead_internal_link, "死链"),
 ]
 
 
 def run_one(name, mutate, expect):
     original = content.CHAPTERS
+    orig_tree = copy.deepcopy(tree.TREE)
+    orig_intro = copy.deepcopy(intro.SECTIONS)
     tmp = tempfile.mkdtemp(prefix="mut-")
     try:
         mutated = copy.deepcopy(original)
@@ -102,7 +126,7 @@ def run_one(name, mutate, expect):
         content.CHAPTERS = mutated
         build.CHAPTERS = mutated
         content.WRITTEN = {c["no"] for c in mutated}
-        build.main(tmp, quiet=True)
+        build_site(tmp)
         # 校验器读的是渲染产物；官方索引仍从仓库读，外部真相不参与 mutation
         rep = check_site.run(tmp)
         hit = [e for e in rep.errors if expect in e]
@@ -115,6 +139,8 @@ def run_one(name, mutate, expect):
         content.CHAPTERS = original
         build.CHAPTERS = original
         content.WRITTEN = {c["no"] for c in original}
+        tree.TREE[:] = orig_tree
+        intro.SECTIONS[:] = orig_intro
         shutil.rmtree(tmp, ignore_errors=True)
 
 
@@ -122,7 +148,7 @@ def main():
     # 前提：未变异的站点必须是干净的，否则「抓到错误」可能只是本来就有的错
     base = tempfile.mkdtemp(prefix="mut-base-")
     try:
-        build.main(base, quiet=True)
+        build_site(base)
         rep = check_site.run(base)
         if rep.errors:
             print("基线就不干净，先修好再跑 mutation test:")

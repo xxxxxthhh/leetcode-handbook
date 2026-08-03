@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>00 导读 · 算法面试阈值手册</title>
+<meta name="description" content="阈值策略、三条达标标准、明确不覆盖的内容、怎么用这本书、达标之后怎么维持。">
+<link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"></noscript>
+<link rel="stylesheet" href="../assets/handbook.css">
+<script src="../assets/theme.js"></script>
+</head>
+<body>
+<button class="theme-toggle" type="button" aria-label="切换深色/浅色模式" title="切换深色/浅色模式">
+  <span class="sun" aria-hidden="true">☀️</span><span class="moon" aria-hidden="true">🌙</span>
+</button>
+<div class="wrap">
+<nav class="crumb"><a href="../index.html">← 目录</a> · 导读</nav>
+
+<header class="ch">
+  <div class="bars" aria-hidden="true"><span class="h1"></span><span class="h2"></span><span class="h4"></span><span class="h6"></span><span class="h3"></span><span class="h5 w"></span><span class="h2 f"></span><span class="h1 f"></span></div>
+  <div class="kicker">Chapter 00 · How to Use</div>
+  <h1>00 导读
+    <span class="zh">达到面试不翻车的水平即停</span>
+  </h1>
+  <div class="meta"><span>模式 <b>18 个</b></span><span>题目 <b>111 道</b></span><span>模板 <b>34 个</b></span><span>翻车点 <b>87 条</b></span></div>
+</header>
+
+<section id="s1">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§1 The Threshold 阈值策略</span></div>
+  <h2>为什么是「阈值」而不是「精通」</h2>
+<p>算法准备最容易犯的错，是把它当成一门要学完的学科。它不是。对绝大多数工程岗位来说，算法面试是一道<b>及格线</b>：过了线，面试官关心的就转向系统设计、工程判断和沟通；没过线，别的都不用谈。</p>
+<p>所以本书的目标不是让你变强，而是让你<b>尽快越过那条线然后停下来</b>，把省下的时间还给别的准备。下面三条是可验证的达标标准，全书每一处设计都为它们服务——你可以拿它们随时检查自己还差多远。</p>
+<div class="stats">
+  <div class="stat"><div class="n">5 分钟</div><div class="l">拿到一道陌生的 medium，<b>5 分钟内说出它属于哪个模式</b>、思路框架是什么。做不到，说明识别信号没练熟。</div></div>
+  <div class="stat"><div class="n">25–30 分钟</div><div class="l">陌生 medium 在 25–30 分钟内<b>写出能跑的代码</b>，并说清时间 / 空间复杂度。</div></div>
+  <div class="stat"><div class="n">18 个模式</div><div class="l">18 个核心模式全覆盖，共 111 道题、34 个可默写模板。</div></div>
+</div>
+
+</section>
+
+<section id="s2">
+  <div class="sec-tag"><span class="cell" style="background:var(--warn)"></span><span class="lab">§2 Out of Scope 明确不覆盖</span></div>
+  <h2>这本书不教什么</h2>
+<p>把不做什么写下来，和写清楚做什么同样重要——否则准备永远没有终点。以下内容在工程岗面试里出现的概率低到不值得投入，本书<b>明确不覆盖</b>：</p>
+<div class="callout no">
+<p><b>明确不覆盖：</b></p>
+<ul>
+  <li>线段树、树状数组（Fenwick）</li>
+  <li>KMP、后缀数组、AC 自动机等字符串算法</li>
+  <li>计算几何</li>
+  <li>高级位运算技巧（状压 DP 之外的那些）</li>
+  <li>竞赛数论（同余方程、莫比乌斯反演等）</li>
+</ul>
+</div>
+<p>另外几样东西是「知道就行、不必会写」：Dijkstra / 最小生成树、快速选择的完整实现、平衡树。面试里说得出名字和适用场景即可。</p>
+<p>书里还有一档更轻的标记：<b>⭐ 认脸</b>（全书 15 道）。它们几乎都是 hard，价值在于「见过、能一句话说出思路」，<b>不要求现场默写</b>。篇幅上它们也刻意比必会题短——篇幅本身就是优先级信号。另有 5 道 🔒 premium 题，没有会员可以跳过。</p>
+
+</section>
+
+<section id="s3">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§3 How to Use 怎么用这本书</span></div>
+  <h2>平时用章节，考前用速查页</h2>
+<p>每一章都是同样的五段，顺序固定，方便你跳着读：</p>
+<div class="tbl-scroll"><table><thead><tr><th>段</th><th>内容</th><th>什么时候看</th></tr></thead><tbody><tr><td>§1 一句话心智模型</td><td>把这个模式讲透的那一句</td><td>第一次学 / 忘光了重建直觉</td></tr><tr><td>§2 识别信号</td><td>题面关键词 → 想到什么，外加<b>分流条件</b></td><td>全书最值钱的部分，反复看</td></tr><tr><td>§3 模板代码</td><td>可默写的 Python，【骨架】不变 /【插槽】随题变</td><td>练默写；考前扫一眼口诀</td></tr><tr><td>§4 题目分层</td><td>热身 → 标准 → 变体，每题一句话点评</td><td>按顺序刷；⭐ 的只读不写</td></tr><tr><td>§5 翻车点 + 自测</td><td>3–5 条坑，外加「30 秒识别模式」自测</td><td>刷完一章后做，检验识别力</td></tr></tbody></table></div>
+<p><b>每章自测都会混入恰好一道「非本章」的分流题</b>，用来防止「读哪章就选哪章」的条件反射——真实面试里没人告诉你这是第几章。</p>
+<p>面试前一晚不要重读章节，只翻两页：<a href="../cheatsheet.html">决策树速查</a>（关键词 → 模式 → 模板口诀，单屏可打印）和<a href="../mistakes.html">错题登记</a>里你自己真正翻过车的那几条。</p>
+
+</section>
+
+<section id="s4">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§4 Maintenance 达标之后</span></div>
+  <h2>维持模式：每周 3–5 题</h2>
+<p>达标之后继续大量刷题，边际收益接近零，还会挤占系统设计和项目复盘的时间。维持手感只需要每周 3–5 题，构成固定：</p>
+<ul>
+  <li><b>一半来自错题登记页</b>——你真正翻过车的题，隔一周重做一遍；</li>
+  <li><b>一半随机抽模式</b>——闭眼从 18 个模式里点一个，随便找道 medium，重点练「5 分钟内认出模式」而不是写完；</li>
+  <li>面试临近时把频率提到每周 5–8 题，并且<b>限时</b>做，模拟真实压力。</li>
+</ul>
+<p>如果某次随机抽查发现某个模式已经想不起模板了，回去只看那一章的 §1 和 §3，十分钟就能捡回来——这正是把书写成工具书的意义。</p>
+
+</section>
+
+<nav class="next">
+  <a href="../index.html">← 目录</a>
+  <a href="01-hash.html">01 哈希 →</a>
+</nav>
+
+</div>
+</body>
+</html>

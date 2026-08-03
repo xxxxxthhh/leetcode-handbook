@@ -234,6 +234,235 @@ def render_chapter(ch, prev_href, prev_label, next_href, next_label):
                 pat["tagline"], "\n".join(parts), depth=1, extra_js=("quiz.js",))
 
 
+# ---------------------------------------------------------------- 全书统计
+def stats():
+    """全局数量一律在这里算一次，页面上任何数字都从这里取，禁止手写。"""
+    return dict(
+        n_ch=len(CHAPTERS),
+        n_prob=len(content.curated_numbers()),
+        n_tpl=sum(len(c["templates"]) for c in CHAPTERS),
+        n_star=sum(1 for c in CHAPTERS for p in c["problems"] if p.get("star")),
+        n_lock=sum(1 for c in CHAPTERS for p in c["problems"]
+                   if lcindex.get(p["num"])["paid_only"]),
+        n_pit=sum(len(c["pitfalls"]) for c in CHAPTERS),
+        n_quiz=sum(len(c["quiz"]) for c in CHAPTERS),
+        n_assert=sum(t["tests"].count("assert ") for c in CHAPTERS for t in c["templates"]),
+    )
+
+
+# ---------------------------------------------------------------- 导读页
+def render_intro():
+    from content import intro
+    st = stats()
+
+    def fill(s):
+        return inline(s.format(**st))
+
+    parts = ['<nav class="crumb"><a href="../index.html">← 目录</a> · 导读</nav>\n',
+             '<header class="ch">\n  {bars}\n  <div class="kicker">Chapter 00 · How to Use</div>\n'
+             '  <h1>00 导读\n    <span class="zh">达到面试不翻车的水平即停</span>\n  </h1>\n'
+             '  <div class="meta"><span>模式 <b>{n_ch} 个</b></span>'
+             '<span>题目 <b>{n_prob} 道</b></span><span>模板 <b>{n_tpl} 个</b></span>'
+             '<span>翻车点 <b>{n_pit} 条</b></span></div>\n</header>\n'.format(
+                 bars=bars(), **st)]
+
+    for i, s in enumerate(intro.SECTIONS, 1):
+        body = "".join("<p>{}</p>\n".format(fill(p)) for p in s.get("paras", []))
+        if "cards" in s:
+            body += '<div class="stats">\n{}\n</div>\n'.format("\n".join(
+                '  <div class="stat"><div class="n">{}</div><div class="l">{}</div></div>'.format(
+                    fill(n), fill(t)) for n, t in s["cards"]))
+        if "nolist" in s:
+            body += ('<div class="callout no">\n<p><b>明确不覆盖：</b></p>\n<ul>\n{}\n</ul>\n</div>\n'
+                     ).format("\n".join("  <li>{}</li>".format(fill(x)) for x in s["nolist"]))
+        if "list" in s:
+            body += "<ul>\n{}\n</ul>\n".format(
+                "\n".join("  <li>{}</li>".format(fill(x)) for x in s["list"]))
+        if "table" in s:
+            head, rows = s["table"]
+            body += ('<div class="tbl-scroll"><table><thead><tr>{}</tr></thead><tbody>{}'
+                     '</tbody></table></div>\n').format(
+                "".join("<th>{}</th>".format(esc(h)) for h in head),
+                "".join("<tr>{}</tr>".format(
+                    "".join("<td>{}</td>".format(fill(c)) for c in r)) for r in rows))
+        body += "".join("<p>{}</p>\n".format(fill(p)) for p in s.get("tail", []))
+        parts.append(sec(s["tag"][1], s["tag"][0], s["h2"], body,
+                         color="warn" if "nolist" in s else None, anchor="s{}".format(i)))
+
+    parts.append('<nav class="next">\n  <a href="../index.html">← 目录</a>\n'
+                 '  <a href="{}">{} →</a>\n</nav>\n'.format(
+                     content.chapter_href(1), esc(content.chapter_label(1))))
+
+    return page("00 导读 · 算法面试阈值手册",
+                "阈值策略、三条达标标准、明确不覆盖的内容、怎么用这本书、达标之后怎么维持。",
+                "\n".join(parts), depth=1)
+
+
+# ---------------------------------------------------------------- 速查页
+def render_cheatsheet():
+    from content import tree as tree_mod
+    st = stats()
+
+    # ① 决策树：分支条件由 content/tree.py 定，叶子指向章节页
+    lines = []
+    for gi, (name, sub, leaves) in enumerate(tree_mod.TREE):
+        last_group = gi == len(tree_mod.TREE) - 1
+        lines.append('<span class="node">{}<b>{}</b>　<span class="cue">{}</span></span>'.format(
+            "└─ " if last_group else "├─ ", esc(name), esc(sub)))
+        for li, (cond, no) in enumerate(leaves):
+            stem = "　 " if last_group else "│  "
+            branch = "└─ " if li == len(leaves) - 1 else "├─ "
+            lines.append('<span class="node">{}{}<span class="cond">{}</span>'
+                         '　→　<a class="leaf" href="chapters/{}">{}</a></span>'.format(
+                             stem, branch, inline(cond), content.chapter_href(no),
+                             esc(content.chapter_label(no))))
+    tree_html = '<div class="tree">{}</div>'.format("<br>\n".join(lines))
+
+    # ② 关键词索引：直接汇总各章 §2，不另写一套（分流条件与各章 §2 天然一致）
+    rows = []
+    for c in CHAPTERS:
+        for cue, _to in c["signals"]:
+            rows.append((cue, c["no"]))
+    rows.sort(key=lambda r: (r[1], r[0]))
+    idx_html = ('<div class="tbl-scroll"><table class="idx-tbl"><thead><tr>'
+                '<th>题面出现…</th><th>去哪一章</th></tr></thead><tbody>{}</tbody></table></div>'
+                ).format("".join(
+                    '<tr><td>{}</td><td class="to"><a href="chapters/{}">{}</a></td></tr>'.format(
+                        inline(cue), content.chapter_href(no), esc(content.chapter_label(no)))
+                    for cue, no in rows))
+
+    # ③ 同名陷阱：跨章重复的关键词，和校验器共用 patterns.KEYWORDS
+    kw_map = {}
+    for c in CHAPTERS:
+        for cue, _to in c["signals"]:
+            for kw in content.KEYWORDS:
+                if kw in cue:
+                    kw_map.setdefault(kw, set()).add(c["no"])
+    traps = sorted(((k, sorted(v)) for k, v in kw_map.items() if len(v) > 1),
+                   key=lambda kv: (-len(kv[1]), kv[0]))
+    trap_html = ('<div class="tbl-scroll"><table><thead><tr><th>同一个词</th>'
+                 '<th>可能是这几个模式</th></tr></thead><tbody>{}</tbody></table></div>'
+                 ).format("".join(
+                     '<tr><td><b>{}</b></td><td>{}</td></tr>'.format(
+                         esc(kw), "　".join(
+                             '<a href="chapters/{}">{}</a>'.format(
+                                 content.chapter_href(n), esc(content.chapter_label(n)))
+                             for n in nos))
+                     for kw, nos in traps))
+
+    # ④ 模板口诀：从各章模板的 foot 里抽「默写口诀：**…**」，抽不到就退回模板副标题
+    mn_rows = []
+    for c in CHAPTERS:
+        for t in c["templates"]:
+            m = re.search(r"默写口诀：\*\*(.+?)\*\*", t["foot"])
+            mn_rows.append((c["no"], t["name"], m.group(1) if m else t["note"]))
+    mn_html = ('<div class="tbl-scroll"><table><thead><tr><th>模式</th><th>模板</th>'
+               '<th>默写口诀 / 用途</th></tr></thead><tbody>{}</tbody></table></div>'
+               ).format("".join(
+                   '<tr><td><a href="chapters/{}">{}</a></td><td>{}</td><td>{}</td></tr>'.format(
+                       content.chapter_href(no), esc(content.chapter_label(no)),
+                       esc(name), inline(mn))
+                   for no, name, mn in mn_rows))
+
+    parts = ['<nav class="crumb"><a href="index.html">← 目录</a> · 面试前一晚看这页</nav>\n',
+             '<header class="ch">\n  {bars}\n  <div class="kicker">Page 19 · Decision Tree &amp; Cheat Sheet</div>\n'
+             '  <h1>19 模式决策树 / 速查表\n    <span class="zh">关键词 → 模式 → 模板口诀</span>\n  </h1>\n'
+             '  <div class="meta"><span>模式 <b>{n_ch} 个</b></span>'
+             '<span>识别信号 <b>{n_sig} 条</b></span><span>模板 <b>{n_tpl} 个</b></span>'
+             '<span>直接 <b>打印成一页带走</b></span></div>\n</header>\n'.format(
+                 bars=bars(), n_sig=len(rows), **st)]
+
+    parts.append(sec("决策树", "§1 Decision Tree", "拿到题先问「数据长什么样」",
+                     tree_html + '<p>叶子恰好 {} 个，与 {} 个模式一一对应——'
+                                 '构建时程序化核对过覆盖率与唯一性。</p>\n'.format(
+                                     st["n_ch"], st["n_ch"]), anchor="s1"))
+    parts.append(sec("同名陷阱", "§2 Same Word, Different Pattern",
+                     "这些词出现时，别急着下结论",
+                     trap_html + '<p>这张表由各章 §2 的识别信号跨章聚合而成；'
+                                 '每一对都在相关章节的<b>分流条件</b>里写明了怎么分。</p>\n',
+                     color="warn", anchor="s2"))
+    parts.append(sec("关键词索引", "§3 Signal Index", "全书识别信号，按模式排列",
+                     idx_html, anchor="s3"))
+    parts.append(sec("模板口诀", "§4 Template Index", "考前只需要扫这一列",
+                     mn_html, anchor="s4"))
+
+    parts.append('<nav class="next">\n  <a href="chapters/{}">← {}</a>\n'
+                 '  <a href="mistakes.html">20 错题登记 →</a>\n</nav>\n'.format(
+                     content.chapter_href(18), esc(content.chapter_label(18))))
+
+    return page("19 模式决策树 / 速查表 · 算法面试阈值手册",
+                "关键词 → 模式 → 模板口诀，单屏可打印的考前速查页。",
+                "\n".join(parts), depth=0)
+
+
+# ---------------------------------------------------------------- 错题登记页
+def render_mistakes():
+    st = stats()
+    opts = "".join('<option value="{}">{}</option>'.format(
+        esc(content.chapter_label(p["no"])), esc(content.chapter_label(p["no"])))
+        for p in content.PATTERNS)
+
+    form = ('<form id="log-form" class="log-form">\n'
+            '  <div><label for="f-num">题号 / 题名</label>'
+            '<input id="f-num" name="num" required placeholder="例如 84 Largest Rectangle"></div>\n'
+            '  <div><label for="f-pattern">模式</label>'
+            '<select id="f-pattern" name="pattern">{opts}</select></div>\n'
+            '  <div><label for="f-why">翻车点</label>'
+            '<input id="f-why" name="why" placeholder="例如 忘了末尾补哨兵"></div>\n'
+            '  <div><label for="f-redo">重做日期</label>'
+            '<input id="f-redo" name="redo" type="date"></div>\n'
+            '  <div><button class="btn" type="submit">登记</button></div>\n'
+            '</form>\n'
+            '<div class="log-actions"><button id="log-clear" class="btn ghost" type="button">'
+            '清空全部</button></div>\n').format(opts=opts)
+
+    # 空白行单独放一个 tbody：有记录时在屏幕上隐藏，但打印时永远保留，
+    # 这样「没有 JS / 隐私模式」和「打印出来手写补充」两种用法都成立。
+    blank = "".join('<tr class="blank-rows"><td></td><td></td><td></td><td></td><td></td></tr>'
+                    for _ in range(8))
+    table = ('<div class="tbl-scroll"><table id="log-tbl"><thead><tr>'
+             '<th>题号 / 题名</th><th>模式</th><th>翻车点</th><th>重做日期</th><th></th>'
+             '</tr></thead><tbody id="log-body"></tbody><tbody id="log-blank">{}</tbody>'
+             '</table></div>\n'
+             '<p id="log-empty" class="log-empty">还没有记录。'
+             '刷题时每翻一次车就登记一条——这一页是维持模式的输入源。</p>\n').format(blank)
+
+    parts = ['<nav class="crumb"><a href="index.html">← 目录</a> · 错题登记</nav>\n',
+             '<header class="ch">\n  {bars}\n  <div class="kicker">Page 20 · Mistake Log</div>\n'
+             '  <h1>20 错题登记\n    <span class="zh">只记翻车点，不记题解</span>\n  </h1>\n'
+             '  <div class="meta"><span>存在 <b>浏览器本地</b></span>'
+             '<span>不上传 <b>任何服务器</b></span>'
+             '<span>可 <b>直接打印成空白表格</b></span></div>\n</header>\n'.format(bars=bars())]
+
+    body = ('<p>错题登记只写三样东西：<b>哪道题、属于哪个模式、当时错在哪一步</b>。'
+            '不要抄题解——抄了你也不会再看。翻车点写得越具体越好，'
+            '「忘了末尾补哨兵」比「没做出来」有用一百倍。</p>\n'
+            '<p>记录保存在你自己浏览器的 localStorage 里，不会上传到任何地方；'
+            '换浏览器或清缓存就没了，重要的话请截图或打印。'
+            '隐私模式下 localStorage 不可用，本页会自动退化成一张可以打印出来手写的空表。</p>\n'
+            '<p id="log-unavailable" hidden class="log-empty">'
+            '当前浏览器不允许本地存储，登记表单已隐藏。下方空表可直接打印。</p>\n'
+            + form + table)
+    parts.append(sec("登记表", "§1 Log", "每翻一次车，记一条", body, anchor="s1"))
+
+    body2 = ('<p>达标之后进入维持模式：<b>每周 3–5 题，一半来自这一页</b>。'
+             '隔一周重做，重点不是「这次做出来了」，而是<b>当时那个翻车点还会不会再犯</b>。</p>\n'
+             '<p>如果同一个模式在这里出现了三次以上，别再刷题了——'
+             '回去重读那一章的 §1 和 §3，问题多半出在心智模型而不是手速。'
+             '全书 {n_pit} 条翻车点就是照这个思路整理的。</p>\n'
+             '<p>面试前一晚：先看 <a href="cheatsheet.html">决策树速查</a>，'
+             '再看这一页里你自己的记录。这两页加起来 30 分钟，足够了。</p>\n'
+             ).format(**st)
+    parts.append(sec("怎么用它", "§2 Maintenance", "它是维持模式的输入源", body2, anchor="s2"))
+
+    parts.append('<nav class="next">\n  <a href="cheatsheet.html">← 19 模式决策树 / 速查表</a>\n'
+                 '  <span class="disabled">已是最后一页 →</span>\n</nav>\n')
+
+    return page("20 错题登记 · 算法面试阈值手册",
+                "记录题号、模式、翻车点与重做日期；浏览器本地保存，也可打印成空白表格。",
+                "\n".join(parts), depth=0, extra_js=("mistakes.js",))
+
+
 # ---------------------------------------------------------------- 目录页
 def render_index():
     n_ch = len(CHAPTERS)
@@ -325,6 +554,9 @@ def main(out_dir=ROOT, quiet=False):
         written.append(write_("chapters/" + content.chapter_href(c["no"]),
                               render_chapter(c, prev[0], prev[1], nxt[0], nxt[1])))
 
+    written.append(write_("chapters/00-intro.html", render_intro()))
+    written.append(write_("cheatsheet.html", render_cheatsheet()))
+    written.append(write_("mistakes.html", render_mistakes()))
     written.append(write_("index.html", render_index()))
 
     if not quiet:

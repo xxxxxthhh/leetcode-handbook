@@ -32,7 +32,7 @@ import importlib
 import os
 import re
 
-from content.patterns import BY_NO, GROUPS, PATTERNS  # noqa: F401
+from content.patterns import BY_NO, GROUPS, KEYWORDS, PATTERNS  # noqa: F401
 
 _DIR = os.path.dirname(os.path.abspath(__file__))
 

@@ -276,9 +276,12 @@ def check_cheatsheet(site, rep, chapters_present):
     if extra:
         rep.err("cheatsheet", "决策树叶子指向不存在的模式: {}".format(extra))
 
-    # 速查表的识别信号必须逐条出自某章 §2，不能另写一套
+    # 速查表的识别信号必须逐条出自某章 §2，不能另写一套。
+    # 先把索引表整段切出来再逐行匹配——页面上还有别的表，跨表匹配会串行。
+    idx_tbl = re.search(r'<table class="idx-tbl">(.*?)</table>', html, re.S)
     idx_rows = re.findall(r'<tr><td>(.*?)</td><td class="to">'
-                          r'<a href="chapters/(\d{2})-[^"]+">[^<]*</a></td></tr>', html, re.S)
+                          r'<a href="chapters/(\d{2})-[^"]+">[^<]*</a></td></tr>',
+                          idx_tbl.group(1), re.S) if idx_tbl else []
     if not idx_rows:
         rep.err("cheatsheet", "缺少关键词索引表")
     for cue, no in idx_rows:
@@ -346,12 +349,41 @@ def check_signal_conflicts(site, sig_map, routing_map, rep):
 
 
 # ---------------------------------------------------------------- 主流程
+def check_pages(site, rep):
+    """页面清单与站内链接：spec §3 要求 00 导读 + 01–18 + 19 速查 + 20 错题，另有目录页。"""
+    want = (["index.html", "cheatsheet.html", "mistakes.html", "chapters/00-intro.html"]
+            + ["chapters/{:02d}-{}.html".format(p["no"], p["slug"]) for p in PATTERNS])
+    for rel in want:
+        if not os.path.exists(os.path.join(site, rel)):
+            rep.err("site", "缺少页面 {}".format(rel))
+
+    # 站内链接一律要能落地，锚点也要在目标页里真的存在
+    for rel in want:
+        path = os.path.join(site, rel)
+        if not os.path.exists(path):
+            continue
+        html = read(path)
+        base = os.path.dirname(os.path.join(site, rel))
+        for href in set(re.findall(r'href="((?!https?:|#|mailto:)[^"]+)"', html)):
+            target, _, anchor = href.partition("#")
+            if not target or not target.endswith((".html", ".css", ".js", ".svg")):
+                continue
+            dest = os.path.normpath(os.path.join(base, target))
+            if not os.path.exists(dest):
+                rep.err(rel, "死链: {}".format(href))
+            elif anchor and target.endswith(".html"):
+                if 'id="{}"'.format(anchor) not in read(dest):
+                    rep.err(rel, "锚点不存在: {}".format(href))
+
+
 def run(site):
     rep = Report()
     chs = chapter_files(site)
     if not chs:
         rep.err("site", "chapters/ 下没有任何章节页")
         return rep
+
+    check_pages(site, rep)
 
     seen_curated = defaultdict(list)
     sig_map, routing_map, cue_map = {}, {}, {}

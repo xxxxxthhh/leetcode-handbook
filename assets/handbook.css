@@ -246,8 +246,9 @@ ol.pits .pt{font-weight:700}
 .btn.ghost{background:none;color:var(--ink-soft);border-color:var(--line)}
 .btn.ghost:hover{border-color:var(--warn);color:var(--warn)}
 .log-empty{color:var(--ink-soft);font-size:14px;padding:14px 0}
+#log-tbl th{white-space:nowrap}
 #log-tbl td:last-child{white-space:nowrap}
-.blank-rows td{height:34px}
+.blank-rows td{height:34px;border-bottom:1px solid var(--line)}
 
 @media (max-width:560px){
   .bars span{width:14px}
@@ -267,7 +268,10 @@ ol.pits .pt{font-weight:700}
     --code-bg:#EDF0EE;--tool-bg:#F1F3F0;--answer-bg:#FBFCFA;--head-bg:#1B2733;--head-fg:#fff;
     --ok:#2C7A54;--on-fill:#fff;
   }
-  .theme-toggle,.quiz-ctl,.crumb,.opts,.log-form,.log-actions{display:none}
+  .theme-toggle,.quiz-ctl,.crumb,.opts,.log-form,.log-actions,#log-tbl td:last-child,
+  #log-tbl th:last-child,#log-empty{display:none}
+  /* 空白行在屏幕上被 JS 隐藏了（已有记录时），打印时一律放回来供手写补充 */
+  #log-blank[hidden]{display:table-row-group}
   body{background:#fff;font-size:12.5px}
   .q,.tpl,.tier,.routing,.tree{page-break-inside:avoid}
   /* 关闭状态的 <details> 由 UA 在内容槽层面隐藏，只设 display 无法可靠覆盖，
