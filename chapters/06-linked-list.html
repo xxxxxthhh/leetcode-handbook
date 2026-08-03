@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>06 链表 · 算法面试阈值手册</title>
+<meta name="description" content="只有指针改写和快慢指针两件事；画图 &gt; 心算">
+<link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"></noscript>
+<link rel="stylesheet" href="../assets/handbook.css">
+<script src="../assets/theme.js"></script>
+</head>
+<body>
+<button class="theme-toggle" type="button" aria-label="切换深色/浅色模式" title="切换深色/浅色模式">
+  <span class="sun" aria-hidden="true">☀️</span><span class="moon" aria-hidden="true">🌙</span>
+</button>
+<div class="wrap">
+<nav class="crumb"><a href="../index.html">← 目录</a> · <a href="../cheatsheet.html">决策树速查</a></nav>
+
+<header class="ch">
+  <div class="bars" aria-hidden="true"><span class="h1"></span><span class="h2"></span><span class="h4"></span><span class="h6"></span><span class="h3"></span><span class="h5 w"></span><span class="h2 f"></span><span class="h1 f"></span></div>
+  <div class="kicker">Pattern 06 · Linked List</div>
+  <h1>06 链表
+    <span class="zh">只有指针改写和快慢指针两件事；画图 &gt; 心算</span>
+  </h1>
+  <div class="meta"><span>面试频率 <b>高</b></span><span>题目 <b>9 道</b></span><span>模板 <b>2 个</b></span><span>⭐认脸 <b>1 道</b></span></div>
+</header>
+
+<section id="s1">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§1 Mental Model 一句话心智模型</span></div>
+  <h2>先记住这一句</h2>
+<div class="oneliner"><b>链表题只有两件事：改指针，和跑指针。改指针之前一定先把 <code>next</code> 存下来；跑指针靠一快一慢制造出位置差。</b></div>
+<p>改指针类（反转、合并、删除、重排）的通用保险是<b>哨兵节点</b> <code>dummy</code>：它让「头节点也可能被删 / 被换」这个特判彻底消失，代码短一半、bug 少一半。</p>
+<p>跑指针类（找中点、判环、倒数第 n 个）本质是第 02 章的快慢指针，只是数据结构换成了链表。<b>画图，不要心算</b>——三个节点、两轮循环，纸上画一遍比在脑子里推十遍准。</p>
+
+</section>
+
+<section id="s2">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§2 Recognition Signals 识别信号</span></div>
+  <h2>看到什么，想到本章</h2>
+<div class="tbl-scroll"><table class="sig-tbl"><thead><tr><th>题面出现…</th><th>想到</th></tr></thead><tbody><tr><td>「反转 / 翻转链表（或其中一段）」</td><td>三指针改写（模板 A）</td></tr><tr><td>「合并两个有序链表」「删除倒数第 n 个」</td><td>哨兵 + 双指针（模板 B）</td></tr><tr><td>「找中点 / 判断有环 / 环的入口」</td><td>快慢指针，快的每次两步</td></tr><tr><td>「重排 / 判回文链表」</td><td>找中点 → 反转后半 → 交替拼接，三个已知动作的组合</td></tr><tr><td>「带随机指针的深拷贝」</td><td>哈希表：旧节点 → 新节点（第 01 章的映射思维）</td></tr><tr><td>「O(1) 时间的 get 和 put」</td><td>哈希表 + 双向链表（146 LRU）</td></tr></tbody></table></div>
+<div class="routing"><div class="rt-head">分流条件 · 决策树同源</div><p>快慢指针与第 02 章同源，区别只是数组能随机访问、链表只能顺着走。「合并 <b>K</b> 个有序链表」的主语已经不是链表而是<b>堆</b>（第 08 章）——两个链表用双指针，K 个链表要的是「当前最小的头节点」这种 Top-K 结构。「链表排序」考的是归并思路，不在阈值范围内。</p></div>
+
+</section>
+
+<section id="s3">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§3 Template 模板代码</span></div>
+  <h2>可默写的那几行</h2>
+<p class="legend"><i class="bone">■ 【骨架】</i> 不变，闭着眼默写　<i class="slot">■ 【插槽】</i> 随题变化，写题前先问自己填什么</p>
+<div class="tpl">
+  <div class="tpl-head">模板 A · 反转<span class="note">改指针类的地基</span></div>
+  <pre><code>def reverse_list(head):
+    prev, cur = None, head                  <span class="cm bone"># 【骨架】prev 是已反转部分的头</span>
+    while cur:                              <span class="cm bone"># 【骨架】</span>
+        nxt = cur.next                      <span class="cm bone"># 【骨架】先记住 next —— 全章第一守则</span>
+        cur.next = prev                     <span class="cm slot"># 【插槽】改指针:反转 / 断开 / 指向别处</span>
+        prev, cur = cur, nxt                <span class="cm bone"># 【骨架】两个指针一起前进</span>
+    return prev                             <span class="cm slot"># 【插槽】答案:新头 / 新尾 / 一段的两端</span></code></pre>
+  <div class="tpl-foot">默写口诀：<b>存 next、改指向、双双前进</b>。反转一段（92、25）时骨架不变，只是循环跑固定次数、并在两端重新接线。</div>
+</div>
+<div class="tpl">
+  <div class="tpl-head">模板 B · 哨兵 + 双指针<span class="note">合并 / 删除类</span></div>
+  <pre><code>def merge_two(a, b):
+    dummy = tail = ListNode()               <span class="cm bone"># 【骨架】哨兵头,省掉"第一个节点"的特判</span>
+    while a and b:                          <span class="cm bone"># 【骨架】</span>
+        if a.val &lt;= b.val:                  <span class="cm slot"># 【插槽】选谁接上来的条件</span>
+            tail.next, a = a, a.next        <span class="cm bone"># 【骨架】接上 + 被选中的一方前进</span>
+        else:
+            tail.next, b = b, b.next        <span class="cm bone"># 【骨架】</span>
+        tail = tail.next                    <span class="cm bone"># 【骨架】</span>
+    tail.next = a or b                      <span class="cm slot"># 【插槽】收尾:剩下的一整段直接挂上</span>
+    return dummy.next                       <span class="cm bone"># 【骨架】哨兵的下一个才是真头</span></code></pre>
+  <div class="tpl-foot">只要题目里「头节点可能被改动」，第一行就写 <code>dummy</code>。最后 <code>return dummy.next</code>，不是 <code>return head</code>。</div>
+</div>
+
+</section>
+
+<section id="s4">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§4 Problems 题目分层</span></div>
+  <h2>从建直觉到扭模板</h2>
+<div class="tier">
+  <div class="tier-head"><span class="t">热身</span><span class="d">建直觉，easy 为主</span><span class="c">1 道</span></div>
+  <ul class="plist">
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/reverse-linked-list/" target="_blank" rel="noopener">206 Reverse Linked List</a><span class="badge diff">Easy</span></div>
+    <div class="p-note">模板 A 原题。递归写法也要会说：<code>reverse(head.next)</code> 之后<code>head.next.next = head; head.next = None</code>，栈深度 O(n) 是它的代价。</div>
+  </li>
+  </ul>
+</div>
+<div class="tier">
+  <div class="tier-head"><span class="t">标准</span><span class="d">模板直接套</span><span class="c">5 道</span></div>
+  <ul class="plist">
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/merge-two-sorted-lists/" target="_blank" rel="noopener">21 Merge Two Sorted Lists</a><span class="badge diff">Easy</span></div>
+    <div class="p-note">模板 B 原题。收尾那行 <code>tail.next = a or b</code> 是链表相对数组的便宜：剩下的一整段不用逐个搬。</div>
+  </li>
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/linked-list-cycle/" target="_blank" rel="noopener">141 Linked List Cycle</a><span class="badge diff">Easy</span></div>
+    <div class="p-note">快慢指针判环。为什么快指针走两步就一定能追上：每轮差距缩小 1，环内必然相遇。</div>
+  </li>
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/linked-list-cycle-ii/" target="_blank" rel="noopener">142 Linked List Cycle II</a><span class="badge diff">Medium</span></div>
+    <div class="p-note">141 的进阶：相遇后<b>从头和从相遇点同速前进，交点即入口</b>。结论要背，推导（设环前长 a、环长 b）能讲一遍更好。</div>
+  </li>
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/remove-nth-node-from-end-of-list/" target="_blank" rel="noopener">19 Remove Nth Node From End of List</a><span class="badge diff">Medium</span></div>
+    <div class="p-note">哨兵 + 快指针先走 <code>n + 1</code> 步。为什么是 <code>n + 1</code> 而不是 <code>n</code>：要让 <code>slow</code> 停在待删节点的<b>前一个</b>。</div>
+  </li>
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/reorder-list/" target="_blank" rel="noopener">143 Reorder List</a><span class="badge diff">Medium</span></div>
+    <div class="p-note">三个已知动作的拼装：找中点（快慢）→ 反转后半（模板 A）→ 交替合并。本章最能体现「链表题是动作的组合」的一道。</div>
+  </li>
+  </ul>
+</div>
+<div class="tier">
+  <div class="tier-head"><span class="t">变体</span><span class="d">模板要扭，坑的来源</span><span class="c">3 道</span></div>
+  <ul class="plist">
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/copy-list-with-random-pointer/" target="_blank" rel="noopener">138 Copy List with Random Pointer</a><span class="badge diff">Medium</span></div>
+    <div class="p-note">哈希映射旧 → 新，两遍扫描：第一遍建节点，第二遍接 <code>next</code> 和 <code>random</code>。O(1) 空间的原地交织解法是加分项，不是必需品。</div>
+  </li>
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/lru-cache/" target="_blank" rel="noopener">146 LRU Cache</a><span class="badge diff">Medium</span></div>
+    <div class="p-note">哈希表 + 双向链表。面试里可以提 <code>OrderedDict</code> 一行搞定，但<b>必须能手写双向链表版本</b>——考的就是这个。</div>
+  </li>
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/merge-k-sorted-lists/" target="_blank" rel="noopener">23 Merge k Sorted Lists</a><span class="badge star" title="hard，认脸即可">⭐ 认脸</span><span class="badge diff">Hard</span></div>
+    <div class="p-note">⭐认脸。K 路归并：堆里放 K 个头节点，见第 08 章。</div>
+  </li>
+  </ul>
+</div>
+
+</section>
+
+<section id="s5">
+  <div class="sec-tag"><span class="cell" style="background:var(--warn)"></span><span class="lab">§5 Pitfalls &amp; Self-check 常见翻车点 + 自测</span></div>
+  <h2>会写不等于不翻车</h2>
+<ol class="pits">
+<li><span class="pt">先改指针，再想起要 next</span>——<code>cur.next = prev</code> 之后原来的 <code>cur.next</code> 就永远找不回来了。任何改指针的循环，第一行都应该是 <code>nxt = cur.next</code>。</li>
+<li><span class="pt">不用哨兵</span>——头节点可能被删（19）、可能被换（21、203）。没有 <code>dummy</code> 就得为「删的是头」单独写一段，这段代码是链表题最常见的漏写。</li>
+<li><span class="pt">快指针的循环条件</span>——<code>while fast and fast.next</code> 缺一不可：只判 <code>fast</code> 会在 <code>fast.next.next</code> 处崩，只判 <code>fast.next</code> 会在链表为空时崩。</li>
+<li><span class="pt">环入口结论记成「相遇点就是入口」</span>——相遇点在环内但通常不是入口。必须再走一轮同速追赶（见 142）。</li>
+<li><span class="pt">双向链表忘了断两头</span>——146 里删除节点要同时修 <code>prev.next</code> 和 <code>next.prev</code>，只改一边会留下悬挂引用，表现为容量统计对不上。</li>
+</ol>
+<h3>自测 · 30 秒识别模式</h3>
+<div class="quiz">
+<article class="q" data-answer="6">
+  <p class="qprompt"><span class="qtype">30 秒识别</span>Q1 · <a href="https://leetcode.com/problems/remove-duplicates-from-sorted-list/" target="_blank" rel="noopener">83 Remove Duplicates from Sorted List</a>：删除<b>已排序</b>链表中所有重复的节点，每个值只保留一个。你的第一反应是哪个模式？</p>
+  <div class="opts"><button class="opt" type="button" data-ch="6">06 链表</button><button class="opt" type="button" data-ch="1">01 哈希</button><button class="opt" type="button" data-ch="2">02 双指针</button></div>
+  <details><summary>看答案</summary><div class="answer"><p>链表。改指针类，<code>cur.next = cur.next.next</code> 跳过重复即可，连哨兵都不需要（头节点一定保留）。用 <code>set</code> 去重也能过，但那是数组思维，浪费了「已排序」。</p></div></details>
+</article>
+<article class="q" data-answer="6">
+  <p class="qprompt"><span class="qtype">30 秒识别</span>Q2 · <a href="https://leetcode.com/problems/find-the-duplicate-number/" target="_blank" rel="noopener">287 Find the Duplicate Number</a>：长度 n+1 的数组，元素都在 1..n 之间，找出那个重复的数（不能改数组、只能用 O(1) 空间）。你的第一反应是哪个模式？</p>
+  <div class="opts"><button class="opt" type="button" data-ch="6">06 链表</button><button class="opt" type="button" data-ch="1">01 哈希</button><button class="opt" type="button" data-ch="5">05 二分查找</button></div>
+  <details><summary>看答案</summary><div class="answer"><p>链表的快慢指针。把 <code>i -&gt; nums[i]</code> 看成链表的 next，重复的数就是<b>环的入口</b>，142 原样套用。这是本章最值得认脸的一道——它长得完全不像链表题。（允许用哈希时当然是第 01 章。）</p></div></details>
+</article>
+<article class="q" data-answer="4">
+  <p class="qprompt"><span class="qtype">30 秒识别</span>Q3 · <a href="https://leetcode.com/problems/min-stack/" target="_blank" rel="noopener">155 Min Stack</a>：设计一个栈，<code>push</code> / <code>pop</code> / <code>top</code> / <code>getMin</code> 全部 O(1)。你的第一反应是哪个模式？</p>
+  <div class="opts"><button class="opt" type="button" data-ch="6">06 链表</button><button class="opt" type="button" data-ch="4">04 栈与单调栈</button><button class="opt" type="button" data-ch="1">01 哈希</button></div>
+  <details><summary>看答案</summary><div class="answer"><p><b>栈，不是本章</b>——同样是「设计一个数据结构」，146 LRU 要的是「按访问顺序淘汰」所以需要双向链表，而这道要的是「随时取当前最小」，辅助栈同步记录即可。设计题不都是链表题，看它要维护的到底是什么顺序。</p></div></details>
+</article>
+<p class="quiz-note">每章自测都会<b>混入恰好一道非本章题</b>，防止「读哪章选哪章」的条件反射；题面也一律取自本章未收录的题，避免凭记忆而非凭信号作答。</p>
+</div>
+</section>
+
+<nav class="next">
+  <a href="05-binary-search.html">← 05 二分查找</a>
+  <a href="07-tree.html">07 树的遍历与递归 →</a>
+</nav>
+
+</div>
+<script src="../assets/quiz.js" defer></script>
+</body>
+</html>

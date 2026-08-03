@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>05 二分查找 · 算法面试阈值手册</title>
+<meta name="description" content="不止搜位置，还能搜答案本身——前提是判定函数单调">
+<link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"></noscript>
+<link rel="stylesheet" href="../assets/handbook.css">
+<script src="../assets/theme.js"></script>
+</head>
+<body>
+<button class="theme-toggle" type="button" aria-label="切换深色/浅色模式" title="切换深色/浅色模式">
+  <span class="sun" aria-hidden="true">☀️</span><span class="moon" aria-hidden="true">🌙</span>
+</button>
+<div class="wrap">
+<nav class="crumb"><a href="../index.html">← 目录</a> · <a href="../cheatsheet.html">决策树速查</a></nav>
+
+<header class="ch">
+  <div class="bars" aria-hidden="true"><span class="h1"></span><span class="h2"></span><span class="h4"></span><span class="h6"></span><span class="h3"></span><span class="h5 w"></span><span class="h2 f"></span><span class="h1 f"></span></div>
+  <div class="kicker">Pattern 05 · Binary Search</div>
+  <h1>05 二分查找
+    <span class="zh">不止搜位置，还能搜答案本身——前提是判定函数单调</span>
+  </h1>
+  <div class="meta"><span>面试频率 <b>极高</b></span><span>题目 <b>7 道</b></span><span>模板 <b>2 个</b></span><span>⭐认脸 <b>2 道</b></span></div>
+</header>
+
+<section id="s1">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§1 Mental Model 一句话心智模型</span></div>
+  <h2>先记住这一句</h2>
+<div class="oneliner"><b>二分不是在数组里找数，是在一串「前面全 False、后面全 True」的判定结果上找那道分界线。数组有序，只是这条性质最常见的来源。</b></div>
+<p>所以写二分前先把问题翻译成一个<b>布尔判定函数</b> <code>ok(x)</code>，再确认它单调：一旦某个 x 成立，比它大的全都成立。翻译不出这个函数，就说明这题不是二分。</p>
+<p>想通这一层，「答案二分」就不再是新技巧：数组二分的 <code>ok(i)</code> 是 <code>nums[i] &gt;= target</code>，答案二分的 <code>ok(k)</code> 是「速度 k 够不够快」——判定函数换了，骨架一模一样。</p>
+
+</section>
+
+<section id="s2">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§2 Recognition Signals 识别信号</span></div>
+  <h2>看到什么，想到本章</h2>
+<div class="tbl-scroll"><table class="sig-tbl"><thead><tr><th>题面出现…</th><th>想到</th></tr></thead><tbody><tr><td>「已排序数组里找目标 / 插入位置 / 第一个大于 X 的」</td><td>边界二分（模板 A）</td></tr><tr><td>「旋转有序数组」</td><td>二分 + 先判断哪半是有序的</td></tr><tr><td>「最小的最大值」「最大的最小值」「最少需要多少天 / 多快」</td><td>答案二分（模板 B）</td></tr><tr><td>「能否在 X 之内完成」这种问句本身</td><td>它就是判定函数 <code>ok(X)</code></td></tr><tr><td>数据规模到 10⁹ 但答案是个整数</td><td>在答案区间上二分，log 级别的判定次数</td></tr><tr><td>「两个有序数组的中位数 / 第 K 小」</td><td>二分划分位置（认脸级）</td></tr></tbody></table></div>
+<div class="routing"><div class="rt-head">分流条件 · 决策树同源</div><p>有序数组里找<b>一对</b>数是双指针（第 02 章），找<b>一个</b>位置才是二分。「第 K 大」如果数组无序、且没有可二分的判定量，那是堆或快速选择（第 08 章）；但「第 K 小的距离 / 第 K 小的乘积」这类<b>答案本身是数值</b>的题，反而回到答案二分；而「BST 里的第 K 小」根本不用二分，中序遍历走到第 K 个就是（第 07 章）。顺带把「有序」这个词的三种含义分清：有序<b>数组</b>找位置 → 本章；有序<b>链表</b>合并 → 哨兵 + 双指针（第 06 章）；<b>BST</b> 的中序天然有序 → 第 07 章。判断标准始终是同一个：能不能写出单调的 <code>ok(x)</code>。</p></div>
+
+</section>
+
+<section id="s3">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§3 Template 模板代码</span></div>
+  <h2>可默写的那几行</h2>
+<p class="legend"><i class="bone">■ 【骨架】</i> 不变，闭着眼默写　<i class="slot">■ 【插槽】</i> 随题变化，写题前先问自己填什么</p>
+<div class="tpl">
+  <div class="tpl-head">模板 A · 边界二分<span class="note">lower_bound 一个顶三个</span></div>
+  <pre><code>def lower_bound(nums, target):
+    lo, hi = 0, len(nums)                   <span class="cm bone"># 【骨架】左闭右开,hi 取"越界位置"</span>
+    while lo &lt; hi:                          <span class="cm bone"># 【骨架】区间空了就停</span>
+        mid = (lo + hi) // 2                <span class="cm bone"># 【骨架】</span>
+        if nums[mid] &lt; target:              <span class="cm slot"># 【插槽】判定:成立说明 mid 太靠左</span>
+            lo = mid + 1                    <span class="cm bone"># 【骨架】mid 已被排除</span>
+        else:
+            hi = mid                        <span class="cm bone"># 【骨架】mid 可能就是答案,不能排除</span>
+    return lo                               <span class="cm slot"># 【插槽】答案:第一个满足条件的下标</span></code></pre>
+  <div class="tpl-foot">默写口诀：<b>左闭右开、<code>lo = mid + 1</code> / <code>hi = mid</code>、返回 <code>lo</code></b>。只要判定函数单调，这个骨架不会死循环，因为每轮区间必然缩小。</div>
+</div>
+<div class="tpl">
+  <div class="tpl-head">模板 B · 答案二分<span class="note">判定函数才是题目本身</span></div>
+  <pre><code>def min_feasible(lo, hi, ok):
+    while lo &lt; hi:                          <span class="cm bone"># 【骨架】二分的是"答案区间",不是数组</span>
+        mid = (lo + hi) // 2                <span class="cm bone"># 【骨架】</span>
+        if ok(mid):                         <span class="cm slot"># 【插槽】判定函数:mid 这个答案够用吗</span>
+            hi = mid                        <span class="cm bone"># 【骨架】够用,试试更小的</span>
+        else:
+            lo = mid + 1                    <span class="cm bone"># 【骨架】不够用,答案必须更大</span>
+    return lo                               <span class="cm slot"># 【插槽】最小的可行答案</span></code></pre>
+  <div class="tpl-foot">把 <code>ok</code> 写成独立函数，面试时先讲 <code>ok</code> 再讲二分——面试官要听的是<b>你为什么确信它单调</b>。</div>
+</div>
+
+</section>
+
+<section id="s4">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§4 Problems 题目分层</span></div>
+  <h2>从建直觉到扭模板</h2>
+<div class="tier">
+  <div class="tier-head"><span class="t">热身</span><span class="d">建直觉，easy 为主</span><span class="c">1 道</span></div>
+  <ul class="plist">
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/binary-search/" target="_blank" rel="noopener">704 Binary Search</a><span class="badge diff">Easy</span></div>
+    <div class="p-note">标准二分。建议直接用模板 A 的写法而不是 <code>lo &lt;= hi</code> 那一套，全书统一一个边界约定，考场上少一个出错来源。</div>
+  </li>
+  </ul>
+</div>
+<div class="tier">
+  <div class="tier-head"><span class="t">标准</span><span class="d">模板直接套</span><span class="c">3 道</span></div>
+  <ul class="plist">
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/search-a-2d-matrix/" target="_blank" rel="noopener">74 Search a 2D Matrix</a><span class="badge diff">Medium</span></div>
+    <div class="p-note">把 m×n 矩阵当成长度 m·n 的有序数组，下标映射 <code>divmod(mid, n)</code>。识别信号是「每行有序且下一行首元素大于上一行末元素」。</div>
+  </li>
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/find-minimum-in-rotated-sorted-array/" target="_blank" rel="noopener">153 Find Minimum in Rotated Sorted Array</a><span class="badge diff">Medium</span></div>
+    <div class="p-note">判定换成「<code>nums[mid]</code> 和右端比」。为什么和右端比而不是左端：右端在旋转后总是落在「较小的那一段」，比较结果才单调。</div>
+  </li>
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/search-in-rotated-sorted-array/" target="_blank" rel="noopener">33 Search in Rotated Sorted Array</a><span class="badge diff">Medium</span></div>
+    <div class="p-note">153 的进阶：先判断哪半有序，再看 target 在不在那半的区间里。写不顺时的降级方案：先用 153 找到旋转点，再对两段各做一次标准二分。</div>
+  </li>
+  </ul>
+</div>
+<div class="tier">
+  <div class="tier-head"><span class="t">变体</span><span class="d">模板要扭，坑的来源</span><span class="c">3 道</span></div>
+  <ul class="plist">
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/koko-eating-bananas/" target="_blank" rel="noopener">875 Koko Eating Bananas</a><span class="badge diff">Medium</span></div>
+    <div class="p-note">答案二分入门题。<code>ok(k) = 以速度 k 吃完所需小时数 &lt;= h</code>，区间 <code>[1, max(piles)]</code>。向上取整用 <code>-(-p // k)</code>，别用浮点。</div>
+  </li>
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/split-array-largest-sum/" target="_blank" rel="noopener">410 Split Array Largest Sum</a><span class="badge star" title="hard，认脸即可">⭐ 认脸</span><span class="badge diff">Hard</span></div>
+    <div class="p-note">⭐认脸。<code>ok(cap) = 按 cap 贪心切分后段数 &lt;= m</code>，区间 <code>[max(nums), sum(nums)]</code>。认出「最小化最大值」这五个字即可。</div>
+  </li>
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/median-of-two-sorted-arrays/" target="_blank" rel="noopener">4 Median of Two Sorted Arrays</a><span class="badge star" title="hard，认脸即可">⭐ 认脸</span><span class="badge diff">Hard</span></div>
+    <div class="p-note">⭐认脸。二分较短的那个数组的<b>划分位置</b>。面试遇到先说 O(m+n) 归并解法。</div>
+  </li>
+  </ul>
+</div>
+
+</section>
+
+<section id="s5">
+  <div class="sec-tag"><span class="cell" style="background:var(--warn)"></span><span class="lab">§5 Pitfalls &amp; Self-check 常见翻车点 + 自测</span></div>
+  <h2>会写不等于不翻车</h2>
+<ol class="pits">
+<li><span class="pt">开闭区间不统一</span>——<code>hi = len(nums)</code>（右开）配 <code>hi = mid</code>；<code>hi = len(nums) - 1</code>（右闭）配 <code>hi = mid - 1</code>。混着写是死循环和差一错误的唯一来源。全书统一用左闭右开。</li>
+<li><span class="pt">判定函数不单调</span>——答案二分的前提是「x 可行则 x+1 也可行」。写不出这句话就别二分——例如「恰好等于 K」这类非单调条件，二分给出的结果没有意义。</li>
+<li><span class="pt"><code>ok</code> 的方向反了</span>——求<b>最小可行</b>时 <code>ok</code> 成立要 <code>hi = mid</code>；求<b>最大可行</b>时要把判定取反或改成 <code>lo = mid</code>（此时 <code>mid</code> 必须上取整，否则死循环）。拿不准就一律转化成「求最小」。</li>
+<li><span class="pt">旋转数组有重复元素</span>——<code>[1,1,1,0,1]</code> 这种输入下 <code>nums[mid] == nums[hi]</code> 无法判断哪半有序，只能 <code>hi -= 1</code> 退化到 O(n)。面试被追问时要说得出这个边界。</li>
+</ol>
+<h3>自测 · 30 秒识别模式</h3>
+<div class="quiz">
+<article class="q" data-answer="5">
+  <p class="qprompt"><span class="qtype">30 秒识别</span>Q1 · <a href="https://leetcode.com/problems/capacity-to-ship-packages-within-d-days/" target="_blank" rel="noopener">1011 Capacity To Ship Packages Within D Days</a>：传送带每天最多装 cap 重量，货物必须按顺序装运，求 D 天内运完的最小 cap。你的第一反应是哪个模式？</p>
+  <div class="opts"><button class="opt" type="button" data-ch="5">05 二分查找</button><button class="opt" type="button" data-ch="15">15 贪心</button><button class="opt" type="button" data-ch="3">03 滑动窗口</button></div>
+  <details><summary>看答案</summary><div class="answer"><p>答案二分（模板 B）。「最小的最大装载量」+「能否在 D 天内完成」——判定函数直接写在题面里了。区间是 <code>[max(weights), sum(weights)]</code>，和 410 是同一道题。</p></div></details>
+</article>
+<article class="q" data-answer="5">
+  <p class="qprompt"><span class="qtype">30 秒识别</span>Q2 · <a href="https://leetcode.com/problems/find-peak-element/" target="_blank" rel="noopener">162 Find Peak Element</a>：数组中相邻元素不相等，返回任意一个「比左右邻居都大」的位置。你的第一反应是哪个模式？</p>
+  <div class="opts"><button class="opt" type="button" data-ch="5">05 二分查找</button><button class="opt" type="button" data-ch="2">02 双指针</button><button class="opt" type="button" data-ch="4">04 栈与单调栈</button></div>
+  <details><summary>看答案</summary><div class="answer"><p>二分。数组<b>没有排序</b>也能二分：<code>nums[mid] &lt; nums[mid+1]</code> 说明右边一定存在峰值，这个判定是单调的。它是「有序才能二分」这个误解的最好解药。</p></div></details>
+</article>
+<article class="q" data-answer="8">
+  <p class="qprompt"><span class="qtype">30 秒识别</span>Q3 · 在一个<b>无序</b>数组里找第 K 大的元素。你的第一反应是哪个模式？</p>
+  <div class="opts"><button class="opt" type="button" data-ch="5">05 二分查找</button><button class="opt" type="button" data-ch="8">08 堆 / Top-K</button><button class="opt" type="button" data-ch="1">01 哈希</button></div>
+  <details><summary>看答案</summary><div class="answer"><p><b>堆 / 快速选择，不是本章</b>——数组无序，也写不出关于下标的单调判定函数。养一个大小为 K 的小顶堆即可，见第 08 章。对照 162：能不能二分，看的是有没有单调判定，不是看数组长什么样。</p></div></details>
+</article>
+<p class="quiz-note">每章自测都会<b>混入恰好一道非本章题</b>，防止「读哪章选哪章」的条件反射；题面也一律取自本章未收录的题，避免凭记忆而非凭信号作答。</p>
+</div>
+</section>
+
+<nav class="next">
+  <a href="04-stack.html">← 04 栈与单调栈</a>
+  <a href="06-linked-list.html">06 链表 →</a>
+</nav>
+
+</div>
+<script src="../assets/quiz.js" defer></script>
+</body>
+</html>

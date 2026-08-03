@@ -37,6 +37,9 @@ TIER_ORDER = ["热身", "标准", "变体"]
 TIER_EXCEPTIONS = {
     1: ((2, 3, 1), "§5 选题：dict 与 set 是两种最小动作，各配一道热身"),
     4: ((2, 3, 3), "样章体例：普通栈与单调栈两条线各需一道热身；变体含 84/239 两道⭐认脸"),
+    5: ((1, 3, 3), "§5 选题：变体是「答案二分」独立子模式，875 必会 + 410/4 两道⭐认脸"),
+    6: ((1, 5, 3), "§5 选题：141/142 拆成两行；改指针与跑指针两条线各需标准题"),
+    7: ((2, 7, 3), "§5 选题：树是面试最高频章，235/236 拆成两行，标准题刻意多"),
 }
 BAND = {"热身": (1, 1), "标准": (2, 3), "变体": (1, 2)}
 
@@ -293,38 +296,39 @@ def check_signal_conflicts(site, sig_map, routing_map, rep):
             for kw in KEYWORDS:
                 if kw in cue:
                     kw_map[kw].add(no)
+    def names(a, b):
+        """a 章的分流条件里有没有点名 b 章。"""
+        routing = routing_map.get(a, "")
+        return "第 {:02d} 章".format(b) in routing or BY_NO[b]["title_zh"] in routing
+
     conflicts = {k: sorted(v) for k, v in kw_map.items() if len(v) > 1}
+    rows = []
     for kw, nos in sorted(conflicts.items()):
-        for no in nos:
-            others = [x for x in nos if x != no]
-            routing = routing_map.get(no, "")
-            named = [x for x in others
-                     if "第 {:02d} 章".format(x) in routing or BY_NO[x]["title_zh"] in routing]
-            if not named:
-                rep.warn("ch{:02d}".format(no),
-                         "关键词「{}」同时出现在第 {} 章，但本章分流条件没点名它们".format(
-                             kw, others))
+        for i, a in enumerate(nos):
+            for b in nos[i + 1:]:
+                # 一对里有任意一方点名对方即可——读者从哪一章进来都能被接住
+                ok = names(a, b) or names(b, a)
+                rows.append((kw, a, b, ok))
+                if not ok:
+                    rep.warn("site", "关键词「{}」同时落在第 {:02d}、{:02d} 章，"
+                                     "两边的分流条件都没点名对方".format(kw, a, b))
+
     out = os.path.join(site, "data", "signal-conflicts.md")
     os.makedirs(os.path.dirname(out), exist_ok=True)
     with open(out, "w", encoding="utf-8") as f:
         f.write("# 识别信号冲突汇总（构建产物，供人工审读）\n\n")
-        f.write("由 reference/check_site.py 从各章 §2 渲染结果聚合。"
-                "同一关键词落在多个模式上不是错误，但每一条都必须在分流条件里写明怎么分。\n\n")
-        f.write("| 关键词 | 涉及模式 | 各章分流条件是否点名对方 |\n|---|---|---|\n")
-        for kw, nos in sorted(conflicts.items()):
-            cells = []
-            for no in nos:
-                routing = routing_map.get(no, "")
-                ok = any("第 {:02d} 章".format(x) in routing or BY_NO[x]["title_zh"] in routing
-                         for x in nos if x != no)
-                cells.append("{:02d}{}".format(no, "✓" if ok else "✗"))
-            f.write("| {} | {} | {} |\n".format(
-                kw, "、".join("{:02d} {}".format(n, BY_NO[n]["title_zh"]) for n in nos),
-                " ".join(cells)))
-        if not conflicts:
-            f.write("| — | 暂无跨章重复关键词 | — |\n")
-    rep.notes.append("识别信号冲突汇总 -> data/signal-conflicts.md（{} 个跨章关键词）".format(
-        len(conflicts)))
+        f.write("由 `reference/check_site.py` 从各章 §2 的渲染结果聚合，"
+                "覆盖 {} 章。同一关键词落在多个模式上不是错误——它恰恰是本书最该讲清楚的地方——"
+                "但每一对都必须至少有一方在分流条件里点名另一方。\n\n".format(len(sig_map)))
+        f.write("| 关键词 | 模式 A | 模式 B | 分流条件是否互相点名 |\n|---|---|---|---|\n")
+        for kw, a, b, ok in rows:
+            f.write("| {} | {:02d} {} | {:02d} {} | {} |\n".format(
+                kw, a, BY_NO[a]["title_zh"], b, BY_NO[b]["title_zh"],
+                "✓" if ok else "✗ 待补"))
+        if not rows:
+            f.write("| — | — | — | 暂无跨章重复关键词 |\n")
+    rep.notes.append("识别信号冲突汇总 -> data/signal-conflicts.md"
+                     "（{} 个跨章关键词，{} 对模式）".format(len(conflicts), len(rows)))
 
 
 # ---------------------------------------------------------------- 主流程
@@ -347,8 +351,9 @@ def run(site):
         try:
             sig_map[no] = collect_signals(no, html)
             cue_map[no] = "\n".join(sig_map[no])
+            # 取 .routing 里的 <p>，不是整个 div——非贪婪的 </div> 会停在 .rt-head 上
             routing_map[no] = strip_tags(
-                re.search(r'<div class="routing">(.*?)</div>', html, re.S).group(1))
+                re.search(r'<div class="routing">.*?<p>(.*?)</p>', html, re.S).group(1))
         except (AttributeError, IndexError):
             rep.err("ch{:02d}".format(no), "§2 识别信号表或分流条件无法解析")
 
