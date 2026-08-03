@@ -11,6 +11,7 @@
 
 reference/ 与 content/ 属构建期资产，随书发布无妨，但不是读者要看的页面。
 """
+import hashlib
 import os
 import re
 import sys
@@ -140,6 +141,17 @@ def problem_li(p):
         badges=badges, note=inline(p["note"]))
 
 
+def shuffled_options(q):
+    """选项顺序必须打乱：内容里选项是「本章优先」手写的，直接渲染的话正确答案
+    会长期落在第一个（分流题落在第二个），读者点第一个按钮就能刷分，
+    「30 秒识别」就退化成猜位置了。
+
+    用题号做种子 + md5 排序，保证同一道题每次构建顺序都一样（diff 干净），
+    又与作者的书写顺序无关。check_site.py 会核对全书答案位置的分布不退化。"""
+    return sorted(q["options"],
+                  key=lambda o: hashlib.md5("{}:{}".format(q["num"], o).encode()).hexdigest())
+
+
 def quiz_block(ch):
     items = []
     for i, q in enumerate(ch["quiz"], 1):
@@ -148,7 +160,7 @@ def quiz_block(ch):
             lcindex.url(q["num"]), q["num"], esc(meta["title"]))
         opts = "".join(
             '<button class="opt" type="button" data-ch="{no}">{label}</button>'.format(
-                no=o, label=esc(content.chapter_label(o))) for o in q["options"])
+                no=o, label=esc(content.chapter_label(o))) for o in shuffled_options(q))
         items.append(
             '<article class="q" data-answer="{ans}">\n'
             '  <p class="qprompt"><span class="qtype">30 秒识别</span>Q{i} · {label}{prompt}'

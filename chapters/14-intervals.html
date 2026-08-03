@@ -131,17 +131,17 @@
 <div class="quiz">
 <article class="q" data-answer="14">
   <p class="qprompt"><span class="qtype">30 秒识别</span>Q1 · <a href="https://leetcode.com/problems/interval-list-intersections/" target="_blank" rel="noopener">986 Interval List Intersections</a>：给两个各自有序且内部不相交的区间列表，求它们的交集。你的第一反应是哪个模式？</p>
-  <div class="opts"><button class="opt" type="button" data-ch="14">14 区间</button><button class="opt" type="button" data-ch="2">02 双指针</button><button class="opt" type="button" data-ch="13">13 前缀和</button></div>
+  <div class="opts"><button class="opt" type="button" data-ch="2">02 双指针</button><button class="opt" type="button" data-ch="14">14 区间</button><button class="opt" type="button" data-ch="13">13 前缀和</button></div>
   <details><summary>看答案</summary><div class="answer"><p>区间 + 双指针。两个列表都已排序，交集是 <code>[max(起点), min(终点)]</code>，非空就收下，然后<b>终点小的那一方前进</b>。「两个有序列表」这个形状同时也是第 02 章的信号，但处理对象是区间，模板在本章。</p></div></details>
 </article>
 <article class="q" data-answer="14">
   <p class="qprompt"><span class="qtype">30 秒识别</span>Q2 · <a href="https://leetcode.com/problems/remove-covered-intervals/" target="_blank" rel="noopener">1288 Remove Covered Intervals</a>：删除所有被其他区间覆盖的区间，返回剩余数量。你的第一反应是哪个模式？</p>
-  <div class="opts"><button class="opt" type="button" data-ch="14">14 区间</button><button class="opt" type="button" data-ch="15">15 贪心</button><button class="opt" type="button" data-ch="13">13 前缀和</button></div>
+  <div class="opts"><button class="opt" type="button" data-ch="13">13 前缀和</button><button class="opt" type="button" data-ch="15">15 贪心</button><button class="opt" type="button" data-ch="14">14 区间</button></div>
   <details><summary>看答案</summary><div class="answer"><p>区间。排序键是本题全部难点：起点升序、<b>起点相同时终点降序</b>，这样长的排在前面，后面凡是终点不超过当前最大终点的都被覆盖。</p></div></details>
 </article>
 <article class="q" data-answer="15">
   <p class="qprompt"><span class="qtype">30 秒识别</span>Q3 · <a href="https://leetcode.com/problems/jump-game/" target="_blank" rel="noopener">55 Jump Game</a>：数组里每个数表示在该位置最多能向前跳几步，判断能否从起点跳到终点。你的第一反应是哪个模式？</p>
-  <div class="opts"><button class="opt" type="button" data-ch="14">14 区间</button><button class="opt" type="button" data-ch="15">15 贪心</button><button class="opt" type="button" data-ch="16">16 一维 DP</button></div>
+  <div class="opts"><button class="opt" type="button" data-ch="16">16 一维 DP</button><button class="opt" type="button" data-ch="15">15 贪心</button><button class="opt" type="button" data-ch="14">14 区间</button></div>
   <details><summary>看答案</summary><div class="answer"><p><b>贪心，不是本章</b>——每个下标确实定义了一个「可达区间」，看起来很像区间题，但不需要排序也不需要合并：只要一路维护「目前能到的最远位置」，走到某处发现最远位置还不如当前下标就失败。见第 15 章。</p></div></details>
 </article>
 <p class="quiz-note">每章自测都会<b>混入恰好一道非本章题</b>，防止「读哪章选哪章」的条件反射；题面也一律取自本章未收录的题，避免凭记忆而非凭信号作答。</p>

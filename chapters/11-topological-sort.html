@@ -115,18 +115,18 @@ def topo_order(n, prerequisites):
 <h3>自测 · 30 秒识别模式</h3>
 <div class="quiz">
 <article class="q" data-answer="11">
-  <p class="qprompt"><span class="qtype">30 秒识别</span>Q1 · <a href="https://leetcode.com/problems/minimum-height-trees/" target="_blank" rel="noopener">310 Minimum Height Trees</a>：给一棵无向树，找出所有「作为根时树高最小」的节点。你的第一反应是哪个模式？</p>
-  <div class="opts"><button class="opt" type="button" data-ch="11">11 拓扑排序</button><button class="opt" type="button" data-ch="10">10 图的 BFS/DFS</button><button class="opt" type="button" data-ch="7">07 树的遍历与递归</button></div>
-  <details><summary>看答案</summary><div class="answer"><p>拓扑式剥叶子。从度为 1 的点一层层往里剥，最后剩下的 1~2 个点就是答案。骨架和入度法一模一样，只是「入度」换成「度」、终止条件换成「剩余 ≤ 2」。</p></div></details>
+  <p class="qprompt"><span class="qtype">30 秒识别</span>Q1 · <a href="https://leetcode.com/problems/find-all-possible-recipes-from-given-supplies/" target="_blank" rel="noopener">2115 Find All Possible Recipes from Given Supplies</a>：给一批菜谱、各自的原料表和你手上的现有原料，求最终能做出哪些菜（一道菜也可以是另一道菜的原料）。你的第一反应是哪个模式？</p>
+  <div class="opts"><button class="opt" type="button" data-ch="10">10 图的 BFS/DFS</button><button class="opt" type="button" data-ch="12">12 并查集</button><button class="opt" type="button" data-ch="11">11 拓扑排序</button></div>
+  <details><summary>看答案</summary><div class="answer"><p>拓扑排序。「A 是 B 的原料」就是一条有向边，手上的现有原料是入度为 0 的起点，能被剥出来的菜就是做得成的。题面把「依赖」换了个说法而已——认出<b>有向依赖</b>这四个字，模板一行不用改。</p></div></details>
 </article>
 <article class="q" data-answer="11">
   <p class="qprompt"><span class="qtype">30 秒识别</span>Q2 · <a href="https://leetcode.com/problems/find-eventual-safe-states/" target="_blank" rel="noopener">802 Find Eventual Safe States</a>：有向图中，从某点出发的所有路径最终都能走到终点（出度为 0 的点），求所有这样的安全点。你的第一反应是哪个模式？</p>
-  <div class="opts"><button class="opt" type="button" data-ch="11">11 拓扑排序</button><button class="opt" type="button" data-ch="10">10 图的 BFS/DFS</button><button class="opt" type="button" data-ch="12">12 并查集</button></div>
+  <div class="opts"><button class="opt" type="button" data-ch="10">10 图的 BFS/DFS</button><button class="opt" type="button" data-ch="11">11 拓扑排序</button><button class="opt" type="button" data-ch="12">12 并查集</button></div>
   <details><summary>看答案</summary><div class="answer"><p>拓扑排序。把图<b>反向</b>后，出度为 0 就变成入度为 0，能被剥掉的点就是安全的，剥不掉的卡在环里。「反向建图」是拓扑题的常见变形。</p></div></details>
 </article>
 <article class="q" data-answer="12">
   <p class="qprompt"><span class="qtype">30 秒识别</span>Q3 · <a href="https://leetcode.com/problems/number-of-provinces/" target="_blank" rel="noopener">547 Number of Provinces</a>：给一个 n×n 的矩阵表示城市之间是否直接相连，求「省份」（连通块）的个数。你的第一反应是哪个模式？</p>
-  <div class="opts"><button class="opt" type="button" data-ch="11">11 拓扑排序</button><button class="opt" type="button" data-ch="12">12 并查集</button><button class="opt" type="button" data-ch="10">10 图的 BFS/DFS</button></div>
+  <div class="opts"><button class="opt" type="button" data-ch="10">10 图的 BFS/DFS</button><button class="opt" type="button" data-ch="12">12 并查集</button><button class="opt" type="button" data-ch="11">11 拓扑排序</button></div>
   <details><summary>看答案</summary><div class="answer"><p><b>并查集，不是本章</b>——图是<b>无向</b>的，问的是「谁和谁在一伙」而不是「谁在谁前面」。无向图没有入度这个概念，拓扑排序无从谈起。见 §2 分流条件与第 12 章。</p></div></details>
 </article>
 <p class="quiz-note">每章自测都会<b>混入恰好一道非本章题</b>，防止「读哪章选哪章」的条件反射；题面也一律取自本章未收录的题，避免凭记忆而非凭信号作答。</p>

@@ -131,17 +131,17 @@ def subarray_sum_k(nums, k):
 <div class="quiz">
 <article class="q" data-answer="13">
   <p class="qprompt"><span class="qtype">30 秒识别</span>Q1 · <a href="https://leetcode.com/problems/find-pivot-index/" target="_blank" rel="noopener">724 Find Pivot Index</a>：找出数组中的「中心下标」：它左边所有数之和等于右边所有数之和。你的第一反应是哪个模式？</p>
-  <div class="opts"><button class="opt" type="button" data-ch="13">13 前缀和</button><button class="opt" type="button" data-ch="3">03 滑动窗口</button><button class="opt" type="button" data-ch="2">02 双指针</button></div>
+  <div class="opts"><button class="opt" type="button" data-ch="13">13 前缀和</button><button class="opt" type="button" data-ch="2">02 双指针</button><button class="opt" type="button" data-ch="3">03 滑动窗口</button></div>
   <details><summary>看答案</summary><div class="answer"><p>前缀和。<code>left == total - left - nums[i]</code> 一次遍历即可。看到「左边的和 / 右边的和」就是前缀和的字面形态，连哈希都不需要。</p></div></details>
 </article>
 <article class="q" data-answer="13">
   <p class="qprompt"><span class="qtype">30 秒识别</span>Q2 · <a href="https://leetcode.com/problems/subarray-sums-divisible-by-k/" target="_blank" rel="noopener">974 Subarray Sums Divisible by K</a>：求和能被 K 整除的连续子数组个数。你的第一反应是哪个模式？</p>
-  <div class="opts"><button class="opt" type="button" data-ch="13">13 前缀和</button><button class="opt" type="button" data-ch="3">03 滑动窗口</button><button class="opt" type="button" data-ch="1">01 哈希</button></div>
+  <div class="opts"><button class="opt" type="button" data-ch="13">13 前缀和</button><button class="opt" type="button" data-ch="1">01 哈希</button><button class="opt" type="button" data-ch="3">03 滑动窗口</button></div>
   <details><summary>看答案</summary><div class="answer"><p>前缀和 + 哈希（模板 B），累积量换成 <code>前缀和 % k</code>：两个前缀同余，它们之间那段就能被 K 整除。注意 Python 的 <code>%</code> 对负数已经返回非负结果，其他语言要自己修正。</p></div></details>
 </article>
 <article class="q" data-answer="3">
   <p class="qprompt"><span class="qtype">30 秒识别</span>Q3 · 求长度<b>恰好为 k</b> 的连续子数组的最大平均值。你的第一反应是哪个模式？</p>
-  <div class="opts"><button class="opt" type="button" data-ch="13">13 前缀和</button><button class="opt" type="button" data-ch="3">03 滑动窗口</button><button class="opt" type="button" data-ch="4">04 栈与单调栈</button></div>
+  <div class="opts"><button class="opt" type="button" data-ch="13">13 前缀和</button><button class="opt" type="button" data-ch="4">04 栈与单调栈</button><button class="opt" type="button" data-ch="3">03 滑动窗口</button></div>
   <details><summary>看答案</summary><div class="answer"><p><b>定长滑动窗口，不是本章</b>——窗口大小固定，进一个出一个就能 O(1) 维护和，根本不需要建前缀数组。前缀和是为<b>任意区间</b>的多次查询准备的；只查一种固定长度时它是杀鸡用牛刀。见 §2 分流条件与第 03 章模板 B。</p></div></details>
 </article>
 <p class="quiz-note">每章自测都会<b>混入恰好一道非本章题</b>，防止「读哪章选哪章」的条件反射；题面也一律取自本章未收录的题，避免凭记忆而非凭信号作答。</p>

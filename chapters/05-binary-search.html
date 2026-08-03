@@ -140,12 +140,12 @@
 <div class="quiz">
 <article class="q" data-answer="5">
   <p class="qprompt"><span class="qtype">30 秒识别</span>Q1 · <a href="https://leetcode.com/problems/capacity-to-ship-packages-within-d-days/" target="_blank" rel="noopener">1011 Capacity To Ship Packages Within D Days</a>：传送带每天最多装 cap 重量，货物必须按顺序装运，求 D 天内运完的最小 cap。你的第一反应是哪个模式？</p>
-  <div class="opts"><button class="opt" type="button" data-ch="5">05 二分查找</button><button class="opt" type="button" data-ch="15">15 贪心</button><button class="opt" type="button" data-ch="3">03 滑动窗口</button></div>
+  <div class="opts"><button class="opt" type="button" data-ch="15">15 贪心</button><button class="opt" type="button" data-ch="3">03 滑动窗口</button><button class="opt" type="button" data-ch="5">05 二分查找</button></div>
   <details><summary>看答案</summary><div class="answer"><p>答案二分（模板 B）。「最小的最大装载量」+「能否在 D 天内完成」——判定函数直接写在题面里了。区间是 <code>[max(weights), sum(weights)]</code>，和 410 是同一道题。</p></div></details>
 </article>
 <article class="q" data-answer="5">
   <p class="qprompt"><span class="qtype">30 秒识别</span>Q2 · <a href="https://leetcode.com/problems/find-peak-element/" target="_blank" rel="noopener">162 Find Peak Element</a>：数组中相邻元素不相等，返回任意一个「比左右邻居都大」的位置。你的第一反应是哪个模式？</p>
-  <div class="opts"><button class="opt" type="button" data-ch="5">05 二分查找</button><button class="opt" type="button" data-ch="2">02 双指针</button><button class="opt" type="button" data-ch="4">04 栈与单调栈</button></div>
+  <div class="opts"><button class="opt" type="button" data-ch="4">04 栈与单调栈</button><button class="opt" type="button" data-ch="2">02 双指针</button><button class="opt" type="button" data-ch="5">05 二分查找</button></div>
   <details><summary>看答案</summary><div class="answer"><p>二分。数组<b>没有排序</b>也能二分：<code>nums[mid] &lt; nums[mid+1]</code> 说明右边一定存在峰值，这个判定是单调的。它是「有序才能二分」这个误解的最好解药。</p></div></details>
 </article>
 <article class="q" data-answer="8">

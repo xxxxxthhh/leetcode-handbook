@@ -129,17 +129,17 @@
 <div class="quiz">
 <article class="q" data-answer="12">
   <p class="qprompt"><span class="qtype">30 秒识别</span>Q1 · <a href="https://leetcode.com/problems/satisfiability-of-equality-equations/" target="_blank" rel="noopener">990 Satisfiability of Equality Equations</a>：给一组形如 <code>a==b</code>、<code>a!=b</code> 的等式，判断它们能否同时成立。你的第一反应是哪个模式？</p>
-  <div class="opts"><button class="opt" type="button" data-ch="12">12 并查集</button><button class="opt" type="button" data-ch="11">11 拓扑排序</button><button class="opt" type="button" data-ch="1">01 哈希</button></div>
+  <div class="opts"><button class="opt" type="button" data-ch="11">11 拓扑排序</button><button class="opt" type="button" data-ch="12">12 并查集</button><button class="opt" type="button" data-ch="1">01 哈希</button></div>
   <details><summary>看答案</summary><div class="answer"><p>并查集。先把所有 <code>==</code> 合并成组，再逐条检查 <code>!=</code> 的两端是否落在同一组。「约束是否自洽」= 连通性问题，两遍扫描解决。</p></div></details>
 </article>
 <article class="q" data-answer="12">
   <p class="qprompt"><span class="qtype">30 秒识别</span>Q2 · <a href="https://leetcode.com/problems/similar-string-groups/" target="_blank" rel="noopener">839 Similar String Groups</a>：若两个字符串相等，或交换其中两个字母后相等，则它们相似。求相似字符串的组数。你的第一反应是哪个模式？</p>
-  <div class="opts"><button class="opt" type="button" data-ch="12">12 并查集</button><button class="opt" type="button" data-ch="10">10 图的 BFS/DFS</button><button class="opt" type="button" data-ch="9">09 回溯</button></div>
+  <div class="opts"><button class="opt" type="button" data-ch="10">10 图的 BFS/DFS</button><button class="opt" type="button" data-ch="9">09 回溯</button><button class="opt" type="button" data-ch="12">12 并查集</button></div>
   <details><summary>看答案</summary><div class="answer"><p>并查集。两两判断相似（O(n²·len)）后合并，最后数连通块。「归组 / 有多少组」是并查集最直白的暗号，和 547 是同一道题换了个判定条件。</p></div></details>
 </article>
 <article class="q" data-answer="11">
   <p class="qprompt"><span class="qtype">30 秒识别</span>Q3 · <a href="https://leetcode.com/problems/course-schedule/" target="_blank" rel="noopener">207 Course Schedule</a>：共 n 门课，给出若干「先修 A 才能修 B」的关系，判断能否修完所有课。你的第一反应是哪个模式？</p>
-  <div class="opts"><button class="opt" type="button" data-ch="12">12 并查集</button><button class="opt" type="button" data-ch="11">11 拓扑排序</button><button class="opt" type="button" data-ch="10">10 图的 BFS/DFS</button></div>
+  <div class="opts"><button class="opt" type="button" data-ch="10">10 图的 BFS/DFS</button><button class="opt" type="button" data-ch="12">12 并查集</button><button class="opt" type="button" data-ch="11">11 拓扑排序</button></div>
   <details><summary>看答案</summary><div class="answer"><p><b>拓扑排序，不是本章</b>——边是<b>有向</b>的。并查集里 <code>union(a, b)</code> 和 <code>union(b, a)</code> 给出的连通性完全一样，天生表达不了「谁在谁前面」，自然也判不出有向环。见 §2 分流条件。</p></div></details>
 </article>
 <p class="quiz-note">每章自测都会<b>混入恰好一道非本章题</b>，防止「读哪章选哪章」的条件反射；题面也一律取自本章未收录的题，避免凭记忆而非凭信号作答。</p>

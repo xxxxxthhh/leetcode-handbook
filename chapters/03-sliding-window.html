@@ -135,17 +135,17 @@ def longest_no_repeat(s):
 <div class="quiz">
 <article class="q" data-answer="3">
   <p class="qprompt"><span class="qtype">30 秒识别</span>Q1 · <a href="https://leetcode.com/problems/max-consecutive-ones-iii/" target="_blank" rel="noopener">1004 Max Consecutive Ones III</a>：数组只含 0 和 1，最多可以把 k 个 0 翻成 1，求最长的全 1 连续子数组。你的第一反应是哪个模式？</p>
-  <div class="opts"><button class="opt" type="button" data-ch="3">03 滑动窗口</button><button class="opt" type="button" data-ch="1">01 哈希</button><button class="opt" type="button" data-ch="15">15 贪心</button></div>
+  <div class="opts"><button class="opt" type="button" data-ch="15">15 贪心</button><button class="opt" type="button" data-ch="3">03 滑动窗口</button><button class="opt" type="button" data-ch="1">01 哈希</button></div>
   <details><summary>看答案</summary><div class="answer"><p>滑动窗口。不合法 = 「窗口内 0 的个数 &gt; k」，状态就一个计数器。「最多 K 次操作」是滑窗最标准的暗号。</p></div></details>
 </article>
 <article class="q" data-answer="3">
   <p class="qprompt"><span class="qtype">30 秒识别</span>Q2 · <a href="https://leetcode.com/problems/find-all-anagrams-in-a-string/" target="_blank" rel="noopener">438 Find All Anagrams in a String</a>：找出字符串中所有「另一个串的字母异位词」的起始下标。你的第一反应是哪个模式？</p>
-  <div class="opts"><button class="opt" type="button" data-ch="3">03 滑动窗口</button><button class="opt" type="button" data-ch="1">01 哈希</button><button class="opt" type="button" data-ch="2">02 双指针</button></div>
+  <div class="opts"><button class="opt" type="button" data-ch="1">01 哈希</button><button class="opt" type="button" data-ch="2">02 双指针</button><button class="opt" type="button" data-ch="3">03 滑动窗口</button></div>
   <details><summary>看答案</summary><div class="answer"><p>定长窗口（模板 B）+ 计数相等，和 567 是同一道题换了个问法：567 问存不存在，它问全部位置。窗口长度固定为模式串长度。</p></div></details>
 </article>
 <article class="q" data-answer="4">
   <p class="qprompt"><span class="qtype">30 秒识别</span>Q3 · <a href="https://leetcode.com/problems/sliding-window-maximum/" target="_blank" rel="noopener">239 Sliding Window Maximum</a>：窗口大小固定为 k，返回每个窗口里的<b>最大值</b>。你的第一反应是哪个模式？</p>
-  <div class="opts"><button class="opt" type="button" data-ch="3">03 滑动窗口</button><button class="opt" type="button" data-ch="4">04 栈与单调栈</button><button class="opt" type="button" data-ch="8">08 堆 / Top-K</button></div>
+  <div class="opts"><button class="opt" type="button" data-ch="8">08 堆 / Top-K</button><button class="opt" type="button" data-ch="4">04 栈与单调栈</button><button class="opt" type="button" data-ch="3">03 滑动窗口</button></div>
   <details><summary>看答案</summary><div class="answer"><p><b>单调队列，不是本章</b>——窗口是定长的，但要的是窗口内的最值，而滑窗模板只会维护「和 / 计数」这类能 O(1) 增删的状态，最大值删掉后无法 O(1) 恢复。见 §2 分流条件与第 04 章模板 B。</p></div></details>
 </article>
 <p class="quiz-note">每章自测都会<b>混入恰好一道非本章题</b>，防止「读哪章选哪章」的条件反射；题面也一律取自本章未收录的题，避免凭记忆而非凭信号作答。</p>

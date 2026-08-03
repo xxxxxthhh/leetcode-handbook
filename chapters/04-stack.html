@@ -151,17 +151,17 @@ def max_sliding_window(nums, k):
 <div class="quiz">
 <article class="q" data-answer="4">
   <p class="qprompt"><span class="qtype">30 秒识别</span>Q1 · <a href="https://leetcode.com/problems/online-stock-span/" target="_blank" rel="noopener">901 Online Stock Span</a>：返回今天之前连续多少天股价 ≤ 今天。你的第一反应是哪个模式？</p>
-  <div class="opts"><button class="opt" type="button" data-ch="4">04 栈与单调栈</button><button class="opt" type="button" data-ch="3">03 滑动窗口</button><button class="opt" type="button" data-ch="8">08 堆 / Top-K</button></div>
+  <div class="opts"><button class="opt" type="button" data-ch="3">03 滑动窗口</button><button class="opt" type="button" data-ch="4">04 栈与单调栈</button><button class="opt" type="button" data-ch="8">08 堆 / Top-K</button></div>
   <details><summary>看答案</summary><div class="answer"><p>单调栈。这是「之前第一个比我高的」的镜像问法：找到那个人，中间的天数就是答案，所以要存下标而不是值（翻车点①）。</p></div></details>
 </article>
 <article class="q" data-answer="4">
   <p class="qprompt"><span class="qtype">30 秒识别</span>Q2 · <a href="https://leetcode.com/problems/remove-k-digits/" target="_blank" rel="noopener">402 Remove K Digits</a>：删掉 k 个数字使剩下的数最小。你的第一反应是哪个模式？</p>
-  <div class="opts"><button class="opt" type="button" data-ch="4">04 栈与单调栈</button><button class="opt" type="button" data-ch="15">15 贪心</button><button class="opt" type="button" data-ch="9">09 回溯</button></div>
+  <div class="opts"><button class="opt" type="button" data-ch="4">04 栈与单调栈</button><button class="opt" type="button" data-ch="9">09 回溯</button><button class="opt" type="button" data-ch="15">15 贪心</button></div>
   <details><summary>看答案</summary><div class="answer"><p>单调栈。维持栈内递增，遇到更小的就把前面大的弹掉——「删掉一个大的」正是弹栈动作；贪心的直觉对，但落地结构是栈。</p></div></details>
 </article>
 <article class="q" data-answer="13">
   <p class="qprompt"><span class="qtype">30 秒识别</span>Q3 · 给定数组和整数 k，求「和恰好等于 k 的连续子数组」个数。你的第一反应是哪个模式？</p>
-  <div class="opts"><button class="opt" type="button" data-ch="4">04 栈与单调栈</button><button class="opt" type="button" data-ch="3">03 滑动窗口</button><button class="opt" type="button" data-ch="13">13 前缀和</button></div>
+  <div class="opts"><button class="opt" type="button" data-ch="13">13 前缀和</button><button class="opt" type="button" data-ch="3">03 滑动窗口</button><button class="opt" type="button" data-ch="4">04 栈与单调栈</button></div>
   <details><summary>看答案</summary><div class="answer"><p><b>前缀和 + 哈希，不是本章</b>——「恰好为 K」是分流关键词，见 §2 分流条件。单调栈处理的是「比较大小」，不是「求和」。</p></div></details>
 </article>
 <p class="quiz-note">每章自测都会<b>混入恰好一道非本章题</b>，防止「读哪章选哪章」的条件反射；题面也一律取自本章未收录的题，避免凭记忆而非凭信号作答。</p>

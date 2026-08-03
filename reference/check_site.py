@@ -156,7 +156,24 @@ def check_structure(no, html, rep):
 
 
 # ---------------------------------------------------------------- 自测题
-def check_quiz(no, html, rep):
+def check_answer_positions(pos_counts, total, rep):
+    """全书正确答案在选项里的位置分布不能退化。
+
+    这一条是补上的：早期版本按「本章优先」的书写顺序直接渲染选项，结果 54 道自测里
+    36 道的正确答案都排在第一个、分流题清一色排在第二个——读者点第一个按钮就能刷分，
+    「30 秒识别模式」退化成猜位置。结构类校验看不见这种缺陷，只能盯分布。"""
+    if not total:
+        return
+    for i in range(3):
+        if pos_counts.get(i, 0) == 0:
+            rep.err("site", "全书自测没有一道题的正确答案排在第 {} 位，选项顺序有系统性偏置".format(i + 1))
+    worst, n = max(pos_counts.items(), key=lambda kv: kv[1])
+    if n / total > 0.6:
+        rep.err("site", "全书 {}/{} 道自测的正确答案都排在第 {} 位（{:.0%}），"
+                        "读者靠位置就能猜对".format(n, total, worst + 1, n / total))
+
+
+def check_quiz(no, html, rep, pos_counts=None):
     where = "ch{:02d}".format(no)
     qs = re.findall(r'<article class="q" data-answer="(\d+)">(.*?)</article>', html, re.S)
     if not 2 <= len(qs) <= 3:
@@ -175,6 +192,8 @@ def check_quiz(no, html, rep):
             rep.err(where, "自测题缺少答案解释（无 JS / 打印时读者就看不到答案了）")
         if ans != no:
             off += 1
+        if pos_counts is not None and ans in opts:
+            pos_counts[opts.index(ans)] = pos_counts.get(opts.index(ans), 0) + 1
     if qs and off != 1:
         rep.err(where, "§5 应恰好混入 1 道非本章分流题，实际 {} 道".format(off))
 
@@ -410,11 +429,12 @@ def run(site):
     pages = {no: read(path) for no, path in chs}
     pit_counts = {no: len(re.findall(r'<li><span class="pt">', h))
                   for no, h in pages.items()}
+    pos_counts = {}
     for no, path in chs:
         html = pages[no]
         check_structure(no, html, rep)
         check_pitfall_refs(no, html, rep, pit_counts)
-        check_quiz(no, html, rep)
+        check_quiz(no, html, rep, pos_counts)
         check_links(no, html, rep, seen_curated)
         check_quiz_sources(no, html, rep)
         check_star_brevity(no, html, rep)
@@ -426,6 +446,10 @@ def run(site):
                 re.search(r'<div class="routing">.*?<p>(.*?)</p>', html, re.S).group(1))
         except (AttributeError, IndexError):
             rep.err("ch{:02d}".format(no), "§2 识别信号表或分流条件无法解析")
+
+    check_answer_positions(pos_counts, sum(pos_counts.values()), rep)
+    rep.notes.append("自测答案位置分布: {}（共 {} 题）".format(
+        {k + 1: v for k, v in sorted(pos_counts.items())}, sum(pos_counts.values())))
 
     for num, nos in sorted(seen_curated.items(), key=lambda kv: int(kv[0])):
         if len(nos) > 1:

@@ -141,12 +141,12 @@
 <div class="quiz">
 <article class="q" data-answer="17">
   <p class="qprompt"><span class="qtype">30 秒识别</span>Q1 · <a href="https://leetcode.com/problems/minimum-path-sum/" target="_blank" rel="noopener">64 Minimum Path Sum</a>：在一个数字网格里从左上走到右下，每次只能向右或向下，求路径数字和的最小值。你的第一反应是哪个模式？</p>
-  <div class="opts"><button class="opt" type="button" data-ch="17">17 二维 DP 与背包</button><button class="opt" type="button" data-ch="16">16 一维 DP</button><button class="opt" type="button" data-ch="10">10 图的 BFS/DFS</button></div>
+  <div class="opts"><button class="opt" type="button" data-ch="16">16 一维 DP</button><button class="opt" type="button" data-ch="10">10 图的 BFS/DFS</button><button class="opt" type="button" data-ch="17">17 二维 DP 与背包</button></div>
   <details><summary>看答案</summary><div class="answer"><p>二维 DP（模板 A）。<code>dp[i][j] = grid[i][j] + min(上, 左)</code>，和 62 是同一张表换了转移。看到「网格 + 只能右/下」就是二维 DP，不是图搜索——方向受限意味着没有环，不需要 <code>visited</code>。</p></div></details>
 </article>
 <article class="q" data-answer="17">
   <p class="qprompt"><span class="qtype">30 秒识别</span>Q2 · <a href="https://leetcode.com/problems/last-stone-weight-ii/" target="_blank" rel="noopener">1049 Last Stone Weight II</a>：一堆石头两两相撞，剩下差值继续撞，求最后可能剩下的最小重量。你的第一反应是哪个模式？</p>
-  <div class="opts"><button class="opt" type="button" data-ch="17">17 二维 DP 与背包</button><button class="opt" type="button" data-ch="8">08 堆 / Top-K</button><button class="opt" type="button" data-ch="15">15 贪心</button></div>
+  <div class="opts"><button class="opt" type="button" data-ch="15">15 贪心</button><button class="opt" type="button" data-ch="17">17 二维 DP 与背包</button><button class="opt" type="button" data-ch="8">08 堆 / Top-K</button></div>
   <details><summary>看答案</summary><div class="answer"><p>01 背包（模板 B）。把石头分成两堆、让两堆重量尽量接近 —— 即在 <code>sum/2</code> 容量内能凑出的最大重量，答案是 <code>sum - 2 * best</code>。对比 1046（每次取最重的两块）才是堆：那道题按固定规则模拟，这道题要你自己分组。</p></div></details>
 </article>
 <article class="q" data-answer="16">

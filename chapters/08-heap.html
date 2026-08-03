@@ -146,7 +146,7 @@ class MedianFinder:
 <div class="quiz">
 <article class="q" data-answer="8">
   <p class="qprompt"><span class="qtype">30 秒识别</span>Q1 · <a href="https://leetcode.com/problems/last-stone-weight/" target="_blank" rel="noopener">1046 Last Stone Weight</a>：每次取出最重的两块石头相撞，剩下的差值放回去，求最后剩下的重量。你的第一反应是哪个模式？</p>
-  <div class="opts"><button class="opt" type="button" data-ch="8">08 堆 / Top-K</button><button class="opt" type="button" data-ch="15">15 贪心</button><button class="opt" type="button" data-ch="4">04 栈与单调栈</button></div>
+  <div class="opts"><button class="opt" type="button" data-ch="15">15 贪心</button><button class="opt" type="button" data-ch="4">04 栈与单调栈</button><button class="opt" type="button" data-ch="8">08 堆 / Top-K</button></div>
   <details><summary>看答案</summary><div class="answer"><p>堆。「每次取当前最大、处理完再放回去」是堆的标准句式。Python 里全部取负入小顶堆即可。排序做不到——每撞一次集合就变了。</p></div></details>
 </article>
 <article class="q" data-answer="8">
@@ -156,8 +156,8 @@ class MedianFinder:
 </article>
 <article class="q" data-answer="5">
   <p class="qprompt"><span class="qtype">30 秒识别</span>Q3 · <a href="https://leetcode.com/problems/find-k-closest-elements/" target="_blank" rel="noopener">658 Find K Closest Elements</a>：给一个<b>已排序</b>数组和目标值 x，找出最接近 x 的 k 个数。你的第一反应是哪个模式？</p>
-  <div class="opts"><button class="opt" type="button" data-ch="8">08 堆 / Top-K</button><button class="opt" type="button" data-ch="5">05 二分查找</button><button class="opt" type="button" data-ch="2">02 双指针</button></div>
-  <details><summary>看答案</summary><div class="answer"><p><b>二分 / 双指针，不是本章</b>——看到「k 个最接近」手就想去掏堆，但数组已排序，答案一定是一个<b>连续区间</b>，二分找左边界即可，O(log n)。堆能过，却白白浪费了「有序」这个最值钱的条件。见 §2 分流条件。</p></div></details>
+  <div class="opts"><button class="opt" type="button" data-ch="2">02 双指针</button><button class="opt" type="button" data-ch="8">08 堆 / Top-K</button><button class="opt" type="button" data-ch="5">05 二分查找</button></div>
+  <details><summary>看答案</summary><div class="answer"><p><b>二分 / 双指针，不是本章</b>——看到「k 个最接近」手就想去掏堆，但数组已排序，答案必然是一段<b>连续区间</b>，二分找左边界即可，O(log n)。堆要先把 n 个元素全扫一遍（O(n log k)），等于把题目给的「有序」这个最强条件原样扔掉。见 §2 分流条件。</p></div></details>
 </article>
 <p class="quiz-note">每章自测都会<b>混入恰好一道非本章题</b>，防止「读哪章选哪章」的条件反射；题面也一律取自本章未收录的题，避免凭记忆而非凭信号作答。</p>
 </div>

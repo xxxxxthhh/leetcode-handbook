@@ -283,6 +283,12 @@
       "slug": "course-schedule-ii",
       "title": "Course Schedule II"
     },
+    "2115": {
+      "difficulty": "Medium",
+      "paid_only": false,
+      "slug": "find-all-possible-recipes-from-given-supplies",
+      "title": "Find All Possible Recipes from Given Supplies"
+    },
     "213": {
       "difficulty": "Medium",
       "paid_only": false,
@@ -426,12 +432,6 @@
       "paid_only": false,
       "slug": "best-time-to-buy-and-sell-stock-with-cooldown",
       "title": "Best Time to Buy and Sell Stock with Cooldown"
-    },
-    "310": {
-      "difficulty": "Medium",
-      "paid_only": false,
-      "slug": "minimum-height-trees",
-      "title": "Minimum Height Trees"
     },
     "322": {
       "difficulty": "Medium",

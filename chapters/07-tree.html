@@ -173,12 +173,12 @@ def level_order(root):
 </article>
 <article class="q" data-answer="7">
   <p class="qprompt"><span class="qtype">30 秒识别</span>Q2 · <a href="https://leetcode.com/problems/binary-tree-right-side-view/" target="_blank" rel="noopener">199 Binary Tree Right Side View</a>：从右侧看一棵二叉树，返回从上到下能看到的节点值。你的第一反应是哪个模式？</p>
-  <div class="opts"><button class="opt" type="button" data-ch="7">07 树的遍历与递归</button><button class="opt" type="button" data-ch="10">10 图的 BFS/DFS</button><button class="opt" type="button" data-ch="9">09 回溯</button></div>
+  <div class="opts"><button class="opt" type="button" data-ch="9">09 回溯</button><button class="opt" type="button" data-ch="10">10 图的 BFS/DFS</button><button class="opt" type="button" data-ch="7">07 树的遍历与递归</button></div>
   <details><summary>看答案</summary><div class="answer"><p>层序 BFS（模板 B）。每层只取最后一个，<code>size = len(q)</code> 那行的直接应用。「右视图 / 每层最大值 / 层平均数」全是同一道题换皮。</p></div></details>
 </article>
 <article class="q" data-answer="10">
   <p class="qprompt"><span class="qtype">30 秒识别</span>Q3 · <a href="https://leetcode.com/problems/number-of-islands/" target="_blank" rel="noopener">200 Number of Islands</a>：给一个由 '1'（陆地）和 '0'（水）组成的网格，数出岛屿的个数。你的第一反应是哪个模式？</p>
-  <div class="opts"><button class="opt" type="button" data-ch="7">07 树的遍历与递归</button><button class="opt" type="button" data-ch="10">10 图的 BFS/DFS</button><button class="opt" type="button" data-ch="9">09 回溯</button></div>
+  <div class="opts"><button class="opt" type="button" data-ch="9">09 回溯</button><button class="opt" type="button" data-ch="10">10 图的 BFS/DFS</button><button class="opt" type="button" data-ch="7">07 树的遍历与递归</button></div>
   <details><summary>看答案</summary><div class="answer"><p><b>图的 BFS/DFS，不是本章</b>——网格是图不是树，会绕回来，所以必须有 <code>visited</code>（或就地改成 '0'）。树的递归之所以不用判重，是因为树天然无环。见第 10 章。</p></div></details>
 </article>
 <p class="quiz-note">每章自测都会<b>混入恰好一道非本章题</b>，防止「读哪章选哪章」的条件反射；题面也一律取自本章未收录的题，避免凭记忆而非凭信号作答。</p>

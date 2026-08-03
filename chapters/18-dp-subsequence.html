@@ -123,17 +123,17 @@ def length_of_lis_fast(nums):
 <div class="quiz">
 <article class="q" data-answer="18">
   <p class="qprompt"><span class="qtype">30 秒识别</span>Q1 · <a href="https://leetcode.com/problems/largest-divisible-subset/" target="_blank" rel="noopener">368 Largest Divisible Subset</a>：从一组互不相同的正整数里，选出最大的子集，使其中任意两个数都能互相整除。你的第一反应是哪个模式？</p>
-  <div class="opts"><button class="opt" type="button" data-ch="18">18 子序列 DP</button><button class="opt" type="button" data-ch="9">09 回溯</button><button class="opt" type="button" data-ch="17">17 二维 DP 与背包</button></div>
+  <div class="opts"><button class="opt" type="button" data-ch="9">09 回溯</button><button class="opt" type="button" data-ch="17">17 二维 DP 与背包</button><button class="opt" type="button" data-ch="18">18 子序列 DP</button></div>
   <details><summary>看答案</summary><div class="answer"><p>LIS 变体（模板 A）。先排序，把「能否接在 j 后面」的条件从 <code>nums[j] &lt; nums[i]</code> 换成 <code>nums[i] % nums[j] == 0</code>，骨架一行没动。要返回子集本身，所以还得记前驱下标。</p></div></details>
 </article>
 <article class="q" data-answer="18">
   <p class="qprompt"><span class="qtype">30 秒识别</span>Q2 · <a href="https://leetcode.com/problems/longest-string-chain/" target="_blank" rel="noopener">1048 Longest String Chain</a>：若在字符串 A 中插入一个字母能得到 B，则 A 是 B 的前身。求最长的词链长度。你的第一反应是哪个模式？</p>
-  <div class="opts"><button class="opt" type="button" data-ch="18">18 子序列 DP</button><button class="opt" type="button" data-ch="17">17 二维 DP 与背包</button><button class="opt" type="button" data-ch="1">01 哈希</button></div>
+  <div class="opts"><button class="opt" type="button" data-ch="17">17 二维 DP 与背包</button><button class="opt" type="button" data-ch="18">18 子序列 DP</button><button class="opt" type="button" data-ch="1">01 哈希</button></div>
   <details><summary>看答案</summary><div class="answer"><p>LIS 变体。按<b>长度</b>排序后，「能否接上」变成「删掉一个字母是否相等」。用哈希表按「前身」直接转移比两层循环更快，但状态定义还是「以某个词结尾的最长链」。</p></div></details>
 </article>
 <article class="q" data-answer="15">
   <p class="qprompt"><span class="qtype">30 秒识别</span>Q3 · <a href="https://leetcode.com/problems/maximum-subarray/" target="_blank" rel="noopener">53 Maximum Subarray</a>：求<b>连续</b>子数组的最大和。你的第一反应是哪个模式？</p>
-  <div class="opts"><button class="opt" type="button" data-ch="18">18 子序列 DP</button><button class="opt" type="button" data-ch="15">15 贪心</button><button class="opt" type="button" data-ch="3">03 滑动窗口</button></div>
+  <div class="opts"><button class="opt" type="button" data-ch="3">03 滑动窗口</button><button class="opt" type="button" data-ch="15">15 贪心</button><button class="opt" type="button" data-ch="18">18 子序列 DP</button></div>
   <details><summary>看答案</summary><div class="answer"><p><b>贪心 / Kadane，不是本章</b>——「连续」两个字直接排除了子序列 DP。LIS 要回头看所有更早的元素（O(n²)），而连续的只需要看前一个（<code>cur = max(x, cur + x)</code>，O(n)）。见 §2 分流条件与第 15 章。</p></div></details>
 </article>
 <p class="quiz-note">每章自测都会<b>混入恰好一道非本章题</b>，防止「读哪章选哪章」的条件反射；题面也一律取自本章未收录的题，避免凭记忆而非凭信号作答。</p>

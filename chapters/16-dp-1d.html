@@ -137,17 +137,17 @@
 <div class="quiz">
 <article class="q" data-answer="16">
   <p class="qprompt"><span class="qtype">30 秒识别</span>Q1 · <a href="https://leetcode.com/problems/min-cost-climbing-stairs/" target="_blank" rel="noopener">746 Min Cost Climbing Stairs</a>：每级台阶有一个花费，每次可以走 1 或 2 级，求走到楼顶的最小花费。你的第一反应是哪个模式？</p>
-  <div class="opts"><button class="opt" type="button" data-ch="16">16 一维 DP</button><button class="opt" type="button" data-ch="15">15 贪心</button><button class="opt" type="button" data-ch="9">09 回溯</button></div>
+  <div class="opts"><button class="opt" type="button" data-ch="15">15 贪心</button><button class="opt" type="button" data-ch="16">16 一维 DP</button><button class="opt" type="button" data-ch="9">09 回溯</button></div>
   <details><summary>看答案</summary><div class="answer"><p>一维 DP（模板 A）。<code>dp[i] = cost[i] + min(dp[i-1], dp[i-2])</code>，和爬楼梯是同一个骨架，只是把「方法数求和」换成「花费取 min」。</p></div></details>
 </article>
 <article class="q" data-answer="16">
   <p class="qprompt"><span class="qtype">30 秒识别</span>Q2 · <a href="https://leetcode.com/problems/coin-change-ii/" target="_blank" rel="noopener">518 Coin Change II</a>：给定面额，求凑出目标金额的<b>组合数</b>（<code>1+2</code> 和 <code>2+1</code> 算同一种）。你的第一反应是哪个模式？</p>
-  <div class="opts"><button class="opt" type="button" data-ch="16">16 一维 DP</button><button class="opt" type="button" data-ch="9">09 回溯</button><button class="opt" type="button" data-ch="15">15 贪心</button></div>
+  <div class="opts"><button class="opt" type="button" data-ch="16">16 一维 DP</button><button class="opt" type="button" data-ch="15">15 贪心</button><button class="opt" type="button" data-ch="9">09 回溯</button></div>
   <details><summary>看答案</summary><div class="answer"><p>一维 DP（模板 B 的计数版）。关键在循环顺序：<b>外层物品、内层容量</b>才是组合数；反过来会把 <code>1+2</code> 和 <code>2+1</code> 数成两种（那是 377 排列数）。同一个骨架，两层循环换个位置就是两道不同的题。</p></div></details>
 </article>
 <article class="q" data-answer="15">
   <p class="qprompt"><span class="qtype">30 秒识别</span>Q3 · <a href="https://leetcode.com/problems/jump-game/" target="_blank" rel="noopener">55 Jump Game</a>：数组里每个数表示在该位置最多能向前跳几步，判断能否从起点跳到终点。你的第一反应是哪个模式？</p>
-  <div class="opts"><button class="opt" type="button" data-ch="16">16 一维 DP</button><button class="opt" type="button" data-ch="15">15 贪心</button><button class="opt" type="button" data-ch="17">17 二维 DP 与背包</button></div>
+  <div class="opts"><button class="opt" type="button" data-ch="17">17 二维 DP 与背包</button><button class="opt" type="button" data-ch="16">16 一维 DP</button><button class="opt" type="button" data-ch="15">15 贪心</button></div>
   <details><summary>看答案</summary><div class="answer"><p><b>贪心，不是本章</b>——<code>dp[i] = 能否到达 i</code> 的写法是 O(n²) 且会超时；只维护「目前能到的最远位置」就够，O(n)。能一句话说清每步该选谁、且不需要回头改，优先贪心。见第 15 章。</p></div></details>
 </article>
 <p class="quiz-note">每章自测都会<b>混入恰好一道非本章题</b>，防止「读哪章选哪章」的条件反射；题面也一律取自本章未收录的题，避免凭记忆而非凭信号作答。</p>

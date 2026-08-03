@@ -151,17 +151,17 @@
 <div class="quiz">
 <article class="q" data-answer="9">
   <p class="qprompt"><span class="qtype">30 秒识别</span>Q1 · <a href="https://leetcode.com/problems/combinations/" target="_blank" rel="noopener">77 Combinations</a>：从 1..n 中选出所有长度为 k 的组合。你的第一反应是哪个模式？</p>
-  <div class="opts"><button class="opt" type="button" data-ch="9">09 回溯</button><button class="opt" type="button" data-ch="16">16 一维 DP</button><button class="opt" type="button" data-ch="1">01 哈希</button></div>
+  <div class="opts"><button class="opt" type="button" data-ch="16">16 一维 DP</button><button class="opt" type="button" data-ch="9">09 回溯</button><button class="opt" type="button" data-ch="1">01 哈希</button></div>
   <details><summary>看答案</summary><div class="answer"><p>回溯（模板 A）。「所有组合」= 枚举方案本身。剪枝点：当剩下的数不够凑满 k 个时直接返回，<code>range(start, n - (k - len(path)) + 2)</code>。</p></div></details>
 </article>
 <article class="q" data-answer="9">
   <p class="qprompt"><span class="qtype">30 秒识别</span>Q2 · <a href="https://leetcode.com/problems/letter-combinations-of-a-phone-number/" target="_blank" rel="noopener">17 Letter Combinations of a Phone Number</a>：给一串电话数字，返回它能表示的所有字母组合。你的第一反应是哪个模式？</p>
-  <div class="opts"><button class="opt" type="button" data-ch="9">09 回溯</button><button class="opt" type="button" data-ch="16">16 一维 DP</button><button class="opt" type="button" data-ch="2">02 双指针</button></div>
+  <div class="opts"><button class="opt" type="button" data-ch="16">16 一维 DP</button><button class="opt" type="button" data-ch="9">09 回溯</button><button class="opt" type="button" data-ch="2">02 双指针</button></div>
   <details><summary>看答案</summary><div class="answer"><p>回溯。每一位数字对应一层，本层的选择列表就是这个数字映射的几个字母。「所有组合」+ 输入长度很短（≤ 4），指数级枚举被默许。</p></div></details>
 </article>
 <article class="q" data-answer="16">
   <p class="qprompt"><span class="qtype">30 秒识别</span>Q3 · <a href="https://leetcode.com/problems/combination-sum-iv/" target="_blank" rel="noopener">377 Combination Sum IV</a>：给一个无重复正整数数组和目标值，求<b>总和为目标值的组合个数</b>（顺序不同算不同）。你的第一反应是哪个模式？</p>
-  <div class="opts"><button class="opt" type="button" data-ch="9">09 回溯</button><button class="opt" type="button" data-ch="16">16 一维 DP</button><button class="opt" type="button" data-ch="8">08 堆 / Top-K</button></div>
+  <div class="opts"><button class="opt" type="button" data-ch="9">09 回溯</button><button class="opt" type="button" data-ch="8">08 堆 / Top-K</button><button class="opt" type="button" data-ch="16">16 一维 DP</button></div>
   <details><summary>看答案</summary><div class="answer"><p><b>一维 DP，不是本章</b>——名字里带 Combination，要的却只是<b>个数</b>。回溯枚举完再数是指数级；<code>dp[t] = Σ dp[t - num]</code> 是 O(n·target)。见 §2 分流条件：要方案本身才回溯，要个数就 DP。</p></div></details>
 </article>
 <p class="quiz-note">每章自测都会<b>混入恰好一道非本章题</b>，防止「读哪章选哪章」的条件反射；题面也一律取自本章未收录的题，避免凭记忆而非凭信号作答。</p>

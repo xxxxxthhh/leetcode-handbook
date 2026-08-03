@@ -149,12 +149,12 @@
 <div class="quiz">
 <article class="q" data-answer="6">
   <p class="qprompt"><span class="qtype">30 秒识别</span>Q1 · <a href="https://leetcode.com/problems/remove-duplicates-from-sorted-list/" target="_blank" rel="noopener">83 Remove Duplicates from Sorted List</a>：删除<b>已排序</b>链表中所有重复的节点，每个值只保留一个。你的第一反应是哪个模式？</p>
-  <div class="opts"><button class="opt" type="button" data-ch="6">06 链表</button><button class="opt" type="button" data-ch="1">01 哈希</button><button class="opt" type="button" data-ch="2">02 双指针</button></div>
+  <div class="opts"><button class="opt" type="button" data-ch="1">01 哈希</button><button class="opt" type="button" data-ch="2">02 双指针</button><button class="opt" type="button" data-ch="6">06 链表</button></div>
   <details><summary>看答案</summary><div class="answer"><p>链表。改指针类，<code>cur.next = cur.next.next</code> 跳过重复即可，连哨兵都不需要（头节点一定保留）。用 <code>set</code> 去重也能过，但那是数组思维，浪费了「已排序」。</p></div></details>
 </article>
 <article class="q" data-answer="6">
   <p class="qprompt"><span class="qtype">30 秒识别</span>Q2 · <a href="https://leetcode.com/problems/find-the-duplicate-number/" target="_blank" rel="noopener">287 Find the Duplicate Number</a>：长度 n+1 的数组，元素都在 1..n 之间，找出那个重复的数（不能改数组、只能用 O(1) 空间）。你的第一反应是哪个模式？</p>
-  <div class="opts"><button class="opt" type="button" data-ch="6">06 链表</button><button class="opt" type="button" data-ch="1">01 哈希</button><button class="opt" type="button" data-ch="5">05 二分查找</button></div>
+  <div class="opts"><button class="opt" type="button" data-ch="1">01 哈希</button><button class="opt" type="button" data-ch="6">06 链表</button><button class="opt" type="button" data-ch="5">05 二分查找</button></div>
   <details><summary>看答案</summary><div class="answer"><p>链表的快慢指针。把 <code>i -&gt; nums[i]</code> 看成链表的 next，重复的数就是<b>环的入口</b>，142 原样套用。这是本章最值得认脸的一道——它长得完全不像链表题。（允许用哈希时当然是第 01 章。）</p></div></details>
 </article>
 <article class="q" data-answer="4">

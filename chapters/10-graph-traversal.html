@@ -170,7 +170,7 @@ def rotting_oranges(grid):
 <div class="quiz">
 <article class="q" data-answer="10">
   <p class="qprompt"><span class="qtype">30 秒识别</span>Q1 · <a href="https://leetcode.com/problems/flood-fill/" target="_blank" rel="noopener">733 Flood Fill</a>：从某个像素出发，把所有与它四连通且同色的像素改成新颜色。你的第一反应是哪个模式？</p>
-  <div class="opts"><button class="opt" type="button" data-ch="10">10 图的 BFS/DFS</button><button class="opt" type="button" data-ch="9">09 回溯</button><button class="opt" type="button" data-ch="12">12 并查集</button></div>
+  <div class="opts"><button class="opt" type="button" data-ch="10">10 图的 BFS/DFS</button><button class="opt" type="button" data-ch="12">12 并查集</button><button class="opt" type="button" data-ch="9">09 回溯</button></div>
   <details><summary>看答案</summary><div class="answer"><p>图的 DFS/BFS（模板 A）。这就是洪水填充的原型，200 数岛屿是它的计数版。注意新旧颜色相同时要提前返回，否则死循环。</p></div></details>
 </article>
 <article class="q" data-answer="10">
@@ -180,7 +180,7 @@ def rotting_oranges(grid):
 </article>
 <article class="q" data-answer="11">
   <p class="qprompt"><span class="qtype">30 秒识别</span>Q3 · <a href="https://leetcode.com/problems/course-schedule/" target="_blank" rel="noopener">207 Course Schedule</a>：共 n 门课，给出若干「先修 A 才能修 B」的关系，判断能否修完所有课。你的第一反应是哪个模式？</p>
-  <div class="opts"><button class="opt" type="button" data-ch="10">10 图的 BFS/DFS</button><button class="opt" type="button" data-ch="11">11 拓扑排序</button><button class="opt" type="button" data-ch="12">12 并查集</button></div>
+  <div class="opts"><button class="opt" type="button" data-ch="10">10 图的 BFS/DFS</button><button class="opt" type="button" data-ch="12">12 并查集</button><button class="opt" type="button" data-ch="11">11 拓扑排序</button></div>
   <details><summary>看答案</summary><div class="answer"><p><b>拓扑排序，不是本章</b>——题面里的「先修 / 依赖」是拓扑的专属暗号。它确实用 BFS 队列，但队列里放的是<b>入度为 0</b> 的点，不是「所有邻居」；要判的是有没有环，不是能不能走到。见第 11 章。</p></div></details>
 </article>
 <p class="quiz-note">每章自测都会<b>混入恰好一道非本章题</b>，防止「读哪章选哪章」的条件反射；题面也一律取自本章未收录的题，避免凭记忆而非凭信号作答。</p>
