@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>04 栈与单调栈 · 算法面试阈值手册</title>
+<meta name="description" content="每个元素都在找「左/右第一个比我大的人」">
+<link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"></noscript>
+<link rel="stylesheet" href="../assets/handbook.css">
+<script src="../assets/theme.js"></script>
+</head>
+<body>
+<button class="theme-toggle" type="button" aria-label="切换深色/浅色模式" title="切换深色/浅色模式">
+  <span class="sun" aria-hidden="true">☀️</span><span class="moon" aria-hidden="true">🌙</span>
+</button>
+<div class="wrap">
+<nav class="crumb"><a href="../index.html">← 目录</a> · <a href="../cheatsheet.html">决策树速查</a></nav>
+
+<header class="ch">
+  <div class="bars" aria-hidden="true"><span class="h1"></span><span class="h2"></span><span class="h4"></span><span class="h6"></span><span class="h3"></span><span class="h5 w"></span><span class="h2 f"></span><span class="h1 f"></span></div>
+  <div class="kicker">Pattern 04 · Stack &amp; Monotonic Stack</div>
+  <h1>04 栈与单调栈
+    <span class="zh">每个元素都在找「左/右第一个比我大的人」</span>
+  </h1>
+  <div class="meta"><span>面试频率 <b>高</b></span><span>题目 <b>8 道</b></span><span>模板 <b>2 个</b></span><span>⭐认脸 <b>2 道</b></span></div>
+</header>
+
+<section id="s1">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§1 Mental Model 一句话心智模型</span></div>
+  <h2>先记住这一句</h2>
+<div class="oneliner"><b>单调栈：每个元素都在找「左边或右边第一个比我大（或小）的人」；栈里存的，是那些还没等到答案的人。</b></div>
+<p>新元素进场时，把栈里所有「等到答案了」的人依次弹出并结账——弹出的那一刻就是它的答案揭晓的那一刻。每个元素最多进出栈一次，所以整体 O(n)，这就是它把 O(n²) 暴力扫描打下来的全部秘密。</p>
+<p>普通栈是它的退化形态：不比大小、只配对嵌套结构（括号、路径、表达式），本章热身用它找感觉。</p>
+
+</section>
+
+<section id="s2">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§2 Recognition Signals 识别信号</span></div>
+  <h2>看到什么，想到本章</h2>
+<div class="tbl-scroll"><table class="sig-tbl"><thead><tr><th>题面出现…</th><th>想到</th></tr></thead><tbody><tr><td>「下一个更大 / 更小元素」</td><td>单调栈（模板 A）</td></tr><tr><td>「第一个比它高 / 低 / 便宜的…」</td><td>单调栈（模板 A）</td></tr><tr><td>「柱状图 / 矩形 / 最大面积」</td><td>单调栈（模板 A + 哨兵）</td></tr><tr><td>「滑动窗口的最大 / 最小值」</td><td>单调队列（模板 B）</td></tr><tr><td>括号匹配、嵌套、「撤销上一步」</td><td>普通栈</td></tr><tr><td>你写出的暴力解，内层循环在「向左/右扫，找第一个满足条件就停」</td><td>单调栈优化信号</td></tr></tbody></table></div>
+<div class="routing"><div class="rt-head">分流条件 · 决策树同源</div><p>「连续子数组 + 最值」且窗口大小固定 → 单调队列；窗口不固定、条件是「和 / 种类数」 → 滑动窗口（第 03 章）；「子数组和恰好为 K」 → 前缀和 + 哈希（第 13 章）。</p></div>
+
+</section>
+
+<section id="s3">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§3 Template 模板代码</span></div>
+  <h2>可默写的那几行</h2>
+<p class="legend"><i class="bone">■ 【骨架】</i> 不变，闭着眼默写　<i class="slot">■ 【插槽】</i> 随题变化，写题前先问自己填什么</p>
+<div class="tpl">
+  <div class="tpl-head">模板 A · 下一个更大元素<span class="note">覆盖本章 80% 的题</span></div>
+  <pre><code>def next_greater(nums):
+    n = len(nums)
+    ans = [-1] * n                          <span class="cm slot"># 【插槽】默认值:没等到答案的人得什么</span>
+    stack = []                              <span class="cm bone"># 【骨架】存下标;栈内对应值单调递减</span>
+    for i, x in enumerate(nums):            <span class="cm bone"># 【骨架】</span>
+        while stack and nums[stack[-1]] &lt; x:  <span class="cm slot"># 【插槽】比较方向:&lt; 找更大,&gt; 找更小;带不带 = 见翻车点②</span>
+            j = stack.pop()                 <span class="cm bone"># 【骨架】j 此刻等到了答案</span>
+            ans[j] = x                      <span class="cm slot"># 【插槽】答案形式:值 x / 距离 i-j / 下标 i</span>
+        stack.append(i)                     <span class="cm bone"># 【骨架】</span>
+    return ans</code></pre>
+  <div class="tpl-foot">默写口诀：<b>存下标、递减栈、弹出即结账</b>。</div>
+</div>
+<div class="tpl">
+  <div class="tpl-head">模板 B · 单调队列<span class="note">仅 239 一题需要，认脸级</span></div>
+  <pre><code>from collections import deque
+
+def max_sliding_window(nums, k):
+    q, ans = deque(), []                    <span class="cm bone"># 【骨架】q 存下标,对应值单调递减,队首=窗口最大</span>
+    for i, x in enumerate(nums):
+        while q and nums[q[-1]] &lt;= x:       <span class="cm bone"># 【骨架】新人把比自己弱的全部挤出去</span>
+            q.pop()
+        q.append(i)
+        if q[0] &lt;= i - k:                   <span class="cm slot"># 【插槽】过期条件:窗口左界怎么算</span>
+            q.popleft()
+        if i &gt;= k - 1:                      <span class="cm slot"># 【插槽】何时开始产出答案</span>
+            ans.append(nums[q[0]])
+    return ans</code></pre>
+  <div class="tpl-foot">与模板 A 的唯一区别：窗口会从左边过期，所以要用双端队列在队首淘汰出窗的人。</div>
+</div>
+
+</section>
+
+<section id="s4">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§4 Problems 题目分层</span></div>
+  <h2>从建直觉到扭模板</h2>
+<div class="tier">
+  <div class="tier-head"><span class="t">热身</span><span class="d">建直觉，easy 为主</span><span class="c">2 道</span></div>
+  <ul class="plist">
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/valid-parentheses/" target="_blank" rel="noopener">20 Valid Parentheses</a><span class="badge diff">Easy</span></div>
+    <div class="p-note">纯配对：左括号进栈，右括号找栈顶结账。体会「栈顶 = 最近一个未完成的事」。</div>
+  </li>
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/min-stack/" target="_blank" rel="noopener">155 Min Stack</a><span class="badge diff">Medium</span></div>
+    <div class="p-note">辅助栈同步记录「当前最小」。插槽思维预演：栈里存什么由问题决定。</div>
+  </li>
+  </ul>
+</div>
+<div class="tier">
+  <div class="tier-head"><span class="t">标准</span><span class="d">模板直接套</span><span class="c">3 道</span></div>
+  <ul class="plist">
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/daily-temperatures/" target="_blank" rel="noopener">739 Daily Temperatures</a><span class="badge diff">Medium</span></div>
+    <div class="p-note">模板 A 原题。唯一插槽改动：<code>ans[j] = i - j</code>（答案要距离，这就是为什么骨架存下标）。</div>
+  </li>
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/next-greater-element-i/" target="_blank" rel="noopener">496 Next Greater Element I</a><span class="badge diff">Easy</span></div>
+    <div class="p-note">模板 A + 哈希把答案映射回子数组。</div>
+  </li>
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/next-greater-element-ii/" target="_blank" rel="noopener">503 Next Greater Element II</a><span class="badge diff">Medium</span></div>
+    <div class="p-note">循环数组变形：遍历 <code>2n</code> 次、下标取 <code>i % n</code>，其余不变。</div>
+  </li>
+  </ul>
+</div>
+<div class="tier">
+  <div class="tier-head"><span class="t">变体</span><span class="d">模板要扭，坑的来源</span><span class="c">3 道</span></div>
+  <ul class="plist">
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/car-fleet/" target="_blank" rel="noopener">853 Car Fleet</a><span class="badge diff">Medium</span></div>
+    <div class="p-note">先按位置排序算到达时间，再用栈合并车队。识别难度大于实现难度：它的「第一个追上我的人」结构藏在排序之后。</div>
+  </li>
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/largest-rectangle-in-histogram/" target="_blank" rel="noopener">84 Largest Rectangle in Histogram</a><span class="badge star" title="hard，认脸即可">⭐ 认脸</span><span class="badge diff">Hard</span></div>
+    <div class="p-note">模板 A 换方向（递增栈、找两侧第一个更矮的），末尾补哨兵 0 强制清算。见翻车点⑤，本章唯一必须掌握的 hard。</div>
+  </li>
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/sliding-window-maximum/" target="_blank" rel="noopener">239 Sliding Window Maximum</a><span class="badge star" title="hard，认脸即可">⭐ 认脸</span><span class="badge diff">Hard</span></div>
+    <div class="p-note">模板 B 原题，认脸即可。</div>
+  </li>
+  </ul>
+</div>
+
+</section>
+
+<section id="s5">
+  <div class="sec-tag"><span class="cell" style="background:var(--warn)"></span><span class="lab">§5 Pitfalls &amp; Self-check 常见翻车点 + 自测</span></div>
+  <h2>会写不等于不翻车</h2>
+<ol class="pits">
+<li><span class="pt">存值还是存下标</span>——默认存下标。答案涉及距离或位置（739）时值救不了你；存下标永远能取回值，反之不行。</li>
+<li><span class="pt">严格与非严格（<code>&lt;</code> vs <code>&lt;=</code>）</span>——有重复元素时决定相等的人算不算「答案」。84 题里用 <code>&gt;=</code> 弹出可以简化等高柱的处理；写题前先问一句「两个相等的元素，谁给谁结账」。</li>
+<li><span class="pt">方向记反</span>——找「更大」用递减栈，找「更小」用递增栈。记法：栈里留着的都是「还没等到更大的人」，所以他们自然从底到顶递减。</li>
+<li><span class="pt">循环数组忘了取模</span>——503 走两遍时下标必须 <code>i % n</code>，第二遍只结账、不再入栈也可以（微优化，非必须）。</li>
+<li><span class="pt">清算时机</span>——遍历结束后栈里剩下的人是「永远没等到答案的人」。要么接受默认值（739 的 0），要么补哨兵强制结账（84 的末尾 0）——忘掉这一步是 84 题 WA 的头号原因。</li>
+</ol>
+<h3>自测 · 30 秒识别模式</h3>
+<div class="quiz">
+<article class="q" data-answer="4">
+  <p class="qprompt"><span class="qtype">30 秒识别</span>Q1 · <a href="https://leetcode.com/problems/online-stock-span/" target="_blank" rel="noopener">901 Online Stock Span</a>：返回今天之前连续多少天股价 ≤ 今天。你的第一反应是哪个模式？</p>
+  <div class="opts"><button class="opt" type="button" data-ch="4">04 栈与单调栈</button><button class="opt" type="button" data-ch="3">03 滑动窗口</button><button class="opt" type="button" data-ch="8">08 堆 / Top-K</button></div>
+  <details><summary>看答案</summary><div class="answer"><p>单调栈。这是「之前第一个比我高的」的镜像问法：找到那个人，中间的天数就是答案，所以要存下标而不是值（翻车点①）。</p></div></details>
+</article>
+<article class="q" data-answer="4">
+  <p class="qprompt"><span class="qtype">30 秒识别</span>Q2 · <a href="https://leetcode.com/problems/remove-k-digits/" target="_blank" rel="noopener">402 Remove K Digits</a>：删掉 k 个数字使剩下的数最小。你的第一反应是哪个模式？</p>
+  <div class="opts"><button class="opt" type="button" data-ch="4">04 栈与单调栈</button><button class="opt" type="button" data-ch="15">15 贪心</button><button class="opt" type="button" data-ch="9">09 回溯</button></div>
+  <details><summary>看答案</summary><div class="answer"><p>单调栈。维持栈内递增，遇到更小的就把前面大的弹掉——「删掉一个大的」正是弹栈动作；贪心的直觉对，但落地结构是栈。</p></div></details>
+</article>
+<article class="q" data-answer="13">
+  <p class="qprompt"><span class="qtype">30 秒识别</span>Q3 · 给定数组和整数 k，求「和恰好等于 k 的连续子数组」个数。你的第一反应是哪个模式？</p>
+  <div class="opts"><button class="opt" type="button" data-ch="4">04 栈与单调栈</button><button class="opt" type="button" data-ch="3">03 滑动窗口</button><button class="opt" type="button" data-ch="13">13 前缀和</button></div>
+  <details><summary>看答案</summary><div class="answer"><p><b>前缀和 + 哈希，不是本章</b>——「恰好为 K」是分流关键词，见 §2 分流条件。单调栈处理的是「比较大小」，不是「求和」。</p></div></details>
+</article>
+<p class="quiz-note">每章自测都会<b>混入恰好一道非本章题</b>，防止「读哪章选哪章」的条件反射；题面也一律取自本章未收录的题，避免凭记忆而非凭信号作答。</p>
+</div>
+</section>
+
+<nav class="next">
+  <a href="00-intro.html">← 导读</a>
+  <a href="../cheatsheet.html">决策树速查 →</a>
+</nav>
+
+</div>
+<script src="../assets/quiz.js" defer></script>
+</body>
+</html>

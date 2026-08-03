@@ -1,0 +1,73 @@
+{
+  "fetched_at": "2026-08-04",
+  "problems": {
+    "155": {
+      "difficulty": "Medium",
+      "paid_only": false,
+      "slug": "min-stack",
+      "title": "Min Stack"
+    },
+    "20": {
+      "difficulty": "Easy",
+      "paid_only": false,
+      "slug": "valid-parentheses",
+      "title": "Valid Parentheses"
+    },
+    "239": {
+      "difficulty": "Hard",
+      "paid_only": false,
+      "slug": "sliding-window-maximum",
+      "title": "Sliding Window Maximum"
+    },
+    "402": {
+      "difficulty": "Medium",
+      "paid_only": false,
+      "slug": "remove-k-digits",
+      "title": "Remove K Digits"
+    },
+    "496": {
+      "difficulty": "Easy",
+      "paid_only": false,
+      "slug": "next-greater-element-i",
+      "title": "Next Greater Element I"
+    },
+    "503": {
+      "difficulty": "Medium",
+      "paid_only": false,
+      "slug": "next-greater-element-ii",
+      "title": "Next Greater Element II"
+    },
+    "560": {
+      "difficulty": "Medium",
+      "paid_only": false,
+      "slug": "subarray-sum-equals-k",
+      "title": "Subarray Sum Equals K"
+    },
+    "739": {
+      "difficulty": "Medium",
+      "paid_only": false,
+      "slug": "daily-temperatures",
+      "title": "Daily Temperatures"
+    },
+    "84": {
+      "difficulty": "Hard",
+      "paid_only": false,
+      "slug": "largest-rectangle-in-histogram",
+      "title": "Largest Rectangle in Histogram"
+    },
+    "853": {
+      "difficulty": "Medium",
+      "paid_only": false,
+      "slug": "car-fleet",
+      "title": "Car Fleet"
+    },
+    "901": {
+      "difficulty": "Medium",
+      "paid_only": false,
+      "slug": "online-stock-span",
+      "title": "Online Stock Span"
+    }
+  },
+  "source": "https://leetcode.com/api/problems/all/",
+  "total_problems_on_leetcode": 4013
+}

@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32">
+  <!-- 全书 signature 母题：单调栈柱状图（呼应 84 / 739）。
+       蓝=必会 橙=变体/坑 灰=认脸级。
+       favicon 无法引用页面 CSS 变量，此处色值为定值，属唯一合理例外。 -->
+  <rect width="32" height="32" rx="7" fill="#12181F"/>
+  <rect x="5"  y="20" width="4" height="7"  rx="1" fill="#4A7FE0"/>
+  <rect x="11" y="15" width="4" height="12" rx="1" fill="#4A7FE0"/>
+  <rect x="17" y="9"  width="4" height="18" rx="1" fill="#D9602C"/>
+  <rect x="23" y="17" width="4" height="10" rx="1" fill="#46535F"/>
+</svg>
