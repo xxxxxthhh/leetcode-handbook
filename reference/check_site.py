@@ -458,12 +458,15 @@ def run(site):
     check_cheatsheet(site, rep, cue_map)
     check_signal_conflicts(site, sig_map, routing_map, rep)
 
-    # 全局数量一律程序化统计
-    n_prob = len(seen_curated)
-    rep.notes.append("已构建 {} / 18 章，收录题目 {} 道，⭐认脸 {} 道，🔒 premium {} 道".format(
-        len(chs), n_prob,
-        sum(1 for n in seen_curated if LC[n]["difficulty"] == "Hard" and True),
-        sum(1 for n in seen_curated if LC[n]["paid_only"])))
+    # 全局数量一律程序化统计，且各数一律数它自己：⭐ 数徽章，🔒 数 paid_only，
+    # Hard 数官方难度——三者不相等（72 挂了⭐但官方是 Medium，见 STAR_EXCEPTIONS）
+    n_star = sum(h.count('class="badge star"') for h in pages.values())
+    rep.notes.append(
+        "已构建 {} / 18 章，收录题目 {} 道，⭐认脸 {} 道，"
+        "其中官方 Hard {} 道，🔒 premium {} 道".format(
+            len(chs), len(seen_curated), n_star,
+            sum(1 for n in seen_curated if LC[n]["difficulty"] == "Hard"),
+            sum(1 for n in seen_curated if LC[n]["paid_only"])))
     missing = sorted({p["no"] for p in PATTERNS} - {no for no, _ in chs})
     if missing:
         rep.notes.append("待撰写章节: {}".format(missing))
