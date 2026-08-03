@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>13 前缀和 · 算法面试阈值手册</title>
+<meta name="description" content="一次预处理，之后区间和 O(1)；配哈希解「子数组和为 K」">
+<link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"></noscript>
+<link rel="stylesheet" href="../assets/handbook.css">
+<script src="../assets/theme.js"></script>
+</head>
+<body>
+<button class="theme-toggle" type="button" aria-label="切换深色/浅色模式" title="切换深色/浅色模式">
+  <span class="sun" aria-hidden="true">☀️</span><span class="moon" aria-hidden="true">🌙</span>
+</button>
+<div class="wrap">
+<nav class="crumb"><a href="../index.html">← 目录</a> · <a href="../cheatsheet.html">决策树速查</a></nav>
+
+<header class="ch">
+  <div class="bars" aria-hidden="true"><span class="h1"></span><span class="h2"></span><span class="h4"></span><span class="h6"></span><span class="h3"></span><span class="h5 w"></span><span class="h2 f"></span><span class="h1 f"></span></div>
+  <div class="kicker">Pattern 13 · Prefix Sum</div>
+  <h1>13 前缀和
+    <span class="zh">一次预处理，之后区间和 O(1)；配哈希解「子数组和为 K」</span>
+  </h1>
+  <div class="meta"><span>面试频率 <b>高</b></span><span>题目 <b>4 道</b></span><span>模板 <b>2 个</b></span><span>⭐认脸 <b>0 道</b></span></div>
+</header>
+
+<section id="s1">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§1 Mental Model 一句话心智模型</span></div>
+  <h2>先记住这一句</h2>
+<div class="oneliner"><b>前缀和把「区间和」变成两个数的差：<code>sum(i..j) = pre[j+1] - pre[i]</code>。一旦区间和能 O(1) 拿到，问题就退化成「找一对下标」——那是第 01 章的活。</b></div>
+<p>这两步是本章的全部：先把「区间」降维成「一对前缀」，再用哈希表回答「我要的那个前缀值，之前出现过几次 / 最早在哪」。「子数组和恰好为 K」于是变成：对每个右端点，问 <code>cur - k</code> 见过几次。</p>
+<p>累积量不必是和。<b>取模</b>后能处理「能被 K 整除」，<b>异或</b>前缀能处理「异或为 0 的子数组」，<b>前后缀乘积</b>能处理 238。骨架不动，换的只是「累积什么」和「找哪个历史值」。</p>
+
+</section>
+
+<section id="s2">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§2 Recognition Signals 识别信号</span></div>
+  <h2>看到什么，想到本章</h2>
+<div class="tbl-scroll"><table class="sig-tbl"><thead><tr><th>题面出现…</th><th>想到</th></tr></thead><tbody><tr><td>「区间和 / 范围求和」且要<b>多次查询</b></td><td>预处理前缀和数组（模板 A）</td></tr><tr><td>「和<b>恰好</b>为 K 的子数组个数 / 最长长度」</td><td>前缀和 + 哈希（模板 B）</td></tr><tr><td>「除自身以外数组的乘积」且不许用除法</td><td>前缀积 × 后缀积</td></tr><tr><td>「能被 K 整除的子数组」</td><td>前缀和<b>取模</b>，同余即可整除</td></tr><tr><td>「0 和 1 数量相同的最长子数组」</td><td>把 0 记成 −1，转成「和为 0」</td></tr><tr><td>二维矩阵的「子矩形和」</td><td>二维前缀和，容斥四项</td></tr></tbody></table></div>
+<div class="routing"><div class="rt-head">分流条件 · 决策树同源</div><p>都带「连续子数组」四个字，分流看的是<b>问什么</b>：「和<b>恰好</b>为 K」→ 本章（窗口和不单调，滑窗的收缩条件根本写不出来）；「和 ≥ target 的<b>最短</b>」且元素<b>全为正</b> → 滑动窗口（第 03 章）；「窗口固定大小求最值」→ 单调队列（第 04 章）。本章的哈希只是配件，主语始终是前缀和——这一点决定了你该往哪本模板里翻。</p></div>
+
+</section>
+
+<section id="s3">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§3 Template 模板代码</span></div>
+  <h2>可默写的那几行</h2>
+<p class="legend"><i class="bone">■ 【骨架】</i> 不变，闭着眼默写　<i class="slot">■ 【插槽】</i> 随题变化，写题前先问自己填什么</p>
+<div class="tpl">
+  <div class="tpl-head">模板 A · 前缀和数组<span class="note">多次区间查询</span></div>
+  <pre><code>def build_prefix(nums):
+    pre = [0] * (len(nums) + 1)             <span class="cm bone"># 【骨架】长度 n+1,pre[0]=0 是哨兵</span>
+    for i, x in enumerate(nums):            <span class="cm bone"># 【骨架】</span>
+        pre[i + 1] = pre[i] + x             <span class="cm slot"># 【插槽】累积什么:和 / 乘积 / 异或 / 计数</span>
+    return pre
+
+def range_sum(pre, i, j):                   <span class="cm bone"># 【骨架】闭区间 [i, j]</span>
+    return pre[j + 1] - pre[i]              <span class="cm bone"># 【骨架】区间 = 两个前缀之差</span></code></pre>
+  <div class="tpl-foot">默写口诀：<b>长度 n+1、pre[0]=0、区间取两端之差</b>。哨兵位省掉了所有 <code>i == 0</code> 的特判。</div>
+</div>
+<div class="tpl">
+  <div class="tpl-head">模板 B · 前缀和 + 哈希<span class="note">「恰好为 K」类</span></div>
+  <pre><code>from collections import defaultdict
+
+def subarray_sum_k(nums, k):
+    cnt = defaultdict(int)
+    cnt[0] = 1                              <span class="cm bone"># 【骨架】空前缀出现过一次;漏了它就漏掉"从头开始"的子数组</span>
+    cur = ans = 0
+    for x in nums:                          <span class="cm bone"># 【骨架】</span>
+        cur += x                            <span class="cm slot"># 【插槽】累积量:和 / 前缀和取模 / 奇偶数差</span>
+        ans += cnt[cur - k]                 <span class="cm slot"># 【插槽】要找的历史值,以及答案怎么攒:计数 / 最长 / 存在性</span>
+        cnt[cur] += 1                       <span class="cm bone"># 【骨架】先结算再登记,否则会用自己配自己</span>
+    return ans</code></pre>
+  <div class="tpl-foot">两条铁律：<b><code>cnt[0] = 1</code> 必须有</b>（代表空前缀），<b>先结算再登记</b>（否则会拿自己配自己，和第 01 章模板 A 是同一条纪律）。</div>
+</div>
+
+</section>
+
+<section id="s4">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§4 Problems 题目分层</span></div>
+  <h2>从建直觉到扭模板</h2>
+<div class="tier">
+  <div class="tier-head"><span class="t">热身</span><span class="d">建直觉，easy 为主</span><span class="c">1 道</span></div>
+  <ul class="plist">
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/range-sum-query-immutable/" target="_blank" rel="noopener">303 Range Sum Query - Immutable</a><span class="badge diff">Easy</span></div>
+    <div class="p-note">模板 A 原题。它存在的意义就是让你记住「预处理一次，之后每次查询 O(1)」这个交易——以及 <code>n + 1</code> 长度的哨兵位。</div>
+  </li>
+  </ul>
+</div>
+<div class="tier">
+  <div class="tier-head"><span class="t">标准</span><span class="d">模板直接套</span><span class="c">2 道</span></div>
+  <ul class="plist">
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/product-of-array-except-self/" target="_blank" rel="noopener">238 Product of Array Except Self</a><span class="badge diff">Medium</span></div>
+    <div class="p-note">前缀积 + 后缀积。第二遍用一个滚动变量 <code>right</code> 就能做到 O(1) 额外空间（输出数组不算）。被追问「有 0 怎么办」时，正是不用除法的理由。</div>
+  </li>
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/subarray-sum-equals-k/" target="_blank" rel="noopener">560 Subarray Sum Equals K</a><span class="badge diff">Medium</span></div>
+    <div class="p-note">模板 B 原题，本章最该背下来的一道。面试高频追问：「全是正数能不能用滑窗」——能，但有负数就只能靠它。</div>
+  </li>
+  </ul>
+</div>
+<div class="tier">
+  <div class="tier-head"><span class="t">变体</span><span class="d">模板要扭，坑的来源</span><span class="c">1 道</span></div>
+  <ul class="plist">
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/continuous-subarray-sum/" target="_blank" rel="noopener">523 Continuous Subarray Sum</a><span class="badge diff">Medium</span></div>
+    <div class="p-note">累积量换成 <code>前缀和 % k</code>，哈希里存<b>最早下标</b>而不是次数。两个坑：长度至少为 2，以及 <code>first = {0: -1}</code> 这个初始值。</div>
+  </li>
+  </ul>
+</div>
+
+</section>
+
+<section id="s5">
+  <div class="sec-tag"><span class="cell" style="background:var(--warn)"></span><span class="lab">§5 Pitfalls &amp; Self-check 常见翻车点 + 自测</span></div>
+  <h2>会写不等于不翻车</h2>
+<ol class="pits">
+<li><span class="pt">忘了 <code>cnt[0] = 1</code></span>——少了它，「从下标 0 开始的那些子数组」全部数不到。<code>subarray_sum_k([3], 3)</code> 会返回 0——模板测试里专门留了这条断言。</li>
+<li><span class="pt">先登记再结算</span>——<code>cnt[cur] += 1</code> 必须在 <code>ans += cnt[cur - k]</code> 之后。顺序反了，<code>k == 0</code> 时每个位置都会多算一次。</li>
+<li><span class="pt">下标偏移写错</span>——<code>pre</code> 长度是 <code>n + 1</code>，闭区间 <code>[i, j]</code> 的和是 <code>pre[j+1] - pre[i]</code>。把 <code>pre</code> 写成长度 <code>n</code>（<code>pre[i]</code> 表示前 i+1 项）也能做，但每道题都要重新推边界，得不偿失。</li>
+<li><span class="pt">对负数用滑窗</span>——「和为 K 的子数组」在有负数时<b>不能</b>滑窗：扩大窗口不再让和单调变大，收缩条件无从写起。这正是本章存在的理由。</li>
+<li><span class="pt">523 只判同余不判长度</span>——题目要求子数组长度至少为 2，所以哈希里要存<b>最早</b>下标并检查 <code>i - first[cur] &gt;= 2</code>。存最新下标会把长度 1 的情况误判成 True。</li>
+</ol>
+<h3>自测 · 30 秒识别模式</h3>
+<div class="quiz">
+<article class="q" data-answer="13">
+  <p class="qprompt"><span class="qtype">30 秒识别</span>Q1 · <a href="https://leetcode.com/problems/find-pivot-index/" target="_blank" rel="noopener">724 Find Pivot Index</a>：找出数组中的「中心下标」：它左边所有数之和等于右边所有数之和。你的第一反应是哪个模式？</p>
+  <div class="opts"><button class="opt" type="button" data-ch="13">13 前缀和</button><button class="opt" type="button" data-ch="3">03 滑动窗口</button><button class="opt" type="button" data-ch="2">02 双指针</button></div>
+  <details><summary>看答案</summary><div class="answer"><p>前缀和。<code>left == total - left - nums[i]</code> 一次遍历即可。看到「左边的和 / 右边的和」就是前缀和的字面形态，连哈希都不需要。</p></div></details>
+</article>
+<article class="q" data-answer="13">
+  <p class="qprompt"><span class="qtype">30 秒识别</span>Q2 · <a href="https://leetcode.com/problems/subarray-sums-divisible-by-k/" target="_blank" rel="noopener">974 Subarray Sums Divisible by K</a>：求和能被 K 整除的连续子数组个数。你的第一反应是哪个模式？</p>
+  <div class="opts"><button class="opt" type="button" data-ch="13">13 前缀和</button><button class="opt" type="button" data-ch="3">03 滑动窗口</button><button class="opt" type="button" data-ch="1">01 哈希</button></div>
+  <details><summary>看答案</summary><div class="answer"><p>前缀和 + 哈希（模板 B），累积量换成 <code>前缀和 % k</code>：两个前缀同余，它们之间那段就能被 K 整除。注意 Python 的 <code>%</code> 对负数已经返回非负结果，其他语言要自己修正。</p></div></details>
+</article>
+<article class="q" data-answer="3">
+  <p class="qprompt"><span class="qtype">30 秒识别</span>Q3 · 求长度<b>恰好为 k</b> 的连续子数组的最大平均值。你的第一反应是哪个模式？</p>
+  <div class="opts"><button class="opt" type="button" data-ch="13">13 前缀和</button><button class="opt" type="button" data-ch="3">03 滑动窗口</button><button class="opt" type="button" data-ch="4">04 栈与单调栈</button></div>
+  <details><summary>看答案</summary><div class="answer"><p><b>定长滑动窗口，不是本章</b>——窗口大小固定，进一个出一个就能 O(1) 维护和，根本不需要建前缀数组。前缀和是为<b>任意区间</b>的多次查询准备的；只查一种固定长度时它是杀鸡用牛刀。见 §2 分流条件与第 03 章模板 B。</p></div></details>
+</article>
+<p class="quiz-note">每章自测都会<b>混入恰好一道非本章题</b>，防止「读哪章选哪章」的条件反射；题面也一律取自本章未收录的题，避免凭记忆而非凭信号作答。</p>
+</div>
+</section>
+
+<nav class="next">
+  <a href="12-union-find.html">← 12 并查集</a>
+  <a href="14-intervals.html">14 区间 →</a>
+</nav>
+
+</div>
+<script src="../assets/quiz.js" defer></script>
+</body>
+</html>

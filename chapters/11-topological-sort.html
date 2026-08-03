@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>11 拓扑排序 · 算法面试阈值手册</title>
+<meta name="description" content="「依赖关系」三个字出现就是它；入度为 0 进队列">
+<link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"></noscript>
+<link rel="stylesheet" href="../assets/handbook.css">
+<script src="../assets/theme.js"></script>
+</head>
+<body>
+<button class="theme-toggle" type="button" aria-label="切换深色/浅色模式" title="切换深色/浅色模式">
+  <span class="sun" aria-hidden="true">☀️</span><span class="moon" aria-hidden="true">🌙</span>
+</button>
+<div class="wrap">
+<nav class="crumb"><a href="../index.html">← 目录</a> · <a href="../cheatsheet.html">决策树速查</a></nav>
+
+<header class="ch">
+  <div class="bars" aria-hidden="true"><span class="h1"></span><span class="h2"></span><span class="h4"></span><span class="h6"></span><span class="h3"></span><span class="h5 w"></span><span class="h2 f"></span><span class="h1 f"></span></div>
+  <div class="kicker">Pattern 11 · Topological Sort</div>
+  <h1>11 拓扑排序
+    <span class="zh">「依赖关系」三个字出现就是它；入度为 0 进队列</span>
+  </h1>
+  <div class="meta"><span>面试频率 <b>高</b></span><span>题目 <b>3 道</b></span><span>模板 <b>1 个</b></span><span>⭐认脸 <b>1 道</b></span></div>
+</header>
+
+<section id="s1">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§1 Mental Model 一句话心智模型</span></div>
+  <h2>先记住这一句</h2>
+<div class="oneliner"><b>「依赖」两个字出现就是它：把入度为 0 的点放进队列，出队一个就给它的后继减一个入度，减到 0 再入队。</b></div>
+<p>判环不需要额外逻辑：<b>能出队的点数少于总点数，剩下的就卡在环里</b>。这一条让「能不能修完所有课」和「给出一种修课顺序」变成同一段代码，只是返回值不同。</p>
+<p>全章唯一的难点其实是<b>建图方向</b>。LeetCode 给的 <code>[b, a]</code> 意思是「修 b 之前要先修 a」，所以边是 <code>a → b</code>、<code>indeg[b] += 1</code>。方向反了代码照样能跑，只是答案整个是倒的。</p>
+
+</section>
+
+<section id="s2">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§2 Recognition Signals 识别信号</span></div>
+  <h2>看到什么，想到本章</h2>
+<div class="tbl-scroll"><table class="sig-tbl"><thead><tr><th>题面出现…</th><th>想到</th></tr></thead><tbody><tr><td>「先修课 / 前置条件 / 依赖关系」</td><td>拓扑排序，入度为 0 进队列</td></tr><tr><td>「编译顺序 / 任务调度顺序 / 打包顺序」</td><td>同上，问的是一种合法线性序</td></tr><tr><td>「判断有没有循环依赖 / 能不能全部完成」</td><td>拓扑 + 计数判环</td></tr><tr><td>「输出<b>任意一种</b>合法顺序」</td><td>拓扑（答案不唯一正是它的特征）</td></tr><tr><td>「根据给定的单词序推字母表顺序」</td><td>先从相邻单词比出边，再拓扑（269）</td></tr><tr><td>图是<b>有向</b>的且要问顺序</td><td>拓扑；无向图问连通性是第 12 章</td></tr></tbody></table></div>
+<div class="routing"><div class="rt-head">分流条件 · 决策树同源</div><p>同样用队列，第 10 章的 BFS 队列里放的是「所有未访问的邻居」，本章队列里放的是「入度已清零的点」——<b>入度</b>这两个字是分界线。判环也要分清：<b>有向</b>图判环用拓扑（本章），<b>无向</b>图判环用并查集（第 12 章，<code>union</code> 返回 False 即成环）或 DFS 记父节点。只要遍历、不问顺序，回到第 10 章。</p></div>
+
+</section>
+
+<section id="s3">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§3 Template 模板代码</span></div>
+  <h2>可默写的那几行</h2>
+<p class="legend"><i class="bone">■ 【骨架】</i> 不变，闭着眼默写　<i class="slot">■ 【插槽】</i> 随题变化，写题前先问自己填什么</p>
+<div class="tpl">
+  <div class="tpl-head">模板 A · Kahn 入度法<span class="note">本章唯一模板</span></div>
+  <pre><code>from collections import deque
+
+def topo_order(n, prerequisites):
+    graph = [[] for _ in range(n)]          <span class="cm bone"># 【骨架】邻接表:a -&gt; b 表示"修完 a 才能修 b"</span>
+    indeg = [0] * n                         <span class="cm bone"># 【骨架】入度 = 还欠几个前置</span>
+    for b, a in prerequisites:              <span class="cm slot"># 【插槽】题目给的是 [课, 先修课],方向别搞反</span>
+        graph[a].append(b)
+        indeg[b] += 1
+    q = deque(i for i in range(n) if not indeg[i])   <span class="cm bone"># 【骨架】所有零依赖的先入队</span>
+    order = []
+    while q:                                <span class="cm bone"># 【骨架】</span>
+        cur = q.popleft()                   <span class="cm bone"># 【骨架】</span>
+        order.append(cur)                   <span class="cm slot"># 【插槽】答案:顺序本身 / 只要个数</span>
+        for nxt in graph[cur]:              <span class="cm bone"># 【骨架】</span>
+            indeg[nxt] -= 1                 <span class="cm bone"># 【骨架】它少欠一个了</span>
+            if not indeg[nxt]:              <span class="cm bone"># 【骨架】欠债清零才有资格入队</span>
+                q.append(nxt)               <span class="cm bone"># 【骨架】</span>
+    return order if len(order) == n else [] <span class="cm slot"># 【插槽】出队数 &lt; n 就是有环</span></code></pre>
+  <div class="tpl-foot">默写口诀：<b>建图数入度、零入度入队、出队减邻居、计数判环</b>。DFS 三色法（白/灰/黑）也能做，但入度法更好写也更好讲，阈值内只需要这一个。</div>
+</div>
+
+</section>
+
+<section id="s4">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§4 Problems 题目分层</span></div>
+  <h2>从建直觉到扭模板</h2>
+<div class="tier">
+  <div class="tier-head"><span class="t">标准</span><span class="d">模板直接套</span><span class="c">2 道</span></div>
+  <ul class="plist">
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/course-schedule/" target="_blank" rel="noopener">207 Course Schedule</a><span class="badge diff">Medium</span></div>
+    <div class="p-note">模板 A 原题，只取「出队个数是否等于 n」。面试里被问「怎么证明这样就能判环」时答：入度永远清不了零的点，必然互相欠着。</div>
+  </li>
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/course-schedule-ii/" target="_blank" rel="noopener">210 Course Schedule II</a><span class="badge diff">Medium</span></div>
+    <div class="p-note">和 207 同一段代码，返回 <code>order</code> 而不是布尔值。两道题放一起就是本章的全部内容——这也是本章刻意没有热身题的原因。</div>
+  </li>
+  </ul>
+</div>
+<div class="tier">
+  <div class="tier-head"><span class="t">变体</span><span class="d">模板要扭，坑的来源</span><span class="c">1 道</span></div>
+  <ul class="plist">
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/alien-dictionary/" target="_blank" rel="noopener">269 Alien Dictionary</a><span class="badge lock" title="LeetCode Premium 题">🔒 premium</span><span class="badge star" title="hard，认脸即可">⭐ 认脸</span><span class="badge diff">Hard</span></div>
+    <div class="p-note">⭐认脸。难点全在<b>建图</b>：逐对比较相邻单词，第一个不同的字母给出一条边，之后照套模板。</div>
+  </li>
+  </ul>
+</div>
+
+</section>
+
+<section id="s5">
+  <div class="sec-tag"><span class="cell" style="background:var(--warn)"></span><span class="lab">§5 Pitfalls &amp; Self-check 常见翻车点 + 自测</span></div>
+  <h2>会写不等于不翻车</h2>
+<ol class="pits">
+<li><span class="pt">建图方向反了</span>——<code>[b, a]</code> 是「先修 a 才能修 b」，边必须是 <code>a → b</code>。反了之后 207 依然返回 True（有向无环图反向仍无环），但 210 的顺序整个是倒的。</li>
+<li><span class="pt">孤立点漏进入度表</span>——入度数组必须按 <code>n</code> 开满，没有任何依赖的课也要以 0 入度进队列。只遍历 <code>prerequisites</code> 建表，会漏掉从未出现过的课号。</li>
+<li><span class="pt">用异常或染色去判环</span>——拓扑判环只需要 <code>len(order) == n</code> 这一句。写成递归 DFS 再捕获「重复访问」，既长又容易把「本次路径上」和「以前访问过」搞混。</li>
+<li><span class="pt">以为拓扑序唯一</span>——同时有多个零入度点时，顺序取决于出队次序。题目说「返回任意一种」就是这个意思；要求字典序最小时把队列换成小顶堆（第 08 章）。</li>
+</ol>
+<h3>自测 · 30 秒识别模式</h3>
+<div class="quiz">
+<article class="q" data-answer="11">
+  <p class="qprompt"><span class="qtype">30 秒识别</span>Q1 · <a href="https://leetcode.com/problems/minimum-height-trees/" target="_blank" rel="noopener">310 Minimum Height Trees</a>：给一棵无向树，找出所有「作为根时树高最小」的节点。你的第一反应是哪个模式？</p>
+  <div class="opts"><button class="opt" type="button" data-ch="11">11 拓扑排序</button><button class="opt" type="button" data-ch="10">10 图的 BFS/DFS</button><button class="opt" type="button" data-ch="7">07 树的遍历与递归</button></div>
+  <details><summary>看答案</summary><div class="answer"><p>拓扑式剥叶子。从度为 1 的点一层层往里剥，最后剩下的 1~2 个点就是答案。骨架和入度法一模一样，只是「入度」换成「度」、终止条件换成「剩余 ≤ 2」。</p></div></details>
+</article>
+<article class="q" data-answer="11">
+  <p class="qprompt"><span class="qtype">30 秒识别</span>Q2 · <a href="https://leetcode.com/problems/find-eventual-safe-states/" target="_blank" rel="noopener">802 Find Eventual Safe States</a>：有向图中，从某点出发的所有路径最终都能走到终点（出度为 0 的点），求所有这样的安全点。你的第一反应是哪个模式？</p>
+  <div class="opts"><button class="opt" type="button" data-ch="11">11 拓扑排序</button><button class="opt" type="button" data-ch="10">10 图的 BFS/DFS</button><button class="opt" type="button" data-ch="12">12 并查集</button></div>
+  <details><summary>看答案</summary><div class="answer"><p>拓扑排序。把图<b>反向</b>后，出度为 0 就变成入度为 0，能被剥掉的点就是安全的，剥不掉的卡在环里。「反向建图」是拓扑题的常见变形。</p></div></details>
+</article>
+<article class="q" data-answer="12">
+  <p class="qprompt"><span class="qtype">30 秒识别</span>Q3 · <a href="https://leetcode.com/problems/number-of-provinces/" target="_blank" rel="noopener">547 Number of Provinces</a>：给一个 n×n 的矩阵表示城市之间是否直接相连，求「省份」（连通块）的个数。你的第一反应是哪个模式？</p>
+  <div class="opts"><button class="opt" type="button" data-ch="11">11 拓扑排序</button><button class="opt" type="button" data-ch="12">12 并查集</button><button class="opt" type="button" data-ch="10">10 图的 BFS/DFS</button></div>
+  <details><summary>看答案</summary><div class="answer"><p><b>并查集，不是本章</b>——图是<b>无向</b>的，问的是「谁和谁在一伙」而不是「谁在谁前面」。无向图没有入度这个概念，拓扑排序无从谈起。见 §2 分流条件与第 12 章。</p></div></details>
+</article>
+<p class="quiz-note">每章自测都会<b>混入恰好一道非本章题</b>，防止「读哪章选哪章」的条件反射；题面也一律取自本章未收录的题，避免凭记忆而非凭信号作答。</p>
+</div>
+</section>
+
+<nav class="next">
+  <a href="10-graph-traversal.html">← 10 图的 BFS/DFS</a>
+  <a href="12-union-find.html">12 并查集 →</a>
+</nav>
+
+</div>
+<script src="../assets/quiz.js" defer></script>
+</body>
+</html>

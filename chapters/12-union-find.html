@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>12 并查集 · 算法面试阈值手册</title>
+<meta name="description" content="动态连通性——「这俩在不在一伙」">
+<link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"></noscript>
+<link rel="stylesheet" href="../assets/handbook.css">
+<script src="../assets/theme.js"></script>
+</head>
+<body>
+<button class="theme-toggle" type="button" aria-label="切换深色/浅色模式" title="切换深色/浅色模式">
+  <span class="sun" aria-hidden="true">☀️</span><span class="moon" aria-hidden="true">🌙</span>
+</button>
+<div class="wrap">
+<nav class="crumb"><a href="../index.html">← 目录</a> · <a href="../cheatsheet.html">决策树速查</a></nav>
+
+<header class="ch">
+  <div class="bars" aria-hidden="true"><span class="h1"></span><span class="h2"></span><span class="h4"></span><span class="h6"></span><span class="h3"></span><span class="h5 w"></span><span class="h2 f"></span><span class="h1 f"></span></div>
+  <div class="kicker">Pattern 12 · Union-Find</div>
+  <h1>12 并查集
+    <span class="zh">动态连通性——「这俩在不在一伙」</span>
+  </h1>
+  <div class="meta"><span>面试频率 <b>中</b></span><span>题目 <b>5 道</b></span><span>模板 <b>1 个</b></span><span>⭐认脸 <b>0 道</b></span></div>
+</header>
+
+<section id="s1">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§1 Mental Model 一句话心智模型</span></div>
+  <h2>先记住这一句</h2>
+<div class="oneliner"><b>并查集只回答一个问题：这俩在不在一伙。它维护的是「动态」连通性——边一条条加进来，你随时能问。</b></div>
+<p>两个动作：<code>find</code>（一路往上找老大，顺手做<b>路径压缩</b>）和 <code>union</code>（小的挂到大的下面）。两个优化都加上之后，单次操作近似 O(1)，代码一共十来行，属于必须能默写的那一档。</p>
+<p>它相对第 10 章 DFS 的独门优势有两个：<b>边是动态给的</b>（DFS 得每次重跑），以及 <b><code>union</code> 返回 False 就等于发现了环</b>——684、261 全靠这一行。</p>
+
+</section>
+
+<section id="s2">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§2 Recognition Signals 识别信号</span></div>
+  <h2>看到什么，想到本章</h2>
+<div class="tbl-scroll"><table class="sig-tbl"><thead><tr><th>题面出现…</th><th>想到</th></tr></thead><tbody><tr><td>「有多少个连通分量 / 省份 / 朋友圈 / 组」</td><td>边全合并完，看还剩几伙</td></tr><tr><td>「加上这条边会不会形成环」</td><td><code>union</code> 返回 False 的那一刻（684）</td></tr><tr><td>「判断这张图是不是一棵树」</td><td>边数 == n−1 且合并全程不成环（261）</td></tr><tr><td>「把有共同元素的集合归并」（账户、邮箱、字符串）</td><td>先把元素映射成整数 id，再合并（721）</td></tr><tr><td>边是一条条<b>流进来</b>的，中途还要回答问题</td><td>并查集；DFS 得每来一条边重跑一次</td></tr><tr><td>「等式约束是否自洽」（a==b, b!=c）</td><td>先合并所有相等，再检查不等（990）</td></tr></tbody></table></div>
+<div class="routing"><div class="rt-head">分流条件 · 决策树同源</div><p><b>静态</b>无向图数连通块，第 10 章的 DFS 更直接、也更好写；并查集的价值在「动态」和「成环检测」这两件事上。图是<b>有向</b>的、问的是顺序或循环依赖 → 拓扑排序（第 11 章）：并查集没有方向概念，<code>union(a, b)</code> 和 <code>union(b, a)</code> 完全等价。带权最短路属于 Dijkstra，本书不覆盖。</p></div>
+
+</section>
+
+<section id="s3">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§3 Template 模板代码</span></div>
+  <h2>可默写的那几行</h2>
+<p class="legend"><i class="bone">■ 【骨架】</i> 不变，闭着眼默写　<i class="slot">■ 【插槽】</i> 随题变化，写题前先问自己填什么</p>
+<div class="tpl">
+  <div class="tpl-head">模板 A · 并查集<span class="note">本章唯一模板，十行必须能默写</span></div>
+  <pre><code>class DSU:
+    def __init__(self, n):
+        self.p = list(range(n))             <span class="cm bone"># 【骨架】一开始每个点自成一伙</span>
+        self.size = [1] * n                 <span class="cm bone"># 【骨架】按大小合并,防止退化成长链</span>
+        self.count = n                      <span class="cm slot"># 【插槽】要顺手维护的量:连通块数 / 每块大小</span>
+
+    def find(self, x):
+        while self.p[x] != x:               <span class="cm bone"># 【骨架】</span>
+            self.p[x] = self.p[self.p[x]]   <span class="cm bone"># 【骨架】路径压缩:顺手把爷爷认成爸爸</span>
+            x = self.p[x]                   <span class="cm bone"># 【骨架】</span>
+        return x
+
+    def union(self, a, b):
+        ra, rb = self.find(a), self.find(b)
+        if ra == rb:                        <span class="cm slot"># 【插槽】已在一伙 -&gt; 这条边会成环</span>
+            return False
+        if self.size[ra] &lt; self.size[rb]:   <span class="cm bone"># 【骨架】小的挂到大的下面</span>
+            ra, rb = rb, ra
+        self.p[rb] = ra                     <span class="cm bone"># 【骨架】</span>
+        self.size[ra] += self.size[rb]      <span class="cm bone"># 【骨架】</span>
+        self.count -= 1                     <span class="cm slot"># 【插槽】</span>
+        return True</code></pre>
+  <div class="tpl-foot">默写口诀：<b>find 一路压缩、union 小挂大、返回 False 即成环</b>。<code>count</code> 顺手维护，连通块数就不用最后再数一遍。</div>
+</div>
+
+</section>
+
+<section id="s4">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§4 Problems 题目分层</span></div>
+  <h2>从建直觉到扭模板</h2>
+<div class="tier">
+  <div class="tier-head"><span class="t">标准</span><span class="d">模板直接套</span><span class="c">4 道</span></div>
+  <ul class="plist">
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/number-of-provinces/" target="_blank" rel="noopener">547 Number of Provinces</a><span class="badge diff">Medium</span></div>
+    <div class="p-note">模板 A 原题：全部边合并完，<code>count</code> 就是答案。面试里说得出「DFS 也能做，我选并查集是因为它顺手给出块数」即可。</div>
+  </li>
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/redundant-connection/" target="_blank" rel="noopener">684 Redundant Connection</a><span class="badge diff">Medium</span></div>
+    <div class="p-note"><code>union</code> <b>第一次</b>返回 False 的那条边就是答案。题目要求返回最后出现的那条，而按顺序合并天然满足——这一点值得主动说明。</div>
+  </li>
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/graph-valid-tree/" target="_blank" rel="noopener">261 Graph Valid Tree</a><span class="badge lock" title="LeetCode Premium 题">🔒 premium</span><span class="badge diff">Medium</span></div>
+    <div class="p-note">树的两个充要条件：边数恰好 <code>n - 1</code>，且合并过程中一次环都没成。少判任何一个都会漏用例（<code>n-1</code> 条边但有环 ⇒ 必然不连通）。</div>
+  </li>
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/number-of-connected-components-in-an-undirected-graph/" target="_blank" rel="noopener">323 Number of Connected Components in an Undirected Graph</a><span class="badge lock" title="LeetCode Premium 题">🔒 premium</span><span class="badge diff">Medium</span></div>
+    <div class="p-note">547 的邻接表版本，输入从矩阵换成 <code>edges</code>。两道题一起做，能确认你写的模板对输入形式不敏感。</div>
+  </li>
+  </ul>
+</div>
+<div class="tier">
+  <div class="tier-head"><span class="t">变体</span><span class="d">模板要扭，坑的来源</span><span class="c">1 道</span></div>
+  <ul class="plist">
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/accounts-merge/" target="_blank" rel="noopener">721 Accounts Merge</a><span class="badge diff">Medium</span></div>
+    <div class="p-note">并查集用在<b>字符串</b>上的标准做法：邮箱 → 整数 id 的映射表，同一个账户里的所有邮箱两两（其实只需和第一个）合并，最后按根分组再排序。实现比思路长，是本章唯一的工程量。</div>
+  </li>
+  </ul>
+</div>
+
+</section>
+
+<section id="s5">
+  <div class="sec-tag"><span class="cell" style="background:var(--warn)"></span><span class="lab">§5 Pitfalls &amp; Self-check 常见翻车点 + 自测</span></div>
+  <h2>会写不等于不翻车</h2>
+<ol class="pits">
+<li><span class="pt">忘了路径压缩</span>——只写 <code>while p[x] != x: x = p[x]</code> 而不改 <code>p[x]</code>，最坏退化成 O(n) 的长链。<code>self.p[x] = self.p[self.p[x]]</code> 这一行不能省。</li>
+<li><span class="pt">合并方向随手写</span>——不按大小（或秩）合并，配上没有压缩就是 O(n)。两个优化至少要有一个，面试里建议两个都写——一共多两行。</li>
+<li><span class="pt"><code>union</code> 的返回值没用起来</span>——684、261、990 全靠「返回 False 说明已同组」。把 <code>union</code> 写成没有返回值的过程，这几道题就得另外再判一次环。</li>
+<li><span class="pt">261 只判连通不判边数</span>——<code>n</code> 个点、<code>n</code> 条边且连通，那是有环的图不是树。两个条件缺一不可。</li>
+<li><span class="pt">字符串直接当下标</span>——721 这类题必须先建 <code>{邮箱: id}</code> 映射。把 <code>p</code> 换成字典虽然也能跑，但 <code>size</code> 数组和路径压缩都要跟着改写，容易出错。</li>
+</ol>
+<h3>自测 · 30 秒识别模式</h3>
+<div class="quiz">
+<article class="q" data-answer="12">
+  <p class="qprompt"><span class="qtype">30 秒识别</span>Q1 · <a href="https://leetcode.com/problems/satisfiability-of-equality-equations/" target="_blank" rel="noopener">990 Satisfiability of Equality Equations</a>：给一组形如 <code>a==b</code>、<code>a!=b</code> 的等式，判断它们能否同时成立。你的第一反应是哪个模式？</p>
+  <div class="opts"><button class="opt" type="button" data-ch="12">12 并查集</button><button class="opt" type="button" data-ch="11">11 拓扑排序</button><button class="opt" type="button" data-ch="1">01 哈希</button></div>
+  <details><summary>看答案</summary><div class="answer"><p>并查集。先把所有 <code>==</code> 合并成组，再逐条检查 <code>!=</code> 的两端是否落在同一组。「约束是否自洽」= 连通性问题，两遍扫描解决。</p></div></details>
+</article>
+<article class="q" data-answer="12">
+  <p class="qprompt"><span class="qtype">30 秒识别</span>Q2 · <a href="https://leetcode.com/problems/similar-string-groups/" target="_blank" rel="noopener">839 Similar String Groups</a>：若两个字符串相等，或交换其中两个字母后相等，则它们相似。求相似字符串的组数。你的第一反应是哪个模式？</p>
+  <div class="opts"><button class="opt" type="button" data-ch="12">12 并查集</button><button class="opt" type="button" data-ch="10">10 图的 BFS/DFS</button><button class="opt" type="button" data-ch="9">09 回溯</button></div>
+  <details><summary>看答案</summary><div class="answer"><p>并查集。两两判断相似（O(n²·len)）后合并，最后数连通块。「归组 / 有多少组」是并查集最直白的暗号，和 547 是同一道题换了个判定条件。</p></div></details>
+</article>
+<article class="q" data-answer="11">
+  <p class="qprompt"><span class="qtype">30 秒识别</span>Q3 · <a href="https://leetcode.com/problems/course-schedule/" target="_blank" rel="noopener">207 Course Schedule</a>：共 n 门课，给出若干「先修 A 才能修 B」的关系，判断能否修完所有课。你的第一反应是哪个模式？</p>
+  <div class="opts"><button class="opt" type="button" data-ch="12">12 并查集</button><button class="opt" type="button" data-ch="11">11 拓扑排序</button><button class="opt" type="button" data-ch="10">10 图的 BFS/DFS</button></div>
+  <details><summary>看答案</summary><div class="answer"><p><b>拓扑排序，不是本章</b>——边是<b>有向</b>的。并查集里 <code>union(a, b)</code> 和 <code>union(b, a)</code> 完全等价，天生表达不了「谁在谁前面」，自然也判不出有向环。见 §2 分流条件。</p></div></details>
+</article>
+<p class="quiz-note">每章自测都会<b>混入恰好一道非本章题</b>，防止「读哪章选哪章」的条件反射；题面也一律取自本章未收录的题，避免凭记忆而非凭信号作答。</p>
+</div>
+</section>
+
+<nav class="next">
+  <a href="11-topological-sort.html">← 11 拓扑排序</a>
+  <a href="13-prefix-sum.html">13 前缀和 →</a>
+</nav>
+
+</div>
+<script src="../assets/quiz.js" defer></script>
+</body>
+</html>
