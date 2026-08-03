@@ -105,7 +105,7 @@ def longest_no_repeat(s):
   </li>
   <li>
     <div class="p-title"><a href="https://leetcode.com/problems/permutation-in-string/" target="_blank" rel="noopener">567 Permutation in String</a><span class="badge diff">Medium</span></div>
-    <div class="p-note">定长窗口 + <code>Counter</code> 相等判断。坑在计数减到 0 必须 <code>del</code>，否则两个字典永远不相等——第 01 章翻车点③的同一个坑，在这里第一次真正咬人。</div>
+    <div class="p-note">定长窗口 + <code>Counter</code> 相等判断。习惯上要把减到 0 的键 <code>del</code> 掉：Python 3.10 起 <code>Counter</code> 的 <code>==</code> 已经会忽略零计数（所以这道题不删也能过），但 <code>len()</code> / <code>in</code> 仍然把它算进去，换成普通 <code>dict</code> 更是直接判不等。模板测试里三条断言把这个区别钉死了。</div>
   </li>
   </ul>
 </div>
@@ -128,7 +128,7 @@ def longest_no_repeat(s):
 <li><span class="pt">答案统计的时机</span>——求<b>最长</b>时在收缩完（窗口已合法）之后统计；求<b>最短</b>时在窗口刚合法的那一刻、收缩循环<b>内部</b>统计。位置放错，最短的那类题会整体偏大。</li>
 <li><span class="pt"><code>while</code> 写成 <code>if</code></span>——一次收缩不一定能恢复合法（例如窗口里同一个字符出现了三次）。除非你能证明每步最多违规一次，否则一律用 <code>while</code>。</li>
 <li><span class="pt">跳跃式左指针忘了 <code>max</code></span>——3 题的进阶写法里 <code>left = max(left, last[ch] + 1)</code>；漏掉 <code>max</code>，遇到 <code>"abba"</code> 时左指针会<b>倒退</b>，答案偏大。</li>
-<li><span class="pt">计数字典没删空键</span>——<code>Counter</code> 减到 0 的键仍然存在，<code>len(cnt)</code> 和 <code>==</code> 都会受影响。要么 <code>del</code>，要么额外维护一个「不同字符数」。</li>
+<li><span class="pt">计数字典没删空键</span>——<code>Counter</code> 减到 0 的键<b>不会自动消失</b>。<code>==</code> 从 Python 3.10 起会忽略零计数，但 <code>len(cnt)</code>、<code>in</code>、遍历都还算它——用「窗口内不同字符数」当合法性判据时必须 <code>del</code>。换成普通 <code>dict</code> 时连 <code>==</code> 都会判不等。</li>
 <li><span class="pt">负数破坏单调性</span>——滑窗成立的前提是「扩大窗口让指标单调变差、收缩让它单调变好」。数组含负数时「和 ≥ target」不再单调，得换前缀和 + 单调队列或别的思路。</li>
 </ol>
 <h3>自测 · 30 秒识别模式</h3>

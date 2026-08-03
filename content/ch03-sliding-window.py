@@ -70,7 +70,7 @@ def check_inclusion(s1, s2):
     for i in range(k, len(s2)):
         win[s2[i]] += 1
         win[s2[i - k]] -= 1
-        if win[s2[i - k]] == 0:             # 减到 0 必须删键,否则字典永远不相等
+        if win[s2[i - k]] == 0:             # 删掉零计数的键,理由见下方断言
             del win[s2[i - k]]
         if win == need:
             return True
@@ -80,6 +80,18 @@ def check_inclusion(s1, s2):
 assert check_inclusion("ab", "eidbaooo") is True
 assert check_inclusion("ab", "eidboaoo") is False
 assert check_inclusion("abc", "ab") is False
+
+
+# 为什么要 del:Python 3.10 起 Counter 的 == 会忽略零计数,所以只比较字典的话
+# 不删也能过;但 len() / in / 遍历仍然把零计数的键算进去,换成普通 dict 更是直接判不等。
+from collections import Counter
+
+zero = Counter("ab")
+zero["x"] += 1
+zero["x"] -= 1
+assert zero == Counter("ab")                # Counter 的 == 忽略零计数
+assert len(zero) == 3 and len(Counter("ab")) == 2   # 但 len() 会把它算进去
+assert dict(zero) != dict(Counter("ab"))    # 换成普通 dict 就直接不等了
 '''
 
 CHAPTER = dict(
@@ -136,8 +148,10 @@ CHAPTER = dict(
                   "`most` 只增不减看起来是 bug，实际不影响最终答案（窗口不会缩小，答案也就不会被高估），"
                   "这一点值得在面试里主动讲清楚。"),
         dict(num=567, tier="standard",
-             note="定长窗口 + `Counter` 相等判断。坑在计数减到 0 必须 `del`，否则两个字典永远不相等——"
-                  "第 01 章翻车点③的同一个坑，在这里第一次真正咬人。"),
+             note="定长窗口 + `Counter` 相等判断。习惯上要把减到 0 的键 `del` 掉："
+                  "Python 3.10 起 `Counter` 的 `==` 已经会忽略零计数（所以这道题不删也能过），"
+                  "但 `len()` / `in` 仍然把它算进去，换成普通 `dict` 更是直接判不等。"
+                  "模板测试里三条断言把这个区别钉死了。"),
         dict(num=76, tier="variant", star=True,
              note="⭐认脸。可变窗口的完全体：用 `missing` 计数「还差几个字符」，为 0 才收缩。"
                   "说清框架即可，不必默写。"),
@@ -154,8 +168,9 @@ CHAPTER = dict(
          "3 题的进阶写法里 `left = max(left, last[ch] + 1)`；漏掉 `max`，"
          "遇到 `\"abba\"` 时左指针会**倒退**，答案偏大。"),
         ("计数字典没删空键",
-         "`Counter` 减到 0 的键仍然存在，`len(cnt)` 和 `==` 都会受影响。"
-         "要么 `del`，要么额外维护一个「不同字符数」。"),
+         "`Counter` 减到 0 的键**不会自动消失**。`==` 从 Python 3.10 起会忽略零计数，"
+         "但 `len(cnt)`、`in`、遍历都还算它——用「窗口内不同字符数」当合法性判据时必须 `del`。"
+         "换成普通 `dict` 时连 `==` 都会判不等。"),
         ("负数破坏单调性",
          "滑窗成立的前提是「扩大窗口让指标单调变差、收缩让它单调变好」。"
          "数组含负数时「和 ≥ target」不再单调，得换前缀和 + 单调队列或别的思路。"),

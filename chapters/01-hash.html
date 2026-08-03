@@ -128,7 +128,7 @@ def group_by_signature(words):
 <ol class="pits">
 <li><span class="pt">先查后存的顺序</span>——模板 A 里 <code>if need in seen</code> 必须在 <code>seen[x] = i</code> 之前。反过来写，<code>[3,3]</code> target=6 会返回 <code>[0,0]</code>。</li>
 <li><span class="pt">存值还是存下标</span>——题目要下标就存下标，要判断存在用 <code>set</code> 就够。别默认写 <code>dict</code>——<code>set</code> 的意图更清楚，读代码的人一眼知道你不关心位置。</li>
-<li><span class="pt"><code>Counter</code> 的删空问题</span>——滑动窗口里用 <code>Counter</code> 当窗口状态时，减到 0 的键<b>不会自动消失</b>，<code>len(cnt)</code> 会把它算进去。要么 <code>del</code>，要么改用「不同字符数」计数器。</li>
+<li><span class="pt"><code>Counter</code> 的删空问题</span>——滑动窗口里用 <code>Counter</code> 当窗口状态时，减到 0 的键<b>不会自动消失</b>，<code>len(cnt)</code> 会把它算进去。要么 <code>del</code>，要么另外维护一个「不同字符数」。（<code>==</code> 比较是个例外：Python 3.10 起它会忽略零计数，细节见第 03 章翻车点④。）</li>
 <li><span class="pt">128 从每个数往两边扩</span>——对每个数都向左右扩展是 O(n²)（退化用例：<code>[1,2,3,...,n]</code>）。正确写法是先判断 <code>x - 1 not in s</code>，只有序列起点才进入扩展循环。</li>
 <li><span class="pt">不可哈希的键</span>——<code>list</code> 不能当键，<code>tuple</code> 可以；<code>dict</code> 不能，<code>frozenset</code> 可以。分组题里签名一律用元组。</li>
 </ol>

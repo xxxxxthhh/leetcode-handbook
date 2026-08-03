@@ -99,7 +99,7 @@
   </li>
   <li>
     <div class="p-title"><a href="https://leetcode.com/problems/find-minimum-in-rotated-sorted-array/" target="_blank" rel="noopener">153 Find Minimum in Rotated Sorted Array</a><span class="badge diff">Medium</span></div>
-    <div class="p-note">判定换成「<code>nums[mid]</code> 和右端比」。为什么和右端比而不是左端：右端在旋转后总是落在「较小的那一段」，比较结果才单调。</div>
+    <div class="p-note">判定换成「<code>nums[mid]</code> 和右端比」。为什么和右端比而不是左端：旋转之后右端点一定落在「较小的那一段」里，比较结果才单调；没有旋转时右端就是最大值，条件恒不成立，<code>hi</code> 一路收到 0，答案照样对。</div>
   </li>
   <li>
     <div class="p-title"><a href="https://leetcode.com/problems/search-in-rotated-sorted-array/" target="_blank" rel="noopener">33 Search in Rotated Sorted Array</a><span class="badge diff">Medium</span></div>
@@ -131,7 +131,7 @@
   <div class="sec-tag"><span class="cell" style="background:var(--warn)"></span><span class="lab">§5 Pitfalls &amp; Self-check 常见翻车点 + 自测</span></div>
   <h2>会写不等于不翻车</h2>
 <ol class="pits">
-<li><span class="pt">开闭区间不统一</span>——<code>hi = len(nums)</code>（右开）配 <code>hi = mid</code>；<code>hi = len(nums) - 1</code>（右闭）配 <code>hi = mid - 1</code>。混着写是死循环和差一错误的唯一来源。全书统一用左闭右开。</li>
+<li><span class="pt">开闭区间不统一</span>——<code>hi = len(nums)</code>（右开）配 <code>hi = mid</code>；<code>hi = len(nums) - 1</code>（右闭）配 <code>hi = mid - 1</code>。混着写是死循环和差一错误的头号来源。全书统一用左闭右开。</li>
 <li><span class="pt">判定函数不单调</span>——答案二分的前提是「x 可行则 x+1 也可行」。写不出这句话就别二分——例如「恰好等于 K」这类非单调条件，二分给出的结果没有意义。</li>
 <li><span class="pt"><code>ok</code> 的方向反了</span>——求<b>最小可行</b>时 <code>ok</code> 成立要 <code>hi = mid</code>；求<b>最大可行</b>时要把判定取反或改成 <code>lo = mid</code>（此时 <code>mid</code> 必须上取整，否则死循环）。拿不准就一律转化成「求最小」。</li>
 <li><span class="pt">旋转数组有重复元素</span>——<code>[1,1,1,0,1]</code> 这种输入下 <code>nums[mid] == nums[hi]</code> 无法判断哪半有序，只能 <code>hi -= 1</code> 退化到 O(n)。面试被追问时要说得出这个边界。</li>

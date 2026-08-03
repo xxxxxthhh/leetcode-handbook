@@ -42,7 +42,7 @@
   <div class="sec-tag"><span class="cell"></span><span class="lab">§2 Recognition Signals 识别信号</span></div>
   <h2>看到什么，想到本章</h2>
 <div class="tbl-scroll"><table class="sig-tbl"><thead><tr><th>题面出现…</th><th>想到</th></tr></thead><tbody><tr><td>「有多少个连通分量 / 省份 / 朋友圈 / 组」</td><td>边全合并完，看还剩几伙</td></tr><tr><td>「加上这条边会不会形成环」</td><td><code>union</code> 返回 False 的那一刻（684）</td></tr><tr><td>「判断这张图是不是一棵树」</td><td>边数 == n−1 且合并全程不成环（261）</td></tr><tr><td>「把有共同元素的集合归并」（账户、邮箱、字符串）</td><td>先把元素映射成整数 id，再合并（721）</td></tr><tr><td>边是一条条<b>流进来</b>的，中途还要回答问题</td><td>并查集；DFS 得每来一条边重跑一次</td></tr><tr><td>「等式约束是否自洽」（a==b, b!=c）</td><td>先合并所有相等，再检查不等（990）</td></tr></tbody></table></div>
-<div class="routing"><div class="rt-head">分流条件 · 决策树同源</div><p><b>静态</b>无向图数连通块，第 10 章的 DFS 更直接、也更好写；并查集的价值在「动态」和「成环检测」这两件事上。图是<b>有向</b>的、问的是顺序或循环依赖 → 拓扑排序（第 11 章）：并查集没有方向概念，<code>union(a, b)</code> 和 <code>union(b, a)</code> 完全等价。带权最短路属于 Dijkstra，本书不覆盖。</p></div>
+<div class="routing"><div class="rt-head">分流条件 · 决策树同源</div><p><b>静态</b>无向图数连通块，第 10 章的 DFS 更直接、也更好写；并查集的价值在「动态」和「成环检测」这两件事上。图是<b>有向</b>的、问的是顺序或循环依赖 → 拓扑排序（第 11 章）：并查集没有方向概念——<code>union(a, b)</code> 和 <code>union(b, a)</code> 只会让树形不同，「在不在一伙」的答案完全一样。带权最短路属于 Dijkstra，本书不覆盖。</p></div>
 
 </section>
 
@@ -140,7 +140,7 @@
 <article class="q" data-answer="11">
   <p class="qprompt"><span class="qtype">30 秒识别</span>Q3 · <a href="https://leetcode.com/problems/course-schedule/" target="_blank" rel="noopener">207 Course Schedule</a>：共 n 门课，给出若干「先修 A 才能修 B」的关系，判断能否修完所有课。你的第一反应是哪个模式？</p>
   <div class="opts"><button class="opt" type="button" data-ch="12">12 并查集</button><button class="opt" type="button" data-ch="11">11 拓扑排序</button><button class="opt" type="button" data-ch="10">10 图的 BFS/DFS</button></div>
-  <details><summary>看答案</summary><div class="answer"><p><b>拓扑排序，不是本章</b>——边是<b>有向</b>的。并查集里 <code>union(a, b)</code> 和 <code>union(b, a)</code> 完全等价，天生表达不了「谁在谁前面」，自然也判不出有向环。见 §2 分流条件。</p></div></details>
+  <details><summary>看答案</summary><div class="answer"><p><b>拓扑排序，不是本章</b>——边是<b>有向</b>的。并查集里 <code>union(a, b)</code> 和 <code>union(b, a)</code> 给出的连通性完全一样，天生表达不了「谁在谁前面」，自然也判不出有向环。见 §2 分流条件。</p></div></details>
 </article>
 <p class="quiz-note">每章自测都会<b>混入恰好一道非本章题</b>，防止「读哪章选哪章」的条件反射；题面也一律取自本章未收录的题，避免凭记忆而非凭信号作答。</p>
 </div>
