@@ -258,6 +258,26 @@ def check_star_brevity(no, html, rep):
                                 sum(star) / len(star), sum(plain) / len(plain)))
 
 
+# ---------------------------------------------------------------- 交叉引用
+CIRCLED = "①②③④⑤⑥⑦⑧⑨⑩"
+PIT_REF = re.compile(r"(?:第 (\d{2}) 章)?翻车点([" + CIRCLED + r"])")
+
+
+def check_pitfall_refs(no, html, rep, pit_counts):
+    """正文里「见翻车点③」「第 01 章翻车点③」这类交叉引用必须真的存在。
+    章节分批写，编号在增删翻车点时最容易变成悬空引用。"""
+    where = "ch{:02d}".format(no)
+    for target, mark in PIT_REF.findall(strip_tags(html)):
+        tgt = int(target) if target else no
+        idx = CIRCLED.index(mark) + 1
+        have = pit_counts.get(tgt)
+        if have is None:
+            rep.err(where, "引用了第 {:02d} 章的翻车点，但该章不存在".format(tgt))
+        elif idx > have:
+            rep.err(where, "引用「第 {:02d} 章翻车点{}」，但该章只有 {} 条".format(
+                tgt, mark, have))
+
+
 # ---------------------------------------------------------------- 决策树 / 速查页
 def check_cheatsheet(site, rep, chapters_present):
     path = os.path.join(site, "cheatsheet.html")
@@ -387,9 +407,13 @@ def run(site):
 
     seen_curated = defaultdict(list)
     sig_map, routing_map, cue_map = {}, {}, {}
+    pages = {no: read(path) for no, path in chs}
+    pit_counts = {no: len(re.findall(r'<li><span class="pt">', h))
+                  for no, h in pages.items()}
     for no, path in chs:
-        html = read(path)
+        html = pages[no]
         check_structure(no, html, rep)
+        check_pitfall_refs(no, html, rep, pit_counts)
         check_quiz(no, html, rep)
         check_links(no, html, rep, seen_curated)
         check_quiz_sources(no, html, rep)

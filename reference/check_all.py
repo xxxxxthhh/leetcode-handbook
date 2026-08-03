@@ -17,6 +17,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 STEPS = [
     ("模板可运行", ["python3", "reference/run_templates.py"]),
     ("构建 21 页", ["python3", "reference/build.py", "--quiet"]),
+    ("选题对 spec", ["python3", "reference/check_vs_spec.py"]),
     ("站级校验", ["python3", "reference/check_site.py"]),
     ("mutation test", ["python3", "reference/mutation_test.py"]),
 ]

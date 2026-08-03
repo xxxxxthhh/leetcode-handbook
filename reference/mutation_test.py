@@ -83,6 +83,12 @@ def m_quiz_answer_not_in_options(chs):
     next(c for c in chs if c["no"] == 4)["quiz"][0]["options"] = [3, 13, 8]
 
 
+def m_dangling_pitfall_ref(chs):
+    """删掉一条翻车点，但正文里「见翻车点⑤」的交叉引用还在（编号最容易悬空的场景）。"""
+    ch = next(c for c in chs if c["no"] == 4)
+    ch["pitfalls"] = ch["pitfalls"][:4]
+
+
 def m_tree_duplicate_leaf(chs):
     """决策树里两条分支指向同一章（改章号时最容易犯）。"""
     tree.TREE[1][2][0] = (tree.TREE[1][2][0][0], 1)
@@ -109,6 +115,7 @@ MUTATIONS = [
     ("模板超过 2 个", m_three_templates, "模板 3 个"),
     ("§2 缺少分流条件", m_missing_routing, "缺少分流条件"),
     ("自测正确答案不在选项里", m_quiz_answer_not_in_options, "不在选项"),
+    ("翻车点交叉引用悬空", m_dangling_pitfall_ref, "但该章只有"),
     ("决策树两条分支同一章", m_tree_duplicate_leaf, "重复叶子"),
     ("决策树漏掉一个模式", m_tree_missing_pattern, "未覆盖模式"),
     ("正文链到不存在的页", m_dead_internal_link, "死链"),
