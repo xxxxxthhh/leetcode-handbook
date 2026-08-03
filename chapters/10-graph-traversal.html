@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>10 图的 BFS/DFS · 算法面试阈值手册</title>
+<meta name="description" content="网格也是图；visited 集合是命根子">
+<link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"></noscript>
+<link rel="stylesheet" href="../assets/handbook.css">
+<script src="../assets/theme.js"></script>
+</head>
+<body>
+<button class="theme-toggle" type="button" aria-label="切换深色/浅色模式" title="切换深色/浅色模式">
+  <span class="sun" aria-hidden="true">☀️</span><span class="moon" aria-hidden="true">🌙</span>
+</button>
+<div class="wrap">
+<nav class="crumb"><a href="../index.html">← 目录</a> · <a href="../cheatsheet.html">决策树速查</a></nav>
+
+<header class="ch">
+  <div class="bars" aria-hidden="true"><span class="h1"></span><span class="h2"></span><span class="h4"></span><span class="h6"></span><span class="h3"></span><span class="h5 w"></span><span class="h2 f"></span><span class="h1 f"></span></div>
+  <div class="kicker">Pattern 10 · Graph BFS / DFS</div>
+  <h1>10 图的 BFS/DFS
+    <span class="zh">网格也是图；visited 集合是命根子</span>
+  </h1>
+  <div class="meta"><span>面试频率 <b>极高</b></span><span>题目 <b>7 道</b></span><span>模板 <b>2 个</b></span><span>⭐认脸 <b>1 道</b></span></div>
+</header>
+
+<section id="s1">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§1 Mental Model 一句话心智模型</span></div>
+  <h2>先记住这一句</h2>
+<div class="oneliner"><b>网格就是图：每个格子是点，上下左右是边。<code>visited</code> 决定你会不会死循环，用队列还是栈决定你先看近的还是先看深的。</b></div>
+<p>选 BFS 还是 DFS，只看一个问题：<b>要不要「最少步数」</b>。要，就必须 BFS——队列一层一层往外扩，第一次碰到目标时的层数就是最短距离；不要，两个都行，DFS 的递归写法通常更短。</p>
+<p><code>visited</code> 的标记时机是本章头号 bug 来源：<b>入队时就标记</b>，不是出队时。出队才标记的话，同一个格子会被多个邻居重复入队，轻则变慢，重则超时。</p>
+
+</section>
+
+<section id="s2">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§2 Recognition Signals 识别信号</span></div>
+  <h2>看到什么，想到本章</h2>
+<div class="tbl-scroll"><table class="sig-tbl"><thead><tr><th>题面出现…</th><th>想到</th></tr></thead><tbody><tr><td>「岛屿 / 连通块 / 区域 / 省份的个数」</td><td>洪水填充，一次 DFS 吃掉一整块（模板 A）</td></tr><tr><td>「最少步数 / 最短路径 / 最少几轮」（边权都是 1）</td><td>BFS，层数就是答案（模板 B）</td></tr><tr><td>「同时从多个点开始扩散」（腐烂的橘子、着火）</td><td>多源 BFS：所有起点一次性入队</td></tr><tr><td>「被包围的区域 / 流向两个大洋」</td><td><b>反向</b>从边界出发扩散，比正向判断简单得多</td></tr><tr><td>「克隆图 / 深拷贝一张图」</td><td>DFS + 哈希表映射旧节点 → 新节点</td></tr><tr><td>给的是 <code>edges</code> 数组而不是网格</td><td>先建邻接表 <code>defaultdict(list)</code>，再套同一套骨架</td></tr></tbody></table></div>
+<div class="routing"><div class="rt-head">分流条件 · 决策树同源</div><p>要枚举<b>所有路径</b>并在回来时还原现场，那是回溯（第 09 章）——本章的格子一旦标记就永久标记，绝不还原，这是两者最省事的分辨方法。题面出现「先修课 / 依赖 / 顺序」→ 拓扑排序（第 11 章）；只问「这两个点连不连通」且边是<b>动态加进来</b>的 → 并查集（第 12 章）——静态图数连通块用本章更直接。边有权重的最短路属于 Dijkstra，本书不覆盖。</p></div>
+
+</section>
+
+<section id="s3">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§3 Template 模板代码</span></div>
+  <h2>可默写的那几行</h2>
+<p class="legend"><i class="bone">■ 【骨架】</i> 不变，闭着眼默写　<i class="slot">■ 【插槽】</i> 随题变化，写题前先问自己填什么</p>
+<div class="tpl">
+  <div class="tpl-head">模板 A · 网格 DFS<span class="note">连通块 / 洪水填充</span></div>
+  <pre><code>DIRS = ((1, 0), (-1, 0), (0, 1), (0, -1))
+
+def num_islands(grid):
+    if not grid or not grid[0]:
+        return 0
+    m, n = len(grid), len(grid[0])
+
+    def dfs(i, j):
+        if not (0 &lt;= i &lt; m and 0 &lt;= j &lt; n):     <span class="cm bone"># 【骨架】先越界,再看内容</span>
+            return
+        if grid[i][j] != "1":                   <span class="cm slot"># 【插槽】什么格子该走</span>
+            return
+        grid[i][j] = "0"                        <span class="cm bone"># 【骨架】立刻标记已访问,否则会来回死循环</span>
+        for di, dj in DIRS:                     <span class="cm bone"># 【骨架】</span>
+            dfs(i + di, j + dj)                 <span class="cm bone"># 【骨架】</span>
+
+    count = 0
+    for i in range(m):
+        for j in range(n):
+            if grid[i][j] == "1":               <span class="cm slot"># 【插槽】什么算一个新的连通块</span>
+                count += 1
+                dfs(i, j)
+    return count</code></pre>
+  <div class="tpl-foot">默写口诀：<b>越界就回、不该走就回、进来先标记、再走四个方向</b>。数个数、求面积、求周长都只改最后的返回值。</div>
+</div>
+<div class="tpl">
+  <div class="tpl-head">模板 B · 多源 BFS<span class="note">最少步数</span></div>
+  <pre><code>from collections import deque
+
+def rotting_oranges(grid):
+    m, n = len(grid), len(grid[0])
+    q, fresh = deque(), 0
+    for i in range(m):
+        for j in range(n):
+            if grid[i][j] == 2:
+                q.append((i, j))            <span class="cm slot"># 【插槽】所有起点一次性入队 —— 多源的全部秘密</span>
+            elif grid[i][j] == 1:
+                fresh += 1                  <span class="cm slot"># 【插槽】终止条件要盯的量</span>
+    steps = 0
+    while q and fresh:                      <span class="cm bone"># 【骨架】</span>
+        for _ in range(len(q)):             <span class="cm bone"># 【骨架】先固定这一层,层数就是步数</span>
+            i, j = q.popleft()              <span class="cm bone"># 【骨架】</span>
+            for di, dj in ((1, 0), (-1, 0), (0, 1), (0, -1)):
+                x, y = i + di, j + dj
+                if 0 &lt;= x &lt; m and 0 &lt;= y &lt; n and grid[x][y] == 1:
+                    grid[x][y] = 2          <span class="cm bone"># 【骨架】入队时就标记,不能等出队再标</span>
+                    fresh -= 1
+                    q.append((x, y))        <span class="cm bone"># 【骨架】</span>
+        steps += 1                          <span class="cm slot"># 【插槽】答案:层数 / 每个点的距离</span>
+    return -1 if fresh else steps</code></pre>
+  <div class="tpl-foot">两个关键点：<b>所有起点一次性入队</b>（多源和单源的唯一区别），以及 <code>for _ in range(len(q))</code> 固定住这一层——层数就是步数。</div>
+</div>
+
+</section>
+
+<section id="s4">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§4 Problems 题目分层</span></div>
+  <h2>从建直觉到扭模板</h2>
+<div class="tier">
+  <div class="tier-head"><span class="t">热身</span><span class="d">建直觉，easy 为主</span><span class="c">1 道</span></div>
+  <ul class="plist">
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/number-of-islands/" target="_blank" rel="noopener">200 Number of Islands</a><span class="badge diff">Medium</span></div>
+    <div class="p-note">模板 A 原题。就地把 <code>'1'</code> 改成 <code>'0'</code> 当作 <code>visited</code>；面试官说不许改输入时，换成一个 <code>visited</code> 集合即可。</div>
+  </li>
+  </ul>
+</div>
+<div class="tier">
+  <div class="tier-head"><span class="t">标准</span><span class="d">模板直接套</span><span class="c">4 道</span></div>
+  <ul class="plist">
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/clone-graph/" target="_blank" rel="noopener">133 Clone Graph</a><span class="badge diff">Medium</span></div>
+    <div class="p-note">DFS + <code>old → new</code> 哈希映射。映射必须<b>在递归之前</b>写入，否则环会让你无限递归——这是它和普通 DFS 唯一的区别。</div>
+  </li>
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/max-area-of-island/" target="_blank" rel="noopener">695 Max Area of Island</a><span class="badge diff">Medium</span></div>
+    <div class="p-note">模板 A 换返回值：从「计数」变成「返回本块面积」。<code>1 + sum(四个方向的 dfs)</code> 这一行把递归的合并写法演示得很干净。</div>
+  </li>
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/rotting-oranges/" target="_blank" rel="noopener">994 Rotting Oranges</a><span class="badge diff">Medium</span></div>
+    <div class="p-note">模板 B 原题。多源 BFS 的教科书题：所有烂橘子先入队，再用 <code>fresh</code> 计数判断最后有没有剩下够不到的。</div>
+  </li>
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/surrounded-regions/" target="_blank" rel="noopener">130 Surrounded Regions</a><span class="badge diff">Medium</span></div>
+    <div class="p-note">反向思维：不去找「被包围的 O」，而是从<b>边界的 O</b> 出发标记所有安全的，剩下的就是被包围的。正向判断需要回溯，反向只要一次遍历。</div>
+  </li>
+  </ul>
+</div>
+<div class="tier">
+  <div class="tier-head"><span class="t">变体</span><span class="d">模板要扭，坑的来源</span><span class="c">2 道</span></div>
+  <ul class="plist">
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/pacific-atlantic-water-flow/" target="_blank" rel="noopener">417 Pacific Atlantic Water Flow</a><span class="badge diff">Medium</span></div>
+    <div class="p-note">130 的双向版：从太平洋边界和大西洋边界各做一次反向扩散（水往高处走），取两个集合的交集。识别难度大于实现难度。</div>
+  </li>
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/word-ladder/" target="_blank" rel="noopener">127 Word Ladder</a><span class="badge star" title="hard，认脸即可">⭐ 认脸</span><span class="badge diff">Hard</span></div>
+    <div class="p-note">⭐认脸。把单词看成点、差一个字母看成边，就是无权图最短路 → BFS。说得出「用 <code>*</code> 通配建桶来找邻居」这个优化即可。</div>
+  </li>
+  </ul>
+</div>
+
+</section>
+
+<section id="s5">
+  <div class="sec-tag"><span class="cell" style="background:var(--warn)"></span><span class="lab">§5 Pitfalls &amp; Self-check 常见翻车点 + 自测</span></div>
+  <h2>会写不等于不翻车</h2>
+<ol class="pits">
+<li><span class="pt">出队时才标记 visited</span>——同一个格子会被四个邻居各入队一次。正确做法是<b>入队的那一刻就标记</b>。网格题里表现为超时，图题里表现为重复计数。</li>
+<li><span class="pt">越界检查放在取值之后</span>——<code>grid[i][j] != '1' and 0 &lt;= i &lt; m</code> 会先崩在越界索引上。顺序永远是：先边界，后内容。</li>
+<li><span class="pt">多源 BFS 只入队了一个起点</span>——994、286 这类题必须把<b>全部</b>起点先塞进队列再开始循环。逐个起点跑单源 BFS 是 O(k·mn)，多源是 O(mn)。</li>
+<li><span class="pt">BFS 忘了固定层大小</span>——要「第几步」就必须 <code>for _ in range(len(q))</code>，和第 07 章层序是同一条。只要距离不要步数时，可以改成把 <code>(点, 距离)</code> 一起入队。</li>
+<li><span class="pt">大网格上递归 DFS 爆栈</span>——1000×1000 的全 <code>'1'</code> 网格，递归深度可达 10⁶。面试里提一句「必要时改成显式栈的迭代 DFS 或 BFS」是加分点。</li>
+</ol>
+<h3>自测 · 30 秒识别模式</h3>
+<div class="quiz">
+<article class="q" data-answer="10">
+  <p class="qprompt"><span class="qtype">30 秒识别</span>Q1 · <a href="https://leetcode.com/problems/flood-fill/" target="_blank" rel="noopener">733 Flood Fill</a>：从某个像素出发，把所有与它四连通且同色的像素改成新颜色。你的第一反应是哪个模式？</p>
+  <div class="opts"><button class="opt" type="button" data-ch="10">10 图的 BFS/DFS</button><button class="opt" type="button" data-ch="9">09 回溯</button><button class="opt" type="button" data-ch="12">12 并查集</button></div>
+  <details><summary>看答案</summary><div class="answer"><p>图的 DFS/BFS（模板 A）。这就是洪水填充的原型，200 数岛屿是它的计数版。注意新旧颜色相同时要提前返回，否则死循环。</p></div></details>
+</article>
+<article class="q" data-answer="10">
+  <p class="qprompt"><span class="qtype">30 秒识别</span>Q2 · <a href="https://leetcode.com/problems/shortest-path-in-binary-matrix/" target="_blank" rel="noopener">1091 Shortest Path in Binary Matrix</a>：0/1 矩阵里从左上角走到右下角（可走八个方向），求最短路径长度。你的第一反应是哪个模式？</p>
+  <div class="opts"><button class="opt" type="button" data-ch="10">10 图的 BFS/DFS</button><button class="opt" type="button" data-ch="9">09 回溯</button><button class="opt" type="button" data-ch="5">05 二分查找</button></div>
+  <details><summary>看答案</summary><div class="answer"><p>BFS（模板 B）。「最短」+ 边权都是 1 = BFS，层数就是答案。DFS 也能遍历，但要枚举所有路径再取最小，指数级。八方向只是把 <code>DIRS</code> 换成 8 个。</p></div></details>
+</article>
+<article class="q" data-answer="11">
+  <p class="qprompt"><span class="qtype">30 秒识别</span>Q3 · <a href="https://leetcode.com/problems/course-schedule/" target="_blank" rel="noopener">207 Course Schedule</a>：共 n 门课，给出若干「先修 A 才能修 B」的关系，判断能否修完所有课。你的第一反应是哪个模式？</p>
+  <div class="opts"><button class="opt" type="button" data-ch="10">10 图的 BFS/DFS</button><button class="opt" type="button" data-ch="11">11 拓扑排序</button><button class="opt" type="button" data-ch="12">12 并查集</button></div>
+  <details><summary>看答案</summary><div class="answer"><p><b>拓扑排序，不是本章</b>——题面里的「先修 / 依赖」是拓扑的专属暗号。它确实用 BFS 队列，但队列里放的是<b>入度为 0</b> 的点，不是「所有邻居」；要判的是有没有环，不是能不能走到。见第 11 章。</p></div></details>
+</article>
+<p class="quiz-note">每章自测都会<b>混入恰好一道非本章题</b>，防止「读哪章选哪章」的条件反射；题面也一律取自本章未收录的题，避免凭记忆而非凭信号作答。</p>
+</div>
+</section>
+
+<nav class="next">
+  <a href="09-backtracking.html">← 09 回溯</a>
+  <a href="../cheatsheet.html">决策树速查 →</a>
+</nav>
+
+</div>
+<script src="../assets/quiz.js" defer></script>
+</body>
+</html>

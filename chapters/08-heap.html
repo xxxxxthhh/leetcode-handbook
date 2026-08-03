@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>08 堆 / Top-K · 算法面试阈值手册</title>
+<meta name="description" content="只关心第 K 个时，不排序，养一个大小为 K 的堆">
+<link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"></noscript>
+<link rel="stylesheet" href="../assets/handbook.css">
+<script src="../assets/theme.js"></script>
+</head>
+<body>
+<button class="theme-toggle" type="button" aria-label="切换深色/浅色模式" title="切换深色/浅色模式">
+  <span class="sun" aria-hidden="true">☀️</span><span class="moon" aria-hidden="true">🌙</span>
+</button>
+<div class="wrap">
+<nav class="crumb"><a href="../index.html">← 目录</a> · <a href="../cheatsheet.html">决策树速查</a></nav>
+
+<header class="ch">
+  <div class="bars" aria-hidden="true"><span class="h1"></span><span class="h2"></span><span class="h4"></span><span class="h6"></span><span class="h3"></span><span class="h5 w"></span><span class="h2 f"></span><span class="h1 f"></span></div>
+  <div class="kicker">Pattern 08 · Heap / Top-K</div>
+  <h1>08 堆 / Top-K
+    <span class="zh">只关心第 K 个时，不排序，养一个大小为 K 的堆</span>
+  </h1>
+  <div class="meta"><span>面试频率 <b>高</b></span><span>题目 <b>6 道</b></span><span>模板 <b>2 个</b></span><span>⭐认脸 <b>1 道</b></span></div>
+</header>
+
+<section id="s1">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§1 Mental Model 一句话心智模型</span></div>
+  <h2>先记住这一句</h2>
+<div class="oneliner"><b>只关心第 K 个的时候不要排序：养一个大小为 K 的堆，让不够格的自动掉出去。</b></div>
+<p>方向最容易记反，记住这一句就够：<b>求第 K 大，用大小为 K 的小顶堆</b>。堆顶是这 K 个里最小的，也就是全局第 K 大；新来的数比堆顶大才有资格挤掉它。求第 K 小就整体取相反数，别去手写大顶堆——Python 的 <code>heapq</code> 只有小顶堆。</p>
+<p>复杂度是 O(n log K) 而不是排序的 O(n log n)。K 很小时差距巨大，而且它<b>天然支持数据流</b>：数字一个个来，你随时能回答，排序做不到这件事。</p>
+
+</section>
+
+<section id="s2">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§2 Recognition Signals 识别信号</span></div>
+  <h2>看到什么，想到本章</h2>
+<div class="tbl-scroll"><table class="sig-tbl"><thead><tr><th>题面出现…</th><th>想到</th></tr></thead><tbody><tr><td>「第 K 大 / 第 K 小」且数组<b>无序</b></td><td>大小为 K 的堆（模板 A）</td></tr><tr><td>「前 K 个高频 / 最接近原点的 K 个点」</td><td>模板 A，只换入堆的键</td></tr><tr><td>「数据流 / 不断插入，随时要回答」</td><td>堆（排序做不到，因为数据没有终点）</td></tr><tr><td>「合并 K 个有序链表 / 数组」</td><td>堆里放 K 个当前头，弹一个补一个</td></tr><tr><td>「动态中位数」</td><td>对顶堆（模板 B）</td></tr><tr><td>「每次取出当前最大的，处理完再放回去」</td><td>堆（621 任务调度、1046 碰撞石头）</td></tr></tbody></table></div>
+<div class="routing"><div class="rt-head">分流条件 · 决策树同源</div><p>「前 K 个高频」要先用 <code>Counter</code> 数出频次（第 01 章）再用堆选 K 个——哈希负责统计，堆负责挑选，两步不要混。数组<b>已排序</b>时第 K 大就是一个下标，别掏堆；给的是 <b>BST</b> 时中序走到第 K 个即可（第 07 章）——「第 K」这三个字本身不构成用堆的理由，<b>无序</b>才是；「固定窗口内的最大值」要的是<b>过期淘汰</b>，那是单调队列（第 04 章）不是堆；「第 K 小的距离 / 乘积」这类答案是数值的，回到答案二分（第 05 章）。只要一次的第 K 大且允许平均 O(n)，快速选择（quickselect）也是标准答案。</p></div>
+
+</section>
+
+<section id="s3">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§3 Template 模板代码</span></div>
+  <h2>可默写的那几行</h2>
+<p class="legend"><i class="bone">■ 【骨架】</i> 不变，闭着眼默写　<i class="slot">■ 【插槽】</i> 随题变化，写题前先问自己填什么</p>
+<div class="tpl">
+  <div class="tpl-head">模板 A · 大小为 K 的堆<span class="note">覆盖本章 80% 的题</span></div>
+  <pre><code>import heapq
+
+def kth_largest(nums, k):
+    heap = []                               <span class="cm bone"># 【骨架】小顶堆,堆顶是这 K 个里最小的那个</span>
+    for x in nums:                          <span class="cm bone"># 【骨架】</span>
+        heapq.heappush(heap, x)             <span class="cm slot"># 【插槽】入堆的键:值 / 频次 / 距离的相反数</span>
+        if len(heap) &gt; k:                   <span class="cm bone"># 【骨架】超员就把最弱的踢出去</span>
+            heapq.heappop(heap)             <span class="cm bone"># 【骨架】</span>
+    return heap[0]                          <span class="cm slot"># 【插槽】答案:第 K 大 / 整个 K 集合</span></code></pre>
+  <div class="tpl-foot">默写口诀：<b>入堆、超员、踢堆顶</b>。换题只改一件事——<b>入堆的键</b>（值 / 频次 / 距离的相反数）。</div>
+</div>
+<div class="tpl">
+  <div class="tpl-head">模板 B · 对顶堆<span class="note">仅动态中位数需要，认脸级</span></div>
+  <pre><code>import heapq
+
+class MedianFinder:
+    def __init__(self):
+        self.lo = []                        <span class="cm bone"># 【骨架】大顶堆(存相反数),装较小的一半</span>
+        self.hi = []                        <span class="cm bone"># 【骨架】小顶堆,装较大的一半</span>
+
+    def add(self, x):
+        heapq.heappush(self.lo, -x)                        <span class="cm bone"># 【骨架】先无脑进左边</span>
+        heapq.heappush(self.hi, -heapq.heappop(self.lo))   <span class="cm bone"># 【骨架】把左边最大的让给右边</span>
+        if len(self.hi) &gt; len(self.lo):                    <span class="cm slot"># 【插槽】平衡策略:允许谁多一个</span>
+            heapq.heappush(self.lo, -heapq.heappop(self.hi))
+
+    def median(self):
+        if len(self.lo) &gt; len(self.hi):     <span class="cm slot"># 【插槽】奇数个时中位数在较长的那边</span>
+            return float(-self.lo[0])
+        return (-self.lo[0] + self.hi[0]) / 2</code></pre>
+  <div class="tpl-foot">两个堆的不变式：<code>lo</code> 全体 ≤ <code>hi</code> 全体，且 <code>len(lo) - len(hi) ∈ {0, 1}</code>。「先进左边、再让给右边、右边多了再还回来」这三步能保证不变式恒成立。</div>
+</div>
+
+</section>
+
+<section id="s4">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§4 Problems 题目分层</span></div>
+  <h2>从建直觉到扭模板</h2>
+<div class="tier">
+  <div class="tier-head"><span class="t">热身</span><span class="d">建直觉，easy 为主</span><span class="c">1 道</span></div>
+  <ul class="plist">
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/kth-largest-element-in-a-stream/" target="_blank" rel="noopener">703 Kth Largest Element in a Stream</a><span class="badge diff">Easy</span></div>
+    <div class="p-note">模板 A 的类封装版，把「数据流」这件事具象化：构造时先灌一遍，之后每次 <code>add</code> 都是「入堆 + 超员就踢」。</div>
+  </li>
+  </ul>
+</div>
+<div class="tier">
+  <div class="tier-head"><span class="t">标准</span><span class="d">模板直接套</span><span class="c">3 道</span></div>
+  <ul class="plist">
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/kth-largest-element-in-an-array/" target="_blank" rel="noopener">215 Kth Largest Element in an Array</a><span class="badge diff">Medium</span></div>
+    <div class="p-note">模板 A 原题。面试标准答法是先说堆 O(n log K)，再补一句「要平均 O(n) 就用快速选择」——两个都说得出才算完整。</div>
+  </li>
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/top-k-frequent-elements/" target="_blank" rel="noopener">347 Top K Frequent Elements</a><span class="badge diff">Medium</span></div>
+    <div class="p-note"><code>Counter</code> + 堆的组合。<code>heapq.nlargest(k, cnt, key=cnt.get)</code> 一行也行，但要能说出它内部就是这个堆。桶排序 O(n) 解法是加分项。</div>
+  </li>
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/k-closest-points-to-origin/" target="_blank" rel="noopener">973 K Closest Points to Origin</a><span class="badge diff">Medium</span></div>
+    <div class="p-note">入堆的键换成距离的相反数（求最近的 K 个 = 踢掉最远的）。别开平方，比较平方距离就够——省一次浮点运算，也避免精度问题。</div>
+  </li>
+  </ul>
+</div>
+<div class="tier">
+  <div class="tier-head"><span class="t">变体</span><span class="d">模板要扭，坑的来源</span><span class="c">2 道</span></div>
+  <ul class="plist">
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/task-scheduler/" target="_blank" rel="noopener">621 Task Scheduler</a><span class="badge diff">Medium</span></div>
+    <div class="p-note">堆解法是「每轮取出剩余最多的几种任务」，直观但啰嗦；面试更爱听 <code>(maxCount - 1) * (n + 1) + 同频次任务数</code> 这个数学公式。两种都准备，先讲公式再说堆。</div>
+  </li>
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/find-median-from-data-stream/" target="_blank" rel="noopener">295 Find Median from Data Stream</a><span class="badge star" title="hard，认脸即可">⭐ 认脸</span><span class="badge diff">Hard</span></div>
+    <div class="p-note">⭐认脸。模板 B 原题，说清两个堆的不变式即可。</div>
+  </li>
+  </ul>
+</div>
+
+</section>
+
+<section id="s5">
+  <div class="sec-tag"><span class="cell" style="background:var(--warn)"></span><span class="lab">§5 Pitfalls &amp; Self-check 常见翻车点 + 自测</span></div>
+  <h2>会写不等于不翻车</h2>
+<ol class="pits">
+<li><span class="pt">方向记反</span>——求第 K <b>大</b>用<b>小</b>顶堆。反过来（大顶堆存 K 个）踢掉的是最大的，答案全错。记法：堆顶是「守门员」，它守的是第 K 名这道门。</li>
+<li><span class="pt">Python 没有大顶堆</span>——一律取相反数入堆，出堆再取回来。对顶堆里 <code>lo</code> 存的是负值，<code>-self.lo[0]</code> 才是真正的最大值——这一步漏掉是 295 最常见的 bug。</li>
+<li><span class="pt">元组入堆的次级比较</span>——<code>(freq, val)</code> 里 <code>freq</code> 相同时会去比 <code>val</code>。如果 <code>val</code> 是不可比较的对象（如自定义类、字典），会直接抛 <code>TypeError</code>。塞一个序号当 tie-breaker。</li>
+<li><span class="pt"><code>heapify</code> 与逐个 push 的差别</span>——<code>heapq.heapify(list)</code> 是 O(n)，逐个 <code>heappush</code> 是 O(n log n)。已经拿到全量数据时用前者；数据流场景只能用后者。</li>
+<li><span class="pt">K 等于 n 时堆没意义</span>——K 接近 n 时 O(n log K) 已退化到 O(n log n)，直接排序更省事。面试里主动说这句，说明你知道自己在优化什么。</li>
+</ol>
+<h3>自测 · 30 秒识别模式</h3>
+<div class="quiz">
+<article class="q" data-answer="8">
+  <p class="qprompt"><span class="qtype">30 秒识别</span>Q1 · <a href="https://leetcode.com/problems/last-stone-weight/" target="_blank" rel="noopener">1046 Last Stone Weight</a>：每次取出最重的两块石头相撞，剩下的差值放回去，求最后剩下的重量。你的第一反应是哪个模式？</p>
+  <div class="opts"><button class="opt" type="button" data-ch="8">08 堆 / Top-K</button><button class="opt" type="button" data-ch="15">15 贪心</button><button class="opt" type="button" data-ch="4">04 栈与单调栈</button></div>
+  <details><summary>看答案</summary><div class="answer"><p>堆。「每次取当前最大、处理完再放回去」是堆的标准句式。Python 里全部取负入小顶堆即可。排序做不到——每撞一次集合就变了。</p></div></details>
+</article>
+<article class="q" data-answer="8">
+  <p class="qprompt"><span class="qtype">30 秒识别</span>Q2 · <a href="https://leetcode.com/problems/top-k-frequent-words/" target="_blank" rel="noopener">692 Top K Frequent Words</a>：返回出现频率前 K 高的单词，频率相同的按字典序排。你的第一反应是哪个模式？</p>
+  <div class="opts"><button class="opt" type="button" data-ch="8">08 堆 / Top-K</button><button class="opt" type="button" data-ch="1">01 哈希</button><button class="opt" type="button" data-ch="5">05 二分查找</button></div>
+  <details><summary>看答案</summary><div class="answer"><p><code>Counter</code> + 堆（模板 A）。频率相同按字典序，正是「元组入堆的次级比较」那条翻车点的实战：入堆键写成 <code>(freq, 反向的字典序)</code> 才能一次排对。</p></div></details>
+</article>
+<article class="q" data-answer="5">
+  <p class="qprompt"><span class="qtype">30 秒识别</span>Q3 · <a href="https://leetcode.com/problems/find-k-closest-elements/" target="_blank" rel="noopener">658 Find K Closest Elements</a>：给一个<b>已排序</b>数组和目标值 x，找出最接近 x 的 k 个数。你的第一反应是哪个模式？</p>
+  <div class="opts"><button class="opt" type="button" data-ch="8">08 堆 / Top-K</button><button class="opt" type="button" data-ch="5">05 二分查找</button><button class="opt" type="button" data-ch="2">02 双指针</button></div>
+  <details><summary>看答案</summary><div class="answer"><p><b>二分 / 双指针，不是本章</b>——看到「k 个最接近」手就想去掏堆，但数组已排序，答案一定是一个<b>连续区间</b>，二分找左边界即可，O(log n)。堆能过，却白白浪费了「有序」这个最值钱的条件。见 §2 分流条件。</p></div></details>
+</article>
+<p class="quiz-note">每章自测都会<b>混入恰好一道非本章题</b>，防止「读哪章选哪章」的条件反射；题面也一律取自本章未收录的题，避免凭记忆而非凭信号作答。</p>
+</div>
+</section>
+
+<nav class="next">
+  <a href="07-tree.html">← 07 树的遍历与递归</a>
+  <a href="09-backtracking.html">09 回溯 →</a>
+</nav>
+
+</div>
+<script src="../assets/quiz.js" defer></script>
+</body>
+</html>

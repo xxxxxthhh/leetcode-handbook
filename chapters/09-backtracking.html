@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>09 回溯 · 算法面试阈值手册</title>
+<meta name="description" content="做选择 → 递归 → 撤销选择；剪枝决定生死">
+<link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"></noscript>
+<link rel="stylesheet" href="../assets/handbook.css">
+<script src="../assets/theme.js"></script>
+</head>
+<body>
+<button class="theme-toggle" type="button" aria-label="切换深色/浅色模式" title="切换深色/浅色模式">
+  <span class="sun" aria-hidden="true">☀️</span><span class="moon" aria-hidden="true">🌙</span>
+</button>
+<div class="wrap">
+<nav class="crumb"><a href="../index.html">← 目录</a> · <a href="../cheatsheet.html">决策树速查</a></nav>
+
+<header class="ch">
+  <div class="bars" aria-hidden="true"><span class="h1"></span><span class="h2"></span><span class="h4"></span><span class="h6"></span><span class="h3"></span><span class="h5 w"></span><span class="h2 f"></span><span class="h1 f"></span></div>
+  <div class="kicker">Pattern 09 · Backtracking</div>
+  <h1>09 回溯
+    <span class="zh">做选择 → 递归 → 撤销选择；剪枝决定生死</span>
+  </h1>
+  <div class="meta"><span>面试频率 <b>高</b></span><span>题目 <b>7 道</b></span><span>模板 <b>2 个</b></span><span>⭐认脸 <b>1 道</b></span></div>
+</header>
+
+<section id="s1">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§1 Mental Model 一句话心智模型</span></div>
+  <h2>先记住这一句</h2>
+<div class="oneliner"><b>回溯是在一棵「选择树」上做深度优先：做选择 → 递归 → 撤销选择。三个空要填——本层有哪些选择、什么时候记答案、怎么剪枝。</b></div>
+<p>「撤销选择」是它和普通 DFS 的唯一区别，也是它叫回溯的原因：同一个 <code>path</code> 数组被所有分支共用，走完一条路必须恢复原状，否则兄弟分支拿到的是脏数据。<b>记答案时一定 <code>path[:]</code> 拷贝</b>，同理。</p>
+<p>识别它很容易：题面里有「<b>所有</b>」「列出全部方案」「有多少种走法并要求给出方案」，而且数据规模小得反常（n ≤ 20）——因为答案数量本身就是指数级的，出题人不可能给你大数据。</p>
+
+</section>
+
+<section id="s2">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§2 Recognition Signals 识别信号</span></div>
+  <h2>看到什么，想到本章</h2>
+<div class="tbl-scroll"><table class="sig-tbl"><thead><tr><th>题面出现…</th><th>想到</th></tr></thead><tbody><tr><td>「所有子集 / 所有组合 / 所有排列」</td><td>模板 A（组合）或模板 B（排列）</td></tr><tr><td>「列出全部方案 / 打印所有路径」</td><td>回溯，答案是方案本身而不是个数</td></tr><tr><td>「在矩阵里找一个单词 / 一条路径」</td><td>网格回溯：标记 → 递归 → 还原</td></tr><tr><td>「把字符串切成若干段，每段都要满足…」</td><td>切割型回溯，切点就是选择</td></tr><tr><td>n ≤ 20 却要枚举，或明确说「保证答案不超过 X 个」</td><td>指数级枚举被默许了</td></tr><tr><td>「棋盘 / 皇后 / 数独」</td><td>回溯 + 冲突集合剪枝</td></tr></tbody></table></div>
+<div class="routing"><div class="rt-head">分流条件 · 决策树同源</div><p>题目只要<b>方案数</b>、不要方案本身，几乎一定是 DP（第 16、17 章）——回溯枚举完再数一遍是指数级，DP 是多项式级。只要<b>最优值</b>（最大 / 最小）同理，先想 DP 或贪心（第 15 章）。网格上数连通块（第 10 章）用的是 DFS 但<b>不撤销</b>：格子一旦访问就永久标记，因为你不需要「换一条路再走一遍」。看到「还原现场」这个动作才是回溯。最后一个同名陷阱：「排列」这个词在第 03 章 567 也出现，但那道题问的是「s1 的某个排列是否作为子串出现」——比对字符计数即可，<b>真去枚举排列就爆了</b>。要不要真的列出方案，永远是第一道分水岭。</p></div>
+
+</section>
+
+<section id="s3">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§3 Template 模板代码</span></div>
+  <h2>可默写的那几行</h2>
+<p class="legend"><i class="bone">■ 【骨架】</i> 不变，闭着眼默写　<i class="slot">■ 【插槽】</i> 随题变化，写题前先问自己填什么</p>
+<div class="tpl">
+  <div class="tpl-head">模板 A · 组合 / 子集<span class="note">靠 start 参数不许回头</span></div>
+  <pre><code>def subsets(nums):
+    res, path = [], []                      <span class="cm bone"># 【骨架】path = 当前走到哪</span>
+    def dfs(start):                         <span class="cm slot"># 【插槽】start 表示"不许回头",排列题换成 used</span>
+        res.append(path[:])                 <span class="cm slot"># 【插槽】何时记答案:每个节点 / 只在叶子;必须拷贝</span>
+        for i in range(start, len(nums)):   <span class="cm bone"># 【骨架】枚举本层的选择</span>
+            path.append(nums[i])            <span class="cm bone"># 【骨架】做选择</span>
+            dfs(i + 1)                      <span class="cm slot"># 【插槽】i+1 = 每个数最多用一次;i = 可重复用</span>
+            path.pop()                      <span class="cm bone"># 【骨架】撤销选择</span>
+    dfs(0)
+    return res</code></pre>
+  <div class="tpl-foot">默写口诀：<b>选、递归、撤销</b>。<code>dfs(i + 1)</code> 每个数用一次，<code>dfs(i)</code> 可以重复用——一个字符的差别就是 78 和 39 的差别。</div>
+</div>
+<div class="tpl">
+  <div class="tpl-head">模板 B · 排列<span class="note">靠 used 数组标记占用</span></div>
+  <pre><code>def permutations(nums):
+    res, path = [], []
+    used = [False] * len(nums)              <span class="cm bone"># 【骨架】排列没有"不许回头",靠 used 防重复取</span>
+    def dfs():
+        if len(path) == len(nums):          <span class="cm slot"># 【插槽】终止条件 = 叶子的定义</span>
+            res.append(path[:])             <span class="cm bone"># 【骨架】记答案要拷贝</span>
+            return
+        for i, x in enumerate(nums):        <span class="cm bone"># 【骨架】每层都从头枚举</span>
+            if used[i]:                     <span class="cm bone"># 【骨架】</span>
+                continue
+            used[i] = True                  <span class="cm bone"># 【骨架】做选择</span>
+            path.append(x)
+            dfs()                           <span class="cm bone"># 【骨架】</span>
+            path.pop()                      <span class="cm bone"># 【骨架】撤销选择</span>
+            used[i] = False
+    dfs()
+    return res</code></pre>
+  <div class="tpl-foot">排列与组合的分水岭：组合「不许回头」（<code>start</code>），排列「每层都从头选」（<code>used</code>）。网格题（79）本质是排列型——<code>board[i][j] = '#'</code> 就是它的 <code>used</code>。</div>
+</div>
+
+</section>
+
+<section id="s4">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§4 Problems 题目分层</span></div>
+  <h2>从建直觉到扭模板</h2>
+<div class="tier">
+  <div class="tier-head"><span class="t">热身</span><span class="d">建直觉，easy 为主</span><span class="c">1 道</span></div>
+  <ul class="plist">
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/subsets/" target="_blank" rel="noopener">78 Subsets</a><span class="badge diff">Medium</span></div>
+    <div class="p-note">模板 A 原题。子集题的答案记在<b>每个节点</b>而不是叶子——这就是「什么时候记答案」这个插槽的第一次演示。</div>
+  </li>
+  </ul>
+</div>
+<div class="tier">
+  <div class="tier-head"><span class="t">标准</span><span class="d">模板直接套</span><span class="c">4 道</span></div>
+  <ul class="plist">
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/combination-sum/" target="_blank" rel="noopener">39 Combination Sum</a><span class="badge diff">Medium</span></div>
+    <div class="p-note">唯一改动：递归传 <code>i</code> 而不是 <code>i + 1</code>（同一个数可重复用）。排序后 <code>if candidates[i] &gt; remain: break</code> 是本章性价比最高的剪枝。</div>
+  </li>
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/permutations/" target="_blank" rel="noopener">46 Permutations</a><span class="badge diff">Medium</span></div>
+    <div class="p-note">模板 B 原题。47（含重复元素的排列）在它基础上加「同层跳过相同值且前一个未被使用」，是 90 的排列版。</div>
+  </li>
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/subsets-ii/" target="_blank" rel="noopener">90 Subsets II</a><span class="badge diff">Medium</span></div>
+    <div class="p-note">去重的标准写法：<b>先排序</b>，然后 <code>if i &gt; start and nums[i] == nums[i-1]: continue</code>。条件是 <code>i &gt; start</code> 不是 <code>i &gt; 0</code>，见翻车点②——这是全章最常写错的一行。</div>
+  </li>
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/word-search/" target="_blank" rel="noopener">79 Word Search</a><span class="badge diff">Medium</span></div>
+    <div class="p-note">网格回溯。就地把格子改成 <code>'#'</code> 表示占用，递归结束后<b>必须还原</b>；不还原就变成了第 10 章的洪水填充，答案会漏。</div>
+  </li>
+  </ul>
+</div>
+<div class="tier">
+  <div class="tier-head"><span class="t">变体</span><span class="d">模板要扭，坑的来源</span><span class="c">2 道</span></div>
+  <ul class="plist">
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/palindrome-partitioning/" target="_blank" rel="noopener">131 Palindrome Partitioning</a><span class="badge diff">Medium</span></div>
+    <div class="p-note">切割型回溯：选择是「下一刀切在哪」。判回文可以先用 DP 预处理成表，把每次 O(n) 的检查降到 O(1)——回溯 + 预处理是常见组合拳。</div>
+  </li>
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/n-queens/" target="_blank" rel="noopener">51 N-Queens</a><span class="badge star" title="hard，认脸即可">⭐ 认脸</span><span class="badge diff">Hard</span></div>
+    <div class="p-note">⭐认脸。逐行放皇后，用三个集合记列、主对角线 <code>r - c</code>、副对角线 <code>r + c</code>。说得出这三个集合就够。</div>
+  </li>
+  </ul>
+</div>
+
+</section>
+
+<section id="s5">
+  <div class="sec-tag"><span class="cell" style="background:var(--warn)"></span><span class="lab">§5 Pitfalls &amp; Self-check 常见翻车点 + 自测</span></div>
+  <h2>会写不等于不翻车</h2>
+<ol class="pits">
+<li><span class="pt">记答案忘了拷贝</span>——<code>res.append(path)</code> 存的是同一个列表对象的引用，回溯完它会被改空。必须 <code>path[:]</code> 或 <code>list(path)</code>。这是本章 90% 的「答案全是空数组」的原因。</li>
+<li><span class="pt">去重条件写成 <code>i &gt; 0</code></span>——<code>if i &gt; start and nums[i] == nums[i-1]</code> 里的 <code>start</code> 不能换成 0。写成 <code>i &gt; 0</code> 会把 <code>[1,2,2]</code> 里合法的 <code>[1,2,2]</code> 也剪掉——同一层的重复才要跳过，父子关系上的重复是合法的。</li>
+<li><span class="pt">撤销漏了一半</span>——做了两件事（<code>path.append</code> + <code>used[i] = True</code>）就要撤两件事。网格题里 <code>board[i][j] = '#'</code> 之后忘了还原，会让后续搜索少掉大片可用格子。</li>
+<li><span class="pt">该剪的枝不剪</span>——回溯的复杂度全靠剪枝救。排序 + 提前 <code>break</code>（39）、剩余元素不够就返回（77）、冲突集合（51）——面试里主动讲剪枝比写完更重要。</li>
+<li><span class="pt">把「要方案数」的题写成回溯</span>——见 §2 分流条件。爬楼梯、零钱兑换的方案数如果用回溯枚举，n 稍大就超时。</li>
+</ol>
+<h3>自测 · 30 秒识别模式</h3>
+<div class="quiz">
+<article class="q" data-answer="9">
+  <p class="qprompt"><span class="qtype">30 秒识别</span>Q1 · <a href="https://leetcode.com/problems/combinations/" target="_blank" rel="noopener">77 Combinations</a>：从 1..n 中选出所有长度为 k 的组合。你的第一反应是哪个模式？</p>
+  <div class="opts"><button class="opt" type="button" data-ch="9">09 回溯</button><button class="opt" type="button" data-ch="16">16 一维 DP</button><button class="opt" type="button" data-ch="1">01 哈希</button></div>
+  <details><summary>看答案</summary><div class="answer"><p>回溯（模板 A）。「所有组合」= 枚举方案本身。剪枝点：当剩下的数不够凑满 k 个时直接返回，<code>range(start, n - (k - len(path)) + 2)</code>。</p></div></details>
+</article>
+<article class="q" data-answer="9">
+  <p class="qprompt"><span class="qtype">30 秒识别</span>Q2 · <a href="https://leetcode.com/problems/letter-combinations-of-a-phone-number/" target="_blank" rel="noopener">17 Letter Combinations of a Phone Number</a>：给一串电话数字，返回它能表示的所有字母组合。你的第一反应是哪个模式？</p>
+  <div class="opts"><button class="opt" type="button" data-ch="9">09 回溯</button><button class="opt" type="button" data-ch="16">16 一维 DP</button><button class="opt" type="button" data-ch="2">02 双指针</button></div>
+  <details><summary>看答案</summary><div class="answer"><p>回溯。每一位数字对应一层，本层的选择列表就是这个数字映射的几个字母。「所有组合」+ 输入长度很短（≤ 4），指数级枚举被默许。</p></div></details>
+</article>
+<article class="q" data-answer="16">
+  <p class="qprompt"><span class="qtype">30 秒识别</span>Q3 · <a href="https://leetcode.com/problems/combination-sum-iv/" target="_blank" rel="noopener">377 Combination Sum IV</a>：给一个无重复正整数数组和目标值，求<b>总和为目标值的组合个数</b>（顺序不同算不同）。你的第一反应是哪个模式？</p>
+  <div class="opts"><button class="opt" type="button" data-ch="9">09 回溯</button><button class="opt" type="button" data-ch="16">16 一维 DP</button><button class="opt" type="button" data-ch="8">08 堆 / Top-K</button></div>
+  <details><summary>看答案</summary><div class="answer"><p><b>一维 DP，不是本章</b>——名字里带 Combination，要的却只是<b>个数</b>。回溯枚举完再数是指数级；<code>dp[t] = Σ dp[t - num]</code> 是 O(n·target)。见 §2 分流条件：要方案本身才回溯，要个数就 DP。</p></div></details>
+</article>
+<p class="quiz-note">每章自测都会<b>混入恰好一道非本章题</b>，防止「读哪章选哪章」的条件反射；题面也一律取自本章未收录的题，避免凭记忆而非凭信号作答。</p>
+</div>
+</section>
+
+<nav class="next">
+  <a href="08-heap.html">← 08 堆 / Top-K</a>
+  <a href="10-graph-traversal.html">10 图的 BFS/DFS →</a>
+</nav>
+
+</div>
+<script src="../assets/quiz.js" defer></script>
+</body>
+</html>

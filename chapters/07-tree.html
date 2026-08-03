@@ -42,7 +42,7 @@
   <div class="sec-tag"><span class="cell"></span><span class="lab">§2 Recognition Signals 识别信号</span></div>
   <h2>看到什么，想到本章</h2>
 <div class="tbl-scroll"><table class="sig-tbl"><thead><tr><th>题面出现…</th><th>想到</th></tr></thead><tbody><tr><td>「深度 / 高度 / 直径 / 是否平衡」</td><td>后序递归，返回值是深度（模板 A）</td></tr><tr><td>「层 / 每一层 / 最短路径 / 右视图」</td><td>BFS 队列，按层出队（模板 B）</td></tr><tr><td>「BST」+「第 K 小 / 有序输出」</td><td>中序遍历天然升序</td></tr><tr><td>「验证 BST」</td><td>带上下界递归，不能只和父节点比</td></tr><tr><td>「最近公共祖先 LCA」</td><td>后序：左右都非空则当前就是答案；BST 可用值域直接下降</td></tr><tr><td>「前序 + 中序构造」「序列化 / 反序列化」</td><td>用中序定位划分点 / 前序 + 空标记</td></tr></tbody></table></div>
-<div class="routing"><div class="rt-head">分流条件 · 决策树同源</div><p>要<b>枚举所有路径 / 所有方案</b>并且需要撤销选择，那是回溯（第 09 章），树只是它的递归载体。网格和邻接表上的 BFS/DFS 属于第 10 章——区别在于树没有环、不需要 <code>visited</code>，一旦要判重就说明你面对的是图。「层序」和「多源最短步数」共用队列骨架，但树的层序不需要 <code>visited</code>。还有一个同名陷阱：树里说「有序」指的是 <b>BST 的中序</b>，和有序数组（第 05 章的二分）、有序链表（第 06 章的合并）不是一回事——BST 的有序性藏在结构里，你得走一遍中序才能看见它。</p></div>
+<div class="routing"><div class="rt-head">分流条件 · 决策树同源</div><p>要<b>枚举所有路径 / 所有方案</b>并且需要撤销选择，那是回溯（第 09 章），树只是它的递归载体。网格和邻接表上的 BFS/DFS 属于第 10 章——区别在于树没有环、不需要 <code>visited</code>，一旦要判重就说明你面对的是图。「层序」和「多源最短步数」共用队列骨架，但树的层序不需要 <code>visited</code>。还有一个同名陷阱：树里说「有序」指的是 <b>BST 的中序</b>，和有序数组（第 05 章的二分）、有序链表（第 06 章的合并、第 08 章的 K 路归并）不是一回事——BST 的有序性藏在结构里，你得走一遍中序才能看见它。</p></div>
 
 </section>
 
@@ -187,7 +187,7 @@ def level_order(root):
 
 <nav class="next">
   <a href="06-linked-list.html">← 06 链表</a>
-  <a href="../cheatsheet.html">决策树速查 →</a>
+  <a href="08-heap.html">08 堆 / Top-K →</a>
 </nav>
 
 </div>
