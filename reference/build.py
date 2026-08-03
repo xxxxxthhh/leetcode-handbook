@@ -306,33 +306,40 @@ def render_index():
 
 
 # ---------------------------------------------------------------- 写盘
-def write(rel, html):
-    path = os.path.join(ROOT, rel)
-    os.makedirs(os.path.dirname(path) or ROOT, exist_ok=True)
+def write(out_dir, rel, html):
+    path = os.path.join(out_dir, rel)
+    os.makedirs(os.path.dirname(path) or out_dir, exist_ok=True)
     with open(path, "w", encoding="utf-8") as f:
         f.write(html)
     return rel
 
 
-def main():
+def main(out_dir=ROOT, quiet=False):
     written = []
+    write_ = lambda rel, html: write(out_dir, rel, html)  # noqa: E731
     # 章页之间的上一页/下一页：导读 → 01 … 18 → 速查页
     nav = [(content.chapter_href(c["no"]), content.chapter_label(c["no"])) for c in CHAPTERS]
     for i, c in enumerate(CHAPTERS):
         prev = nav[i - 1] if i else ("00-intro.html", "导读")
         nxt = nav[i + 1] if i + 1 < len(nav) else ("../cheatsheet.html", "决策树速查")
-        written.append(write("chapters/" + content.chapter_href(c["no"]),
-                             render_chapter(c, prev[0], prev[1], nxt[0], nxt[1])))
+        written.append(write_("chapters/" + content.chapter_href(c["no"]),
+                              render_chapter(c, prev[0], prev[1], nxt[0], nxt[1])))
 
-    written.append(write("index.html", render_index()))
+    written.append(write_("index.html", render_index()))
 
-    for rel in written:
-        print("  " + rel)
-    print("{} 章已渲染，{} 页写出".format(len(CHAPTERS), len(written)))
-    missing = [n for n in range(1, 19) if not any(c["no"] == n for c in CHAPTERS)]
-    if missing:
-        print("待撰写章节: {}".format(missing))
+    if not quiet:
+        for rel in written:
+            print("  " + rel)
+        print("{} 章已渲染，{} 页写出".format(len(CHAPTERS), len(written)))
+        missing = [n for n in range(1, 19) if n not in content.WRITTEN]
+        if missing:
+            print("待撰写章节: {}".format(missing))
+    return written
 
 
 if __name__ == "__main__":
-    main()
+    import argparse
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--out", default=ROOT, help="输出目录（mutation test 用临时目录）")
+    ap.add_argument("--quiet", action="store_true")
+    main(ap.parse_args().out, ap.parse_args().quiet)
