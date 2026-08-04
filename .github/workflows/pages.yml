@@ -1,0 +1,47 @@
+# 部署到 GitHub Pages。
+# 只发布站点文件（index / cheatsheet / mistakes / chapters / assets）；
+# content/ 与 reference/ 为构建期资源（内容数据源、渲染器、校验器），按项目约定不发布。
+# 部署前跑完整流水线：模板可运行 → 重新渲染 → 选题对 spec → 站级校验 → mutation test。
+# LeetCode 元数据用仓库里已固化的 data/leetcode-index.json，CI 不访问外网。
+name: deploy-pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build-deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 完整校验流水线（含 mutation test）
+        run: python3 reference/check_all.py
+
+      - name: 组装发布目录（排除 content/ 与 reference/）
+        run: |
+          mkdir _site
+          cp index.html cheatsheet.html mistakes.html _site/
+          cp -r chapters assets _site/
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: _site
+
+      - id: deployment
+        uses: actions/deploy-pages@v4
