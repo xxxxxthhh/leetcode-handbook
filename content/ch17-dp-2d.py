@@ -68,7 +68,7 @@ def can_partition(nums):
     dp = [False] * (target + 1)             # 【骨架】dp[t] = 能否恰好凑出 t
     dp[0] = True                            # 【骨架】什么都不选就能凑出 0
     for x in nums:                          # 【骨架】外层枚举物品
-        for t in range(target, x - 1, -1):  # 【骨架】容量**倒序** —— 保证每个物品只用一次
+        for t in range(target, x - 1, -1):  # 【骨架】容量倒序 —— 保证每个物品只用一次
             dp[t] = dp[t] or dp[t - x]      # 【插槽】布尔可行性 / 计数 / 最大价值
     return dp[target]
 '''
@@ -130,7 +130,6 @@ CHAPTER = dict(
             "要列出全部方案而不是计数 → 回溯（第 09 章）。"
             "「路径」这个词也要分三处：网格里**只能右 / 下**走 → 本章（方向受限、不可能有环，纯 DP）；"
             "能四向移动、求**最少步数** → 第 10 章的 BFS；树上的路径和 → 第 07 章的递归。",
-    routing_to=[7, 9, 10, 16, 18],
 
     templates=[
         dict(name="模板 A · 双序列 / 网格 DP", note="LCS、编辑距离、路径数",

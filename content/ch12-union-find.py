@@ -103,7 +103,6 @@ CHAPTER = dict(
             "并查集没有方向概念——`union(a, b)` 和 `union(b, a)` 只会让树形不同，"
             "「在不在一伙」的答案完全一样。"
             "带权最短路属于 Dijkstra，本书不覆盖。",
-    routing_to=[10, 11],
 
     templates=[
         dict(name="模板 A · 并查集", note="本章唯一模板，十行必须能默写",

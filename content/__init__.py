@@ -14,8 +14,8 @@ freq          str    面试出现频率：极高 / 高 / 中
 mental_model  str    §1 一句话心智模型（渲染进 .oneliner，支持行内标记）
 mental_model_body  list[str]  §1 后续段落
 signals       list[(cue, to)]  §2 识别信号表：题面出现… → 想到…
-routing       str    §2 分流条件段落，决策树与冲突检查都读它
-routing_to    list[int]        分流指向的章号，供「识别信号无冲突」校验
+routing       str    §2 分流条件段落；「识别信号无冲突」校验直接解析这段条文，
+                     不设平行的结构化字段——两份数据必有一份会烂
 templates     list[dict]  §3 模板：name / note / code / tests / foot
                          code 是页面上展示的字符串本体，tests 直接在 exec(code)
                          后的命名空间里跑——展示的代码与被测的代码同源。

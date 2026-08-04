@@ -5,7 +5,7 @@ TPL_A = '''\
 def length_of_lis(nums):
     if not nums:
         return 0
-    dp = [1] * len(nums)                    # 【骨架】dp[i] = **以 i 结尾**的最长长度
+    dp = [1] * len(nums)                    # 【骨架】dp[i] = 「以 i 结尾」的最长长度
     for i in range(len(nums)):              # 【骨架】
         for j in range(i):                  # 【骨架】回头看所有更早的元素
             if nums[j] < nums[i]:           # 【插槽】能否接在 j 后面:严格上升 / 非降 / 整除
@@ -118,7 +118,6 @@ CHAPTER = dict(
             "只求「最大和的连续子数组」是 Kadane（第 15 章）。"
             "两个序列之间的公共子序列（LCS）是第 17 章的双序列表；"
             "本章只有一个序列，转移要回头看所有更早的元素。",
-    routing_to=[3, 13, 15, 17],
 
     templates=[
         dict(name="模板 A · O(n²) LIS", note="先能讲清它，再谈优化",

@@ -69,7 +69,6 @@ CHAPTER = dict(
             "判环也要分清：**有向**图判环用拓扑（本章），**无向**图判环用并查集"
             "（第 12 章，`union` 返回 False 即成环）或 DFS 记父节点。"
             "只要遍历、不问顺序，回到第 10 章。",
-    routing_to=[10, 12],
 
     templates=[
         dict(name="模板 A · Kahn 入度法", note="本章唯一模板",

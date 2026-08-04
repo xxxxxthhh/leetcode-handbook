@@ -74,7 +74,7 @@
     dp = [False] * (target + 1)             <span class="cm bone"># 【骨架】dp[t] = 能否恰好凑出 t</span>
     dp[0] = True                            <span class="cm bone"># 【骨架】什么都不选就能凑出 0</span>
     for x in nums:                          <span class="cm bone"># 【骨架】外层枚举物品</span>
-        for t in range(target, x - 1, -1):  <span class="cm bone"># 【骨架】容量**倒序** —— 保证每个物品只用一次</span>
+        for t in range(target, x - 1, -1):  <span class="cm bone"># 【骨架】容量倒序 —— 保证每个物品只用一次</span>
             dp[t] = dp[t] or dp[t - x]      <span class="cm slot"># 【插槽】布尔可行性 / 计数 / 最大价值</span>
     return dp[target]</code></pre>
   <div class="tpl-foot"><b>01 背包倒序、完全背包正序</b>——这一行的方向就是「每件用一次」和「每件可无限用」的全部差别，见翻车点①。</div>

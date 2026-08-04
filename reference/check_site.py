@@ -353,9 +353,15 @@ def check_signal_conflicts(site, sig_map, routing_map, rep):
                 if kw in cue:
                     kw_map[kw].add(no)
     def names(a, b):
-        """a 章的分流条件里有没有点名 b 章。"""
+        """a 章的分流条件里有没有点名 b 章。
+        章号引用支持合并写法：「第 16、17 章」「第 03 章」都算点名。"""
         routing = routing_map.get(a, "")
-        return "第 {:02d} 章".format(b) in routing or BY_NO[b]["title_zh"] in routing
+        if BY_NO[b]["title_zh"] in routing:
+            return True
+        for group in re.findall(r"第\s*([\d、,\s]+?)\s*章", routing):
+            if b in [int(x) for x in re.findall(r"\d+", group)]:
+                return True
+        return False
 
     conflicts = {k: sorted(v) for k, v in kw_map.items() if len(v) > 1}
     rows = []

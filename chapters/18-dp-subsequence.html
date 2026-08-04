@@ -55,7 +55,7 @@
   <pre><code>def length_of_lis(nums):
     if not nums:
         return 0
-    dp = [1] * len(nums)                    <span class="cm bone"># 【骨架】dp[i] = **以 i 结尾**的最长长度</span>
+    dp = [1] * len(nums)                    <span class="cm bone"># 【骨架】dp[i] = 「以 i 结尾」的最长长度</span>
     for i in range(len(nums)):              <span class="cm bone"># 【骨架】</span>
         for j in range(i):                  <span class="cm bone"># 【骨架】回头看所有更早的元素</span>
             if nums[j] &lt; nums[i]:           <span class="cm slot"># 【插槽】能否接在 j 后面:严格上升 / 非降 / 整除</span>
