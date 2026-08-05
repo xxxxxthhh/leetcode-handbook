@@ -17,7 +17,7 @@ ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, ROOT)
 
 import content  # noqa: E402
-from content import intro, tree  # noqa: E402
+from content import appendix_a, intro, tree  # noqa: E402
 from reference import build, check_site  # noqa: E402
 
 
@@ -107,7 +107,59 @@ def m_tree_missing_pattern(chs):
 
 def m_dead_internal_link(chs):
     """正文里链到一个不存在的页面。"""
-    intro.SECTIONS[0]["tail"] = ["详见 [某个不存在的页](../appendix.html)。"]
+    intro.SECTIONS[0]["tail"] = ["详见 [某个不存在的页](../nonexistent.html)。"]
+
+
+def m_appendix_wrong_slug(chs):
+    """附录 A 复健目标里凭记忆手写链接：two-sums（多个 s）。"""
+    appendix_a.PROBLEMS[0] = dict(
+        appendix_a.PROBLEMS[0],
+        goal=appendix_a.PROBLEMS[0]["goal"]
+        + " 参见 [1 Two Sum](https://leetcode.com/problems/two-sums/)。")
+
+
+def m_appendix_problem_not_curated(chs):
+    """附录 A 混进一道正文没收录的题，「双重用途」承诺失效。
+    挑官方索引里有、但正文各章都没收录的题号（各章自测题即是）。"""
+    curated = {str(p["num"]) for c in chs for p in c["problems"]}
+    num = next(int(n) for n in check_site.LC if n not in curated)
+    appendix_a.PROBLEMS.append(dict(num=num, goal="混进来的题", refs=[]))
+
+
+def m_appendix_quiz_answer_missing(chs):
+    """附录 A 改错题的正确答案 key 不在选项里。"""
+    appendix_a.QUIZ[0] = dict(appendix_a.QUIZ[0], answer="z")
+
+
+def m_appendix_answer_always_first(chs):
+    """附录 A 选项不打乱：正确项一律排第一。章节那条 mutation 打的是
+    build.shuffled_options，够不着附录自己的打乱函数——这条补上。"""
+    build.appendix_shuffled_options = lambda i, options: (
+        sorted(options, key=lambda o: o[0] != "a"))
+
+
+def m_appendix_answer_always_longest(chs):
+    """附录 A 四个干扰项都写得比正确项短：读者挑最长的那条就能刷分。
+    这是位置偏置的孪生缺陷，位置类检查看不见它。"""
+    for i, q in enumerate(appendix_a.QUIZ):
+        appendix_a.QUIZ[i] = dict(q, options=[
+            (k, t if k == q["answer"] else t[:8]) for k, t in q["options"]])
+
+
+def m_appendix_quiz_no_code(chs):
+    """附录 A 改错题只剩选项、没有代码片段——「改错」无从改起。"""
+    appendix_a.QUIZ[:] = [dict(q, code="") for q in appendix_a.QUIZ]
+
+
+def m_appendix_header_count_stale(chs):
+    """删掉一道复健题，但头部 meta 的计数没跟着变（手写数量的经典后果）。
+    这里模拟的是「有人把计数从派生改回硬编码」：渲染后 meta 与实际条目数不符。"""
+    orig = build.render_appendix
+
+    def patched():
+        html = orig()
+        return html.replace("复健题 <b>10 道</b>", "复健题 <b>12 道</b>")
+    build.render_appendix = patched
 
 
 MUTATIONS = [
@@ -126,6 +178,13 @@ MUTATIONS = [
     ("决策树两条分支同一章", m_tree_duplicate_leaf, "重复叶子"),
     ("决策树漏掉一个模式", m_tree_missing_pattern, "未覆盖模式"),
     ("正文链到不存在的页", m_dead_internal_link, "死链"),
+    ("附录A slug 凭记忆手写", m_appendix_wrong_slug, "slug 是"),
+    ("附录A 混入未收录题", m_appendix_problem_not_curated, "未在正文任何一章收录"),
+    ("附录A 答案不在选项里", m_appendix_quiz_answer_missing, "不在选项"),
+    ("附录A 正确答案一律排第一", m_appendix_answer_always_first, "读者靠位置就能猜对"),
+    ("附录A 正确答案一律最长", m_appendix_answer_always_longest, "挑最长的就能猜对"),
+    ("附录A 改错题没有代码", m_appendix_quiz_no_code, "缺少代码片段"),
+    ("附录A 头部计数写死", m_appendix_header_count_stale, "头部复健题计数"),
 ]
 
 
@@ -134,6 +193,10 @@ def run_one(name, mutate, expect):
     orig_shuffle = build.shuffled_options
     orig_tree = copy.deepcopy(tree.TREE)
     orig_intro = copy.deepcopy(intro.SECTIONS)
+    orig_apx_problems = copy.deepcopy(appendix_a.PROBLEMS)
+    orig_apx_quiz = copy.deepcopy(appendix_a.QUIZ)
+    orig_apx_shuffle = build.appendix_shuffled_options
+    orig_render_apx = build.render_appendix
     tmp = tempfile.mkdtemp(prefix="mut-")
     try:
         mutated = copy.deepcopy(original)
@@ -157,6 +220,10 @@ def run_one(name, mutate, expect):
         build.shuffled_options = orig_shuffle
         tree.TREE[:] = orig_tree
         intro.SECTIONS[:] = orig_intro
+        appendix_a.PROBLEMS[:] = orig_apx_problems
+        appendix_a.QUIZ[:] = orig_apx_quiz
+        build.appendix_shuffled_options = orig_apx_shuffle
+        build.render_appendix = orig_render_apx
         shutil.rmtree(tmp, ignore_errors=True)
 
 

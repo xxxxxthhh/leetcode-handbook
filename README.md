@@ -3,8 +3,8 @@
 双语 HTML 电子书（中文讲解 + 英文术语/题名保留原文），dark mode 默认，可打印导出 PDF。
 定位是**工具书而非阅读书**：成功标准 = 面试前一晚翻 30 分钟就够。
 
-规格见 [`spec/skeleton.md`](spec/skeleton.md)，体例基准见 [`spec/ch04-sample.md`](spec/ch04-sample.md)，
-构建约定见 [`CLAUDE.md`](CLAUDE.md)。
+规格见 [`spec/skeleton.md`](spec/skeleton.md)（附录 A 另见 [`spec/appendix-a.md`](spec/appendix-a.md)），
+体例基准见 [`spec/ch04-sample.md`](spec/ch04-sample.md)，构建约定见 [`CLAUDE.md`](CLAUDE.md)。
 
 ## 怎么看
 
@@ -19,6 +19,7 @@ python3 -m http.server 4173
 ```
 index.html              目录页
 chapters/00-intro.html  导读
+chapters/appendix-a.html  附录 A · Python 刷题急救包（复健页：速查 + 10 道手打题 + 改错自测）
 chapters/NN-*.html      18 个模式章（五段固定结构）
 cheatsheet.html         第 19 页 · 模式决策树 / 速查表（单屏可打印）
 mistakes.html           第 20 页 · 错题登记（localStorage，可退化成打印空表）
@@ -29,6 +30,7 @@ data/signal-conflicts.md      识别信号冲突汇总（构建产物，供人�
 content/                ← 唯一数据源
   patterns.py           18 个模式的骨架：章号 / 标题 / 文件名 / 分组 / 冲突关键词
   chNN-*.py             一章的五段内容
+  appendix_a.py         附录 A：速查条目 / 翻车点 / 复健题单 / 改错自测（每条代码都带可执行验证）
   tree.py               决策树的分支结构（叶子指向章节，不重写识别信号）
   intro.py              导读正文（数字全部用占位符，构建时填）
 reference/              构建期脚本，不是读者要看的页面
@@ -42,18 +44,18 @@ reference/              构建期脚本，不是读者要看的页面
 python3 reference/check_all.py
 ```
 
-这一条命令按顺序跑完：模板可运行 → 构建 21 页 → 站级校验 → mutation test。发布前必须全绿。
+这一条命令按顺序跑完：模板可运行 → 构建 22 页 → 站级校验 → mutation test。发布前必须全绿。
 
 单独跑：
 
 | 命令 | 做什么 |
 |---|---|
 | `python3 reference/fetch_lc_index.py` | 从 LeetCode 官方索引重抓题目元数据（新增题目后必跑） |
-| `python3 reference/run_templates.py [章号…]` | 把每章模板原样 `exec`，再跑它的测试用例 |
+| `python3 reference/run_templates.py [章号…]` | 把每章模板原样 `exec`，再跑它的测试用例；全量跑时附录 A 的速查片段、反例与改错题证据也逐条执行 |
 | `python3 reference/build.py [--out DIR]` | 渲染全部页面 |
 | `python3 reference/check_site.py [--site DIR]` | 站级校验，跑在渲染产物 HTML 上 |
 | `python3 reference/check_vs_spec.py` | 逐章逐层比对 `spec/skeleton.md` §5 的选题清单 |
-| `python3 reference/mutation_test.py` | 往内容层注入 15 种真实错误，确认校验器都能抓到 |
+| `python3 reference/mutation_test.py` | 往内容层注入 22 种真实错误，确认校验器都能抓到 |
 
 ## 三条设计约束
 

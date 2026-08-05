@@ -206,15 +206,13 @@ SLUG_RE = re.compile(r"https://leetcode\.com/problems/([a-z0-9-]+)/")
 SLUG2NUM = {v["slug"]: k for k, v in LC.items()}
 
 
-def check_links(no, html, rep, seen_curated):
-    where = "ch{:02d}".format(no)
-
-    # ① 页面上出现的每一个 slug 都必须真实存在——正文里顺手写的链接也不放过
+def check_lc_anchors(where, html, rep):
+    """① 页面上出现的每一个 slug 都必须真实存在——正文里顺手写的链接也不放过；
+    ② 形如「739 Daily Temperatures」的锚文本，题号 ↔ slug ↔ 题名三方逐项核对。"""
     for slug in set(SLUG_RE.findall(html)):
         if slug not in SLUG2NUM:
             rep.err(where, "slug「{}」不对应任何 LeetCode 题（凭记忆手写没核对？）".format(slug))
 
-    # ② 形如「739 Daily Temperatures」的锚文本，三方逐项核对
     for slug, num, title in LINK_RE.findall(html):
         meta = LC.get(num)
         if meta is None:
@@ -225,6 +223,11 @@ def check_links(no, html, rep, seen_curated):
         if meta["title"] != title:
             rep.err(where, "题 {} 的官方题名是「{}」，页面写成「{}」".format(
                 num, meta["title"], title))
+
+
+def check_links(no, html, rep, seen_curated):
+    where = "ch{:02d}".format(no)
+    check_lc_anchors(where, html, rep)
 
     # 徽章必须与官方元数据一致：难度、🔒、⭐（⭐只能挂在 Hard 上）
     for block in re.findall(r'<div class="p-title">(.*?)</div>', html, re.S):
@@ -295,6 +298,88 @@ def check_pitfall_refs(no, html, rep, pit_counts):
         elif idx > have:
             rep.err(where, "引用「第 {:02d} 章翻车点{}」，但该章只有 {} 条".format(
                 tgt, mark, have))
+
+
+# ---------------------------------------------------------------- 附录 A
+def check_appendix(site, rep, seen_curated):
+    """附录 A · Python 刷题急救包：
+      · 复健题链接照常做三方核对；
+      · 页面承诺「10 道且全部收录在正文各章（双重用途）」——逐题对正文核；
+      · 「30 秒改错」自测：规格 §4 定为 5 题，答案必须在选项里、位置不能清一色。"""
+    path = os.path.join(site, "chapters", "appendix-a.html")
+    if not os.path.exists(path):
+        return  # 缺页由 check_pages 报
+    html = read(path)
+    where = "appendix-a"
+
+    check_lc_anchors(where, html, rep)
+
+    nums = []
+    for block in re.findall(r'<div class="p-title">(.*?)</div>', html, re.S):
+        m = LINK_RE.search(block)
+        if not m:
+            rep.err(where, "复健题条目缺少 LeetCode 链接: {}".format(strip_tags(block)[:40]))
+            continue
+        nums.append(m.group(2))
+
+    m = re.search(r"复健题 <b>(\d+) 道</b>", html)
+    if not m:
+        rep.err(where, "头部 meta 缺少复健题计数")
+    elif int(m.group(1)) != len(nums):
+        rep.err(where, "头部复健题计数 {} 与实际渲染 {} 道不一致".format(
+            int(m.group(1)), len(nums)))
+    if len(nums) != 10:
+        rep.err(where, "复健题应恰好 10 道（spec/appendix-a.md §3），实际 {} 道".format(len(nums)))
+    for num in nums:
+        if num not in seen_curated:
+            rep.err(where, "复健题 {} 未在正文任何一章收录，「双重用途」承诺失效".format(num))
+
+    qs = re.findall(r'<article class="q" data-answer="([^"]+)">(.*?)</article>', html, re.S)
+    if len(qs) != 5:
+        rep.err(where, "改错自测应为 5 题（spec/appendix-a.md §4），实际 {} 题".format(len(qs)))
+    pos, longest = [], 0
+    for ans, body in qs:
+        opt_pairs = re.findall(
+            r'class="opt" type="button" data-ch="([^"]+)">([^<]*)</button>', body)
+        opts = [k for k, _ in opt_pairs]
+        if len(opts) < 3:
+            rep.err(where, "改错题选项少于 3 个，识别练习失去意义")
+        if ans not in opts:
+            rep.err(where, "改错题正确答案 {} 不在选项 {} 里".format(ans, opts))
+        else:
+            pos.append(opts.index(ans))
+            # 「正确项总是写得最详细」是位置偏置的孪生缺陷：读者不看代码、挑最长的
+            # 那条也能刷分。只统计「严格最长」——并列最长不构成可利用的信号。
+            lens = [len(t) for _, t in opt_pairs]
+            ans_len = next(len(t) for k, t in opt_pairs if k == ans)
+            if ans_len == max(lens) and lens.count(max(lens)) == 1:
+                longest += 1
+        if len(set(opts)) != len(opts):
+            rep.err(where, "改错题选项重复: {}".format(opts))
+        if not re.search(r'<details><summary>看答案</summary>.*?class="answer".*?\S', body, re.S):
+            rep.err(where, "改错题缺少答案解释（无 JS / 打印时读者就看不到答案了）")
+        # 查的是代码本体有没有内容，不是 <pre> 标签在不在：
+        # 内容清空后标签照样渲染得出来，只验标签等于什么都没验（mutation 抓到过）。
+        snippet = re.search(r"<pre><code>(.*?)</code></pre>", body, re.S)
+        if not snippet or not strip_tags(snippet.group(1)).strip():
+            rep.err(where, "改错题缺少代码片段——没有代码就没有「改错」可言")
+
+    # 位置分布：与章节自测同一阈值（>60% 集中即报错），不是「全部同一位置才报」——
+    # 5 题里 4 题落在同一位就已经足够让读者猜位置了。
+    if pos:
+        worst = max(set(pos), key=pos.count)
+        if pos.count(worst) / len(pos) > 0.6:
+            rep.err(where, "改错题 {}/{} 道的正确答案排在第 {} 位（{:.0%}），"
+                           "读者靠位置就能猜对".format(
+                               pos.count(worst), len(pos), worst + 1,
+                               pos.count(worst) / len(pos)))
+    if qs and longest / len(qs) > 0.6:
+        rep.err(where, "改错题 {}/{} 道的正确答案是最长的那个选项（{:.0%}），"
+                       "读者不看代码、挑最长的就能猜对".format(
+                           longest, len(qs), longest / len(qs)))
+
+    rep.notes.append("附录 A：复健题 {} 道，改错自测 {} 题（正确项位置 {}，最长项命中 {}）".format(
+        len(nums), len(qs), sorted(p + 1 for p in pos), longest))
 
 
 # ---------------------------------------------------------------- 决策树 / 速查页
@@ -396,7 +481,8 @@ def check_signal_conflicts(site, sig_map, routing_map, rep):
 # ---------------------------------------------------------------- 主流程
 def check_pages(site, rep):
     """页面清单与站内链接：spec §3 要求 00 导读 + 01–18 + 19 速查 + 20 错题，另有目录页。"""
-    want = (["index.html", "cheatsheet.html", "mistakes.html", "chapters/00-intro.html"]
+    want = (["index.html", "cheatsheet.html", "mistakes.html",
+             "chapters/00-intro.html", "chapters/appendix-a.html"]
             + ["chapters/{:02d}-{}.html".format(p["no"], p["slug"]) for p in PATTERNS])
     for rel in want:
         if not os.path.exists(os.path.join(site, rel)):
@@ -461,6 +547,7 @@ def run(site):
         if len(nos) > 1:
             rep.warn("site", "题 {} 在第 {} 章重复收录".format(num, nos))
 
+    check_appendix(site, rep, seen_curated)
     check_cheatsheet(site, rep, cue_map)
     check_signal_conflicts(site, sig_map, routing_map, rep)
 
