@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>附录 A Python 刷题急救包 · 算法面试阈值手册</title>
+<meta name="description" content="太久没自己写代码的复健页：惯用法速查（逐条执行验证）+ 10 道手打复健题 + 30 秒改错自测。">
+<link rel="icon" type="image/svg+xml" href="../assets/favicon.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<noscript><link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&family=Noto+Sans+SC:wght@400;500;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet"></noscript>
+<link rel="stylesheet" href="../assets/handbook.css">
+<script src="../assets/theme.js"></script>
+</head>
+<body>
+<button class="theme-toggle" type="button" aria-label="切换深色/浅色模式" title="切换深色/浅色模式">
+  <span class="sun" aria-hidden="true">☀️</span><span class="moon" aria-hidden="true">🌙</span>
+</button>
+<div class="wrap">
+<nav class="crumb"><a href="../index.html">← 目录</a> · 附录 A</nav>
+
+<header class="ch">
+  <div class="bars" aria-hidden="true"><span class="h1"></span><span class="h2"></span><span class="h4"></span><span class="h6"></span><span class="h3"></span><span class="h5 w"></span><span class="h2 f"></span><span class="h1 f"></span></div>
+  <div class="kicker">Appendix A · Python Rehab Kit</div>
+  <h1>附录 A Python 刷题急救包
+    <span class="zh">复健，不是学习——主体动作是打字</span>
+  </h1>
+  <div class="meta"><span>惯用法 <b>24 条</b></span><span>翻车点 <b>5 个</b></span><span>复健题 <b>10 道</b></span><span>改错自测 <b>5 题</b></span></div>
+</header>
+
+<section id="s1">
+  <div class="sec-tag"><span class="cell" style="background:var(--warn)"></span><span class="lab">§1 Scope 划定范围</span></div>
+  <h2>复健，不是学习</h2>
+<p>这一页做的是<b>复健，不是学习</b>：你会 Python，只是长期把写代码这件事委托给 AI 之后，手感萎缩了。所以本页的主体动作是<b>打字，不是阅读</b>——§2 的速查表是拿来<b>查</b>的，不是拿来读的；§3、§4 的练习篇幅是它的两倍，那才是重点。</p>
+<p>先把范围划死，降低心理负担：LeetCode Python 是整个语言的一个极小子集。下面 24 条惯用法加 5 个专属翻车点，覆盖刷题日常会碰到的绝大部分写法——每一条都在构建时实际执行验证过，<b>包括注释里的反例</b>。碰到没收录的写法很正常，查一下就行，不必回头补课。</p>
+<p>以下内容刷题用不到，<b>一个都不用碰</b>：</p>
+<div class="callout no">
+<ul>
+  <li>装饰器</li>
+  <li>生成器进阶（<code>yield from</code>、协程式用法）</li>
+  <li>async / await</li>
+  <li>类型系统进阶（泛型、Protocol）</li>
+  <li>包管理（venv / pip / poetry）</li>
+  <li>面向对象设计（继承体系、魔术方法）</li>
+</ul>
+</div>
+
+</section>
+
+<section id="s2">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§2 Cheat Sheet 惯用法速查</span></div>
+  <h2>拿来查的，不是拿来读的</h2>
+<p class="legend">按使用频率排序。编号（C1、W1、Q5…）供 §3 的「复健自查」引用，点编号可跳回。</p>
+<div class="tpl">
+  <div class="tpl-head">容器基本功</div>
+  <pre><code><span class="eid" id="e-C1">C1</span>  a = [0] * n                          <span class="cm"># 一维初始化：n 个 0</span>
+<span class="eid" id="e-C2">C2</span>  g = [[0] * n for _ in range(m)]      <span class="cm"># 二维初始化；[[0]*n]*m 是 m 份同一引用（翻车点①）</span>
+<span class="eid" id="e-C3">C3</span>  a[i:j], a[::-1]                      <span class="cm"># 切片左闭右开；[::-1] 反转</span>
+<span class="eid" id="e-C4">C4</span>  d[k] = d.get(k, 0) + 1               <span class="cm"># dict 计数三连：键不存在按 0 算</span>
+<span class="eid" id="e-C5">C5</span>  s.add(x); x in s                     <span class="cm"># set：O(1) 判断存在性</span>
+<span class="eid" id="e-C6">C6</span>  st.append(x); st.pop()               <span class="cm"># list 当栈：同侧进出，栈顶是 st[-1]</span>
+<span class="eid" id="e-C7">C7</span>  max(best, x), min(xs), sum(xs)       <span class="cm"># 打擂台与聚合；max 还能带 key=</span></code></pre>
+</div>
+<div class="tpl">
+  <div class="tpl-head">遍历三件套</div>
+  <pre><code><span class="eid" id="e-T1">T1</span>  for i, x in enumerate(nums): ...     <span class="cm"># 要下标也要值</span>
+<span class="eid" id="e-T2">T2</span>  for a, b in zip(xs, ys): ...         <span class="cm"># 并排走两个序列，短的一停全停</span>
+<span class="eid" id="e-T3">T3</span>  out = [f(x) for x in nums if ok(x)]  <span class="cm"># 推导式：过滤 + 变换一行完成</span></code></pre>
+</div>
+<div class="tpl">
+  <div class="tpl-head">字符串</div>
+  <pre><code><span class="eid" id="e-W1">W1</span>  s.lower(), c.isalnum()               <span class="cm"># 归一化 / 判断字母数字：125 靠这两个过滤</span>
+<span class="eid" id="e-W2">W2</span>  ''.join(chs), s.split()              <span class="cm"># 拼接 / 按空白切分；字符串不可变，不能改单个字符</span></code></pre>
+</div>
+<div class="tpl">
+  <div class="tpl-head">排序</div>
+  <pre><code><span class="eid" id="e-S1">S1</span>  nums.sort()                          <span class="cm"># 原地升序；返回 None，别写 nums = nums.sort()</span>
+<span class="eid" id="e-S2">S2</span>  pairs.sort(key=lambda p: (p[0], -p[1]))  <span class="cm"># 多关键字；数值键取负 = 这一键降序</span></code></pre>
+</div>
+<div class="tpl">
+  <div class="tpl-head">collections + heapq 四件套</div>
+  <pre><code><span class="eid" id="e-Q1">Q1</span>  from collections import deque, Counter, defaultdict
+<span class="eid" id="e-Q2">Q2</span>  q = deque(); q.append(x); q.popleft()  <span class="cm"># BFS 队列：右进左出，两头都是 O(1)</span>
+<span class="eid" id="e-Q3">Q3</span>  Counter(s)                           <span class="cm"># 一行频次统计，可当 dict 用</span>
+<span class="eid" id="e-Q4">Q4</span>  g = defaultdict(list); g[u].append(v)  <span class="cm"># 建图：首次访问自动变 []</span>
+<span class="eid" id="e-Q5">Q5</span>  heapq.heappush(h, x); heapq.heappop(h)  <span class="cm"># 最小堆；要最大堆就 push -x（翻车点④）</span></code></pre>
+</div>
+<div class="tpl">
+  <div class="tpl-head">LeetCode 特有语法</div>
+  <pre><code><span class="eid" id="e-L1">L1</span>  best = float('inf')                  <span class="cm"># 打擂台初始值；负无穷 float('-inf')</span>
+<span class="eid" id="e-L2">L2</span>  7 // 2, -7 // 2                      <span class="cm"># 整除向下取整：结果是 3 和 -4（不是 -3），DP 边界常见坑</span>
+<span class="eid" id="e-L3">L3</span>  a, b = b, a + b                      <span class="cm"># 平行赋值：右边整体先求值；链表反转 / 滚动 DP 靠它</span>
+<span class="eid" id="e-L4">L4</span>  class ListNode: ...                  <span class="cm"># 题目自带的定义，会读会用即可，不用自己写</span>
+<span class="eid" id="e-L5">L5</span>  import sys; sys.setrecursionlimit(10 ** 6)   <span class="cm"># 深递归保险（树 / 图 DFS 防爆栈）</span></code></pre>
+</div>
+<h3>五个 Python 专属翻车点</h3>
+<ol class="pits">
+<li><span class="pt">二维初始化的引用陷阱</span>——改 <code>g[0][0]</code> 等于改每一行——正确写法见 C2 的列表推导。
+<pre><code><span class="eid" id="e-P1">P1</span>  g = [[0] * n] * m        <span class="cm"># m 行是同一个 list 的 m 个引用</span></code></pre></li>
+<li><span class="pt">可变默认参数跨调用共享</span>——默认值只在函数<b>定义时</b>创建一次，第二次调用还是同一个 dict。要缓存就写 <code>memo=None</code>，函数体里再建。
+<pre><code><span class="eid" id="e-P2">P2</span>  def f(x, memo={}): memo[x] = 1; return len(memo)</code></pre></li>
+<li><span class="pt">闭包里改外层变量要 nonlocal</span>——函数内一旦对某个名字赋值，Python 就把它当本地变量，读它就 <code>UnboundLocalError</code>。在 <code>inner</code> 开头加 <code>nonlocal cnt</code>。
+<pre><code><span class="eid" id="e-P3">P3</span>  def outer():
+    cnt = 0
+    def inner():
+        cnt += 1          <span class="cm"># 少了 nonlocal cnt</span>
+    inner()</code></pre></li>
+<li><span class="pt">heapq 只有最小堆</span>——<code>heapq</code> 永远弹最小。要最大堆：push 时存 <code>-x</code>，pop 后取负还原（见 Q5）。
+<pre><code><span class="eid" id="e-P4">P4</span>  largest = heapq.heappop(h)   <span class="cm"># 想要最大值？弹出来的偏偏是最小值</span></code></pre></li>
+<li><span class="pt">没有 ++ / --</span>——自增只有 <code>i += 1</code>。<code>++i</code> 是两个一元正号，静默等于 <code>i</code>，连报错都不给。
+<pre><code><span class="eid" id="e-P5">P5</span>  i++                       <span class="cm"># SyntaxError；更阴险的是 ++i 合法但什么都不做</span></code></pre></li>
+</ol>
+
+</section>
+
+<section id="s3">
+  <div class="sec-tag"><span class="cell"></span><span class="lab">§3 Typing Rehab 打字复健计划</span></div>
+  <h2>本页的主体：手打这 10 道</h2>
+<div class="callout">
+<p><b>规则，一条都别放水：</b></p>
+<ul>
+  <li><b>手打每一行</b>，禁止复制粘贴；</li>
+  <li><b>编辑器关掉 AI 补全</b>（Copilot / Cursor Tab / 各种 …）；</li>
+  <li>每道 <b>≤ 15 分钟</b>；</li>
+  <li>卡住<b>看速查表，不看题解</b>——每题下方的「复健自查」告诉你看哪几条；</li>
+  <li>打完<b>在 LeetCode 提交验证</b>，不是在脑子里跑一遍。</li>
+</ul>
+</div>
+<p>10 道复健题，每道标注它复健的惯用法。它们同时全部收录在正文各章（其中 9 道是热身层）——<b>双重用途</b>：打完这一页，全书 17 道热身题你已经完成了 53%。</p>
+<div class="tier">
+  <div class="tier-head"><span class="t">复健题单</span><span class="d">按数据结构由简到繁，全部手打</span><span class="c">10 道</span></div>
+  <ul class="plist">
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/two-sum/" target="_blank" rel="noopener">1 Two Sum</a><span class="badge diff">Easy</span><span class="badge src">正文 01 · 热身</span></div>
+    <div class="p-note">复健目标：dict 计数 / 查找</div>
+    <details><summary>复健自查（卡住再点开，不是题解）</summary><div class="answer rehab-refs"><p>本题用到：<a href="#e-C4"><code>C4</code></a>、<a href="#e-T1"><code>T1</code></a>——逐条对着敲；还是卡，回 §2 看整组，仍然不看题解。</p></div></details>
+  </li>
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/contains-duplicate/" target="_blank" rel="noopener">217 Contains Duplicate</a><span class="badge diff">Easy</span><span class="badge src">正文 01 · 热身</span></div>
+    <div class="p-note">复健目标：set 判存在</div>
+    <details><summary>复健自查（卡住再点开，不是题解）</summary><div class="answer rehab-refs"><p>本题用到：<a href="#e-C5"><code>C5</code></a>——逐条对着敲；还是卡，回 §2 看整组，仍然不看题解。</p></div></details>
+  </li>
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/valid-anagram/" target="_blank" rel="noopener">242 Valid Anagram</a><span class="badge diff">Easy</span><span class="badge src">正文 01 · 标准</span></div>
+    <div class="p-note">复健目标：Counter / 手写计数</div>
+    <details><summary>复健自查（卡住再点开，不是题解）</summary><div class="answer rehab-refs"><p>本题用到：<a href="#e-Q3"><code>Q3</code></a>、<a href="#e-C4"><code>C4</code></a>——逐条对着敲；还是卡，回 §2 看整组，仍然不看题解。</p></div></details>
+  </li>
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/valid-palindrome/" target="_blank" rel="noopener">125 Valid Palindrome</a><span class="badge diff">Easy</span><span class="badge src">正文 02 · 热身</span></div>
+    <div class="p-note">复健目标：字符串方法、双指针</div>
+    <details><summary>复健自查（卡住再点开，不是题解）</summary><div class="answer rehab-refs"><p>本题用到：<a href="#e-W1"><code>W1</code></a>、<a href="#e-C3"><code>C3</code></a>——逐条对着敲；还是卡，回 §2 看整组，仍然不看题解。</p></div></details>
+  </li>
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/valid-parentheses/" target="_blank" rel="noopener">20 Valid Parentheses</a><span class="badge diff">Easy</span><span class="badge src">正文 04 · 热身</span></div>
+    <div class="p-note">复健目标：list 当栈</div>
+    <details><summary>复健自查（卡住再点开，不是题解）</summary><div class="answer rehab-refs"><p>本题用到：<a href="#e-C6"><code>C6</code></a>、<a href="#e-C4"><code>C4</code></a>——逐条对着敲；还是卡，回 §2 看整组，仍然不看题解。</p></div></details>
+  </li>
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/binary-search/" target="_blank" rel="noopener">704 Binary Search</a><span class="badge diff">Easy</span><span class="badge src">正文 05 · 热身</span></div>
+    <div class="p-note">复健目标：下标边界、整除</div>
+    <details><summary>复健自查（卡住再点开，不是题解）</summary><div class="answer rehab-refs"><p>本题用到：<a href="#e-L2"><code>L2</code></a>——逐条对着敲；还是卡，回 §2 看整组，仍然不看题解。</p></div></details>
+  </li>
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/best-time-to-buy-and-sell-stock/" target="_blank" rel="noopener">121 Best Time to Buy and Sell Stock</a><span class="badge diff">Easy</span><span class="badge src">正文 03 · 热身</span></div>
+    <div class="p-note">复健目标：单次遍历 + 打擂台</div>
+    <details><summary>复健自查（卡住再点开，不是题解）</summary><div class="answer rehab-refs"><p>本题用到：<a href="#e-L1"><code>L1</code></a>、<a href="#e-C7"><code>C7</code></a>、<a href="#e-T1"><code>T1</code></a>——逐条对着敲；还是卡，回 §2 看整组，仍然不看题解。</p></div></details>
+  </li>
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/climbing-stairs/" target="_blank" rel="noopener">70 Climbing Stairs</a><span class="badge diff">Easy</span><span class="badge src">正文 16 · 热身</span></div>
+    <div class="p-note">复健目标：dp 数组初始化 / 滚动变量</div>
+    <details><summary>复健自查（卡住再点开，不是题解）</summary><div class="answer rehab-refs"><p>本题用到：<a href="#e-C1"><code>C1</code></a>、<a href="#e-L3"><code>L3</code></a>——逐条对着敲；还是卡，回 §2 看整组，仍然不看题解。</p></div></details>
+  </li>
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/reverse-linked-list/" target="_blank" rel="noopener">206 Reverse Linked List</a><span class="badge diff">Easy</span><span class="badge src">正文 06 · 热身</span></div>
+    <div class="p-note">复健目标：ListNode、平行赋值</div>
+    <details><summary>复健自查（卡住再点开，不是题解）</summary><div class="answer rehab-refs"><p>本题用到：<a href="#e-L4"><code>L4</code></a>、<a href="#e-L3"><code>L3</code></a>——逐条对着敲；还是卡，回 §2 看整组，仍然不看题解。</p></div></details>
+  </li>
+  <li>
+    <div class="p-title"><a href="https://leetcode.com/problems/maximum-depth-of-binary-tree/" target="_blank" rel="noopener">104 Maximum Depth of Binary Tree</a><span class="badge diff">Easy</span><span class="badge src">正文 07 · 热身</span></div>
+    <div class="p-note">复健目标：递归 + 取较大者</div>
+    <details><summary>复健自查（卡住再点开，不是题解）</summary><div class="answer rehab-refs"><p>本题用到：<a href="#e-C7"><code>C7</code></a>、<a href="#e-L5"><code>L5</code></a>——逐条对着敲；还是卡，回 §2 看整组，仍然不看题解。</p></div></details>
+  </li>
+  </ul>
+</div>
+<div class="routing"><div class="rt-head">出口标准 · Exit Criteria</div><p>10 道<b>全部一次提交通过（或第二次）</b>，且没有一道超过 15 分钟 → 关闭本页，进入正文。达不到就重打不达标的那几道——<b>不加新题</b>。</p></div>
+
+</section>
+
+<section id="s4">
+  <div class="sec-tag"><span class="cell" style="background:var(--warn)"></span><span class="lab">§4 Self-check 自测 · 30 秒改错</span></div>
+  <h2>看得出坑，才算复健完成</h2>
+<p>给你一段带 bug 的代码，30 秒内指出错在哪。五段代码分别踩了 §2 的五个翻车点。</p>
+<div class="quiz">
+<article class="q" data-answer="a">
+  <p class="qprompt"><span class="qtype">30 秒改错</span>Q1 · 这段代码里埋了一个 Python 专属的坑——错在哪？</p>
+  <pre><code>rows, cols = 3, 4
+visited = [[False] * cols] * rows
+visited[0][0] = True</code></pre>
+  <div class="opts"><button class="opt" type="button" data-ch="a">第 2 行：3 行其实是同一个 list，标一格等于整列都标了</button><button class="opt" type="button" data-ch="c">第 3 行：二维下标不能连写，要改成 visited[0, 0] 这种</button><button class="opt" type="button" data-ch="d">没有错：这段代码建出了 3 行 4 列的独立标记表</button><button class="opt" type="button" data-ch="b">第 2 行：行列写反了，应该写成 [[False] * rows] * cols</button></div>
+  <details><summary>看答案</summary><div class="answer"><p>翻车点①：<code>[[False]*cols]*rows</code> 复制的是<b>引用</b>。要 rows 份独立的行，只能用列表推导（见 C2）。</p></div></details>
+</article>
+<article class="q" data-answer="a">
+  <p class="qprompt"><span class="qtype">30 秒改错</span>Q2 · 这段代码里埋了一个 Python 专属的坑——错在哪？</p>
+  <pre><code>def collect(node, acc=[]):
+    acc.append(node)
+    return acc</code></pre>
+  <div class="opts"><button class="opt" type="button" data-ch="c">append 返回 None，第 2 行得写成 acc = acc.append(node)</button><button class="opt" type="button" data-ch="a">acc=[] 只在定义时建一次，第二次调用带着上次的结果</button><button class="opt" type="button" data-ch="b">list 不能当参数默认值，这个函数定义时就会 TypeError</button><button class="opt" type="button" data-ch="d">没有错：每次调用都会拿到一个新的空 list</button></div>
+  <details><summary>看答案</summary><div class="answer"><p>翻车点②：可变默认参数跨调用共享。习惯写法 <code>acc=None</code>，函数体里 <code>if acc is None: acc = []</code>。</p></div></details>
+</article>
+<article class="q" data-answer="a">
+  <p class="qprompt"><span class="qtype">30 秒改错</span>Q3 · 这段代码里埋了一个 Python 专属的坑——错在哪？</p>
+  <pre><code>def count_leaves(root):
+    total = 0
+    def dfs(node):
+        if node is None:
+            return
+        if not node.left and not node.right:
+            total += 1
+        dfs(node.left)
+        dfs(node.right)
+    dfs(root)
+    return total</code></pre>
+  <div class="opts"><button class="opt" type="button" data-ch="c">not node.left 判断永远为假，得写 node.left is None</button><button class="opt" type="button" data-ch="d">没有错：这个函数能正确数出二叉树的叶子数</button><button class="opt" type="button" data-ch="b">Python 不允许在函数里定义函数，再让它递归调用自己</button><button class="opt" type="button" data-ch="a">dfs 给 total 赋值却没写 nonlocal，碰到叶子就抛错</button></div>
+  <details><summary>看答案</summary><div class="answer"><p>翻车点③：<code>total += 1</code> 让 Python 把 total 当 dfs 的本地变量。在 dfs 开头加 <code>nonlocal total</code>，或改成 dfs 返回计数再相加。</p></div></details>
+</article>
+<article class="q" data-answer="a">
+  <p class="qprompt"><span class="qtype">30 秒改错</span>Q4 · 这段代码里埋了一个 Python 专属的坑——错在哪？</p>
+  <pre><code>import heapq
+
+def top3(nums):
+    h = list(nums)
+    heapq.heapify(h)
+    return [heapq.heappop(h) for _ in range(3)]   <span class="cm"># 想拿最大的 3 个</span></code></pre>
+  <div class="opts"><button class="opt" type="button" data-ch="b">heapify 建的是无序堆，取前 3 个之前必须先 sort</button><button class="opt" type="button" data-ch="a">heappop 弹的是最小值，这里拿到的是最小的 3 个</button><button class="opt" type="button" data-ch="d">没有错：heapify 之后堆顶就是最大的那个元素</button><button class="opt" type="button" data-ch="c">range(3) 少拿了一个，应该写成 range(1, 4) 才对</button></div>
+  <details><summary>看答案</summary><div class="answer"><p>翻车点④：<code>heapq</code> 只有最小堆。push 时取负、pop 后还原，或者直接 <code>heapq.nlargest(3, nums)</code>。</p></div></details>
+</article>
+<article class="q" data-answer="a">
+  <p class="qprompt"><span class="qtype">30 秒改错</span>Q5 · 这段代码里埋了一个 Python 专属的坑——错在哪？</p>
+  <pre><code>def total(nums):
+    s, i = 0, 0
+    while i &lt; len(nums):
+        s += nums[i]
+        i++
+    return s</code></pre>
+  <div class="opts"><button class="opt" type="button" data-ch="a">Python 没有 ++，i++ 是语法错误，只能写 i += 1</button><button class="opt" type="button" data-ch="c">s += nums[i] 不适用于 int，得写 s = s + nums[i]</button><button class="opt" type="button" data-ch="b">while 条件应写 i &lt;= len(nums) - 1，现在会越界</button><button class="opt" type="button" data-ch="d">没有错：这段代码能正确求出数组的和</button></div>
+  <details><summary>看答案</summary><div class="answer"><p>翻车点⑤：<code>i++</code> 连运行的机会都没有——编译期就 SyntaxError。更阴险的是前缀 <code>++i</code> 合法但什么都不做。</p></div></details>
+</article>
+<p class="quiz-note">5 道改错题与 §2 的 5 个翻车点一一对应；每段代码的 bug 都在构建时实际执行证明过是真的。选项顺序构建时打乱，别背位置。</p>
+</div>
+</section>
+
+<nav class="next">
+  <a href="00-intro.html">← 00 导读</a>
+  <a href="01-hash.html">01 哈希 →</a>
+</nav>
+
+</div>
+<script src="../assets/quiz.js" defer></script>
+</body>
+</html>

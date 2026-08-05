@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""把 content/ 里的数据渲染成 21 页静态 HTML。
+"""把 content/ 里的数据渲染成 22 页静态 HTML。
 
     python3 reference/build.py
 
@@ -246,6 +246,162 @@ def render_chapter(ch, prev_href, prev_label, next_href, next_label):
                 pat["tagline"], "\n".join(parts), depth=1, extra_js=("quiz.js",))
 
 
+# ---------------------------------------------------------------- 附录 A
+APX_HREF = "appendix-a.html"
+APX_LABEL = "附录 A · Python 刷题急救包"
+
+
+def appendix_shuffled_options(i, options):
+    """与 shuffled_options 同一理由：内容里选项是「正确项优先」手写的，直接渲染
+    正确答案会长期落在第一个。独立成函数是为了让 mutation test 能打桩——
+    章节那条 mutation 打的是 shuffled_options，够不着这里。"""
+    return sorted(options,
+                  key=lambda o: hashlib.md5("A{}:{}".format(i, o[0]).encode()).hexdigest())
+
+
+def appendix_quiz_block(apx):
+    """「30 秒改错」题型：带 bug 的代码片段 + 4 个说法选项。
+    沿用章节自测的 .q/.opt/data-answer 结构，quiz.js 无需改动；
+    选项顺序与章节自测同理必须打乱（题号做种子，构建可复现）。"""
+    items = []
+    for i, q in enumerate(apx.QUIZ, 1):
+        opts = appendix_shuffled_options(i, q["options"])
+        buttons = "".join(
+            '<button class="opt" type="button" data-ch="{}">{}</button>'.format(k, esc(t))
+            for k, t in opts)
+        items.append(
+            '<article class="q" data-answer="{ans}">\n'
+            '  <p class="qprompt"><span class="qtype">30 秒改错</span>Q{i} · '
+            '这段代码里埋了一个 Python 专属的坑——错在哪？</p>\n'
+            '  <pre><code>{code}</code></pre>\n'
+            '  <div class="opts">{buttons}</div>\n'
+            '  <details><summary>看答案</summary><div class="answer"><p>{why}</p></div></details>\n'
+            '</article>'.format(ans=q["answer"], i=i, code=highlight(q["code"]),
+                                buttons=buttons, why=inline(q["why"])))
+    note = ("{} 道改错题与 §2 的 {} 个翻车点一一对应；每段代码的 bug 都在构建时"
+            "实际执行证明过是真的。选项顺序构建时打乱，别背位置。").format(
+                len(apx.QUIZ), len(apx.PITFALLS))
+    return '<div class="quiz">\n{}\n<p class="quiz-note">{}</p>\n</div>'.format(
+        "\n".join(items), inline(note))
+
+
+def render_appendix():
+    from content import appendix_a as apx
+
+    entry_group = {}
+    for g in apx.GROUPS:
+        for e in g["entries"]:
+            entry_group[e["id"]] = g["title"]
+
+    # 每题「出自正文哪一章哪一层」从 content 派生；重复收录时取章号最小的一处
+    tier_of = {}
+    for c in CHAPTERS:
+        for p in c["problems"]:
+            tier_of.setdefault(p["num"], (c["no"], p["tier"]))
+
+    st = dict(
+        n_entries=len(entry_group),
+        n_pits=len(apx.PITFALLS),
+        n_prob=len(apx.PROBLEMS),
+        n_quiz=len(apx.QUIZ),
+        n_warm_total=sum(1 for c in CHAPTERS for p in c["problems"] if p["tier"] == "warmup"),
+        n_warm_rehab=sum(1 for p in apx.PROBLEMS
+                         if tier_of.get(p["num"], (0, ""))[1] == "warmup"),
+    )
+    st["warm_pct"] = round(100 * st["n_warm_rehab"] / st["n_warm_total"])
+
+    parts = [
+        '<nav class="crumb"><a href="../index.html">← 目录</a> · 附录 A</nav>\n',
+        '<header class="ch">\n  {bars}\n  <div class="kicker">Appendix A · Python Rehab Kit</div>\n'
+        '  <h1>附录 A Python 刷题急救包\n    <span class="zh">复健，不是学习——主体动作是打字</span>\n  </h1>\n'
+        '  <div class="meta"><span>惯用法 <b>{n_entries} 条</b></span>'
+        '<span>翻车点 <b>{n_pits} 个</b></span><span>复健题 <b>{n_prob} 道</b></span>'
+        '<span>改错自测 <b>{n_quiz} 题</b></span></div>\n</header>\n'.format(bars=bars(), **st),
+    ]
+
+    # §1 划定范围
+    body = "".join("<p>{}</p>\n".format(inline(p.format(**st))) for p in apx.INTRO)
+    body += "<p>{}</p>\n".format(inline(apx.NO_NEED_LEAD))
+    body += '<div class="callout no">\n<ul>\n{}\n</ul>\n</div>\n'.format(
+        "\n".join("  <li>{}</li>".format(inline(x)) for x in apx.NO_NEED))
+    parts.append(sec("划定范围", "§1 Scope", "复健，不是学习", body, color="warn", anchor="s1"))
+
+    # §2 惯用法速查
+    body = ('<p class="legend">按使用频率排序。编号（C1、W1、Q5…）供 §3 的'
+            '「复健自查」引用，点编号可跳回。</p>\n')
+    for g in apx.GROUPS:
+        lines = []
+        for e in g["entries"]:
+            lines.append('<span class="eid" id="e-{0}">{0}</span>  {1}'.format(
+                e["id"], highlight(e["code"])))
+        body += ('<div class="tpl">\n  <div class="tpl-head">{name}</div>\n'
+                 '  <pre><code>{code}</code></pre>\n</div>\n').format(
+                     name=esc(g["title"]), code="\n".join(lines))
+    body += "<h3>五个 Python 专属翻车点</h3>\n"
+    body += '<ol class="pits">\n{}\n</ol>\n'.format("\n".join(
+        '<li><span class="pt">{title}</span>——{why}\n'
+        '<pre><code><span class="eid" id="e-{pid}">{pid}</span>  {bad}</code></pre></li>'.format(
+            pid=p["id"], title=inline(p["title"]), why=inline(p["why"]),
+            bad=highlight(p["bad"]))
+        for p in apx.PITFALLS))
+    parts.append(sec("惯用法速查", "§2 Cheat Sheet", "拿来查的，不是拿来读的", body, anchor="s2"))
+
+    # §3 打字复健计划
+    body = ('<div class="callout">\n<p><b>规则，一条都别放水：</b></p>\n<ul>\n{}\n</ul>\n</div>\n'
+            ).format("\n".join("  <li>{}</li>".format(inline(r)) for r in apx.RULES))
+    body += ("<p>{}</p>\n".format(inline(
+        "{n_prob} 道复健题，每道标注它复健的惯用法。它们同时全部收录在正文各章"
+        "（其中 {n_warm_rehab} 道是热身层）——**双重用途**：打完这一页，"
+        "全书 {n_warm_total} 道热身题你已经完成了 {warm_pct}%。".format(**st))))
+    lis = []
+    for p in apx.PROBLEMS:
+        meta = lcindex.get(p["num"])
+        badges = ""
+        if meta["paid_only"]:
+            badges += '<span class="badge lock" title="LeetCode Premium 题">🔒 premium</span>'
+        badges += '<span class="badge diff">{}</span>'.format(meta["difficulty"])
+        src = tier_of.get(p["num"])
+        if src:
+            badges += '<span class="badge src">正文 {:02d} · {}</span>'.format(
+                src[0], TIER_ZH[src[1]])
+        refs = []
+        for r in p["refs"]:
+            if r not in entry_group and not any(x["id"] == r for x in apx.PITFALLS):
+                raise ValueError("附录 A：题 {} 引用了不存在的速查条目 {}".format(p["num"], r))
+            refs.append('<a href="#e-{0}"><code>{0}</code></a>'.format(r))
+        lis.append(
+            '<li>\n    <div class="p-title"><a href="{url}" target="_blank" rel="noopener">'
+            '{num} {title}</a>{badges}</div>\n'
+            '    <div class="p-note">复健目标：{goal}</div>\n'
+            '    <details><summary>复健自查（卡住再点开，不是题解）</summary>'
+            '<div class="answer rehab-refs"><p>本题用到：{refs}——逐条对着敲；'
+            '还是卡，回 §2 看整组，仍然不看题解。</p></div></details>\n  </li>'.format(
+                url=lcindex.url(p["num"]), num=p["num"], title=esc(meta["title"]),
+                badges=badges, goal=inline(p["goal"]), refs="、".join(refs)))
+    body += ('<div class="tier">\n  <div class="tier-head"><span class="t">复健题单</span>'
+             '<span class="d">按数据结构由简到繁，全部手打</span><span class="c">{} 道</span></div>\n'
+             '  <ul class="plist">\n  {}\n  </ul>\n</div>\n').format(
+                 len(apx.PROBLEMS), "\n  ".join(lis))
+    body += ('<div class="routing"><div class="rt-head">出口标准 · Exit Criteria</div>'
+             '<p>{}</p></div>\n'.format(inline(apx.EXIT.format(**st))))
+    parts.append(sec("打字复健计划", "§3 Typing Rehab", "本页的主体：手打这 {} 道".format(
+        st["n_prob"]), body, anchor="s3"))
+
+    # §4 改错自测
+    body = ('<p>给你一段带 bug 的代码，30 秒内指出错在哪。'
+            '五段代码分别踩了 §2 的五个翻车点。</p>\n') + appendix_quiz_block(apx)
+    parts.append(sec("自测 · 30 秒改错", "§4 Self-check", "看得出坑，才算复健完成",
+                     body, color="warn", anchor="s4"))
+
+    parts.append('<nav class="next">\n  <a href="00-intro.html">← 00 导读</a>\n'
+                 '  <a href="{}">{} →</a>\n</nav>\n'.format(
+                     content.chapter_href(1), esc(content.chapter_label(1))))
+
+    return page("附录 A Python 刷题急救包 · 算法面试阈值手册",
+                "太久没自己写代码的复健页：惯用法速查（逐条执行验证）+ 10 道手打复健题 + 30 秒改错自测。",
+                "\n".join(parts), depth=1, extra_js=("quiz.js",))
+
+
 # ---------------------------------------------------------------- 全书统计
 def stats():
     """全局数量一律在这里算一次，页面上任何数字都从这里取，禁止手写。"""
@@ -303,8 +459,7 @@ def render_intro():
                          color="warn" if "nolist" in s else None, anchor="s{}".format(i)))
 
     parts.append('<nav class="next">\n  <a href="../index.html">← 目录</a>\n'
-                 '  <a href="{}">{} →</a>\n</nav>\n'.format(
-                     content.chapter_href(1), esc(content.chapter_label(1))))
+                 '  <a href="{}">{} →</a>\n</nav>\n'.format(APX_HREF, esc(APX_LABEL)))
 
     return page("00 导读 · 算法面试阈值手册",
                 "阈值策略、三条达标标准、明确不覆盖的内容、怎么用这本书、达标之后怎么维持。",
@@ -491,7 +646,7 @@ def render_index():
              '  <p class="lede">18 个模式，{n_p} 道题。不追求竞赛级精通，'
              '只解决三件事：5 分钟内认出模式、25 分钟写出能跑的代码、说清复杂度。'
              '中文讲解，术语与题名保留英文原文。</p>\n'
-             '  <div class="meta"><span>共 <b>导读 + {n_ch} 章 + 速查 + 错题页</b></span>'
+             '  <div class="meta"><span>共 <b>导读 + 附录 + {n_ch} 章 + 速查 + 错题页</b></span>'
              '<span>模板 <b>{n_tpl} 个</b></span>'
              '<span>支持 <b>深色模式 / 打印导出 PDF</b></span></div>\n</header>\n'.format(
                  bars=bars(), n_p=n_p, n_ch=n_ch, n_tpl=n_tpl)]
@@ -509,7 +664,19 @@ def render_index():
                  '<a href="mistakes.html">错题登记</a> 里自己真正翻过车的那几条。'
                  '章节是平时用的，速查页才是考前用的。</p>\n'
                  '  <p>第一次读请从 <a href="chapters/00-intro.html">导读</a> 开始：'
-                 '它写明了本书<b>不覆盖什么</b>，以及达标之后怎么维持。</p>\n</div>\n')
+                 '它写明了本书<b>不覆盖什么</b>，以及达标之后怎么维持。'
+                 '太久没自己写代码 → 先完成 <a href="chapters/appendix-a.html">'
+                 '附录 A · Python 刷题急救包</a> 再进正文。</p>\n</div>\n')
+
+    parts.append('<div class="part">\n  <div class="part-head"><span class="no">开始之前</span>'
+                 '<h2>导读与复健</h2><span class="tag">按需，进正文前</span></div>\n  <ul class="toc">\n'
+                 '    <li><a href="chapters/00-intro.html"><span class="n">00</span>'
+                 '<span class="t">导读</span>'
+                 '<span class="d">阈值策略、三条达标标准、明确不覆盖的内容</span></a></li>\n'
+                 '    <li><a href="chapters/appendix-a.html"><span class="n">附 A</span>'
+                 '<span class="t">Python 刷题急救包</span>'
+                 '<span class="d">太久没自己写代码 → 惯用法速查 + 10 道手打复健题</span></a></li>\n'
+                 '  </ul>\n</div>\n')
 
     for gi, (name, tag, (lo, hi)) in enumerate(content.GROUPS, 1):
         lis = []
@@ -559,15 +726,16 @@ def write(out_dir, rel, html):
 def main(out_dir=ROOT, quiet=False):
     written = []
     write_ = lambda rel, html: write(out_dir, rel, html)  # noqa: E731
-    # 章页之间的上一页/下一页：导读 → 01 … 18 → 速查页
+    # 章页之间的上一页/下一页：导读 → 附录 A → 01 … 18 → 速查页
     nav = [(content.chapter_href(c["no"]), content.chapter_label(c["no"])) for c in CHAPTERS]
     for i, c in enumerate(CHAPTERS):
-        prev = nav[i - 1] if i else ("00-intro.html", "导读")
+        prev = nav[i - 1] if i else (APX_HREF, APX_LABEL)
         nxt = nav[i + 1] if i + 1 < len(nav) else ("../cheatsheet.html", "决策树速查")
         written.append(write_("chapters/" + content.chapter_href(c["no"]),
                               render_chapter(c, prev[0], prev[1], nxt[0], nxt[1])))
 
     written.append(write_("chapters/00-intro.html", render_intro()))
+    written.append(write_("chapters/" + APX_HREF, render_appendix()))
     written.append(write_("cheatsheet.html", render_cheatsheet()))
     written.append(write_("mistakes.html", render_mistakes()))
     written.append(write_("index.html", render_index()))

@@ -250,6 +250,21 @@ ol.pits .pt{font-weight:700}
 #log-tbl td:last-child{white-space:nowrap}
 .blank-rows td{height:34px;border-bottom:1px solid var(--line)}
 
+/* ---------- 附录 A · Python 刷题急救包 ---------- */
+pre .eid{display:inline-block;min-width:30px;color:var(--ink-soft);user-select:none}
+pre .eid:target{color:var(--warn);font-weight:700}
+ol.pits pre{margin:10px 0 4px;border:1px solid var(--line);border-radius:8px}
+.q pre{margin:0 0 12px;border:1px solid var(--line);border-radius:8px}
+.rehab-refs a{text-decoration:none}
+.rehab-refs a:hover code{border:1px solid var(--accent)}
+.badge.src{background:var(--tool-bg);color:var(--ink-soft);border:1px solid var(--line)}
+.plist details{border-top:1px dashed var(--line);margin-top:10px}
+.plist summary{cursor:pointer;padding:8px 0 2px;font-family:var(--mono);font-size:12.5px;color:var(--ink-soft);list-style:none}
+.plist summary::-webkit-details-marker{display:none}
+.plist summary::before{content:'▸ ';color:var(--accent)}
+.plist details[open] summary::before{content:'▾ '}
+.plist .answer{padding:6px 12px 10px;border-radius:6px}
+
 @media (max-width:560px){
   .bars span{width:14px}
   .stats{grid-template-columns:1fr 1fr}
