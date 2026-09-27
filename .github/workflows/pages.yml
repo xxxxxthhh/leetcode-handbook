@@ -28,6 +28,11 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      # Counter 零计数相等语义等要求 Python ≥ 3.10，固定版本避免 runner 默认版本变化
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
       - name: 完整校验流水线（含 mutation test）
         run: python3 reference/check_all.py
 
