@@ -84,7 +84,7 @@
 <span class="eid" id="e-Q2">Q2</span>  q = deque(); q.append(x); q.popleft()  <span class="cm"># BFS 队列：右进左出，两头都是 O(1)</span>
 <span class="eid" id="e-Q3">Q3</span>  Counter(s)                           <span class="cm"># 一行频次统计，可当 dict 用</span>
 <span class="eid" id="e-Q4">Q4</span>  g = defaultdict(list); g[u].append(v)  <span class="cm"># 建图：首次访问自动变 []</span>
-<span class="eid" id="e-Q5">Q5</span>  heapq.heappush(h, x); heapq.heappop(h)  <span class="cm"># 最小堆；要最大堆就 push -x（翻车点④）</span></code></pre>
+<span class="eid" id="e-Q5">Q5</span>  heapq.heappush(h, x); heapq.heappop(h)  <span class="cm"># 最小堆；要最大堆就 push -x，3.14 起另有 heappush_max（翻车点④）</span></code></pre>
 </div>
 <div class="tpl">
   <div class="tpl-head">LeetCode 特有语法</div>
@@ -106,7 +106,7 @@
     def inner():
         cnt += 1          <span class="cm"># 少了 nonlocal cnt</span>
     inner()</code></pre></li>
-<li><span class="pt">heapq 只有最小堆</span>——<code>heapq</code> 永远弹最小。要最大堆：push 时存 <code>-x</code>，pop 后取负还原（见 Q5）。
+<li><span class="pt">heapq 默认是最小堆</span>——<code>heappop</code> 永远弹最小。要最大堆：push 时存 <code>-x</code>，pop 后取负还原（见 Q5）；Python 3.14 起也可用 <code>heappush_max</code> / <code>heappop_max</code>，先确认面试环境的版本。
 <pre><code><span class="eid" id="e-P4">P4</span>  largest = heapq.heappop(h)   <span class="cm"># 想要最大值？弹出来的偏偏是最小值</span></code></pre></li>
 <li><span class="pt">没有 ++ / --</span>——自增只有 <code>i += 1</code>。<code>++i</code> 是两个一元正号，静默等于 <code>i</code>，连报错都不给。
 <pre><code><span class="eid" id="e-P5">P5</span>  i++                       <span class="cm"># SyntaxError；更阴险的是 ++i 合法但什么都不做</span></code></pre></li>
@@ -233,7 +233,7 @@ def top3(nums):
     heapq.heapify(h)
     return [heapq.heappop(h) for _ in range(3)]   <span class="cm"># 想拿最大的 3 个</span></code></pre>
   <div class="opts"><button class="opt" type="button" data-ch="b">heapify 建的是无序堆，取前 3 个之前必须先 sort</button><button class="opt" type="button" data-ch="a">heappop 弹的是最小值，这里拿到的是最小的 3 个</button><button class="opt" type="button" data-ch="d">没有错：heapify 之后堆顶就是最大的那个元素</button><button class="opt" type="button" data-ch="c">range(3) 少拿了一个，应该写成 range(1, 4) 才对</button></div>
-  <details><summary>看答案</summary><div class="answer"><p>翻车点④：<code>heapq</code> 只有最小堆。push 时取负、pop 后还原，或者直接 <code>heapq.nlargest(3, nums)</code>。</p></div></details>
+  <details><summary>看答案</summary><div class="answer"><p>翻车点④：<code>heappop</code> 弹的是最小值。push 时取负、pop 后还原，或者直接 <code>heapq.nlargest(3, nums)</code>（3.14 起也可用 <code>heappush_max</code> 等，先确认环境版本）。</p></div></details>
 </article>
 <article class="q" data-answer="a">
   <p class="qprompt"><span class="qtype">30 秒改错</span>Q5 · 这段代码里埋了一个 Python 专属的坑——错在哪？</p>

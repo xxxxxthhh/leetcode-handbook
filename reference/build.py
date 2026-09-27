@@ -706,6 +706,10 @@ def render_index():
                  '<span class="d">题号 / 模式 / 翻车点 / 重做日期，浏览器本地保存</span></a></li>\n'
                  '  </ul>\n</div>\n')
 
+    parts.append('<p class="quiz-note">同系列：面试里被问到「设计一个 Agent」，见 '
+                 '<a href="https://xxxxxthhh.github.io/agent-interview-handbook/">Agent 设计面试手册</a>'
+                 '——同样是考前用的工具书，练的是限时交卷与逐层追问。</p>\n')
+
     parts.append('<p class="quiz-note">题名、slug、难度与 🔒 标记均取自 LeetCode 官方题目索引，'
                  '抓取于 {}。</p>\n'.format(lcindex.FETCHED_AT))
 

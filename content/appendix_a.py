@@ -143,7 +143,7 @@ GROUPS = [
              verify="assert g[1] == [2]\n"
                     "assert g[3] == []                  # 没建过的点也能直接读"),
         dict(id="Q5",
-             code="heapq.heappush(h, x); heapq.heappop(h)  # 最小堆；要最大堆就 push -x（翻车点④）",
+             code="heapq.heappush(h, x); heapq.heappop(h)  # 最小堆；要最大堆就 push -x，3.14 起另有 heappush_max（翻车点④）",
              setup="import heapq\nh = [5, 1]\nheapq.heapify(h)\nx = 3",
              verify="assert heapq.heappop(h) == 3       # 刚才那次 heappop 弹走了最小的 1"),
     ]),
@@ -196,9 +196,10 @@ PITFALLS = [
                 "    pass\n"
                 "else:\n"
                 "    raise AssertionError('应触发 UnboundLocalError')"),
-    dict(id="P4", title="heapq 只有最小堆",
+    dict(id="P4", title="heapq 默认是最小堆",
          bad="largest = heapq.heappop(h)   # 想要最大值？弹出来的偏偏是最小值",
-         why="`heapq` 永远弹最小。要最大堆：push 时存 `-x`，pop 后取负还原（见 Q5）。",
+         why="`heappop` 永远弹最小。要最大堆：push 时存 `-x`，pop 后取负还原（见 Q5）；"
+             "Python 3.14 起也可用 `heappush_max` / `heappop_max`，先确认面试环境的版本。",
          setup="import heapq\nh = [5, 1, 9]\nheapq.heapify(h)",
          verify="assert largest == 1"),
     dict(id="P5", title="没有 ++ / --",
@@ -326,8 +327,8 @@ QUIZ = [
              ("d", "没有错：heapify 之后堆顶就是最大的那个元素"),
          ],
          answer="a",
-         why="翻车点④：`heapq` 只有最小堆。push 时取负、pop 后还原，"
-             "或者直接 `heapq.nlargest(3, nums)`。",
+         why="翻车点④：`heappop` 弹的是最小值。push 时取负、pop 后还原，"
+             "或者直接 `heapq.nlargest(3, nums)`（3.14 起也可用 `heappush_max` 等，先确认环境版本）。",
          verify="ns = {}\n"
                 "exec(SNIPPET, ns)\n"
                 "assert ns['top3']([5, 1, 9, 7]) == [1, 5, 7]   # 拿到的是最小的 3 个"),

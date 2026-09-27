@@ -33,7 +33,7 @@
   <div class="sec-tag"><span class="cell"></span><span class="lab">§1 Mental Model 一句话心智模型</span></div>
   <h2>先记住这一句</h2>
 <div class="oneliner"><b>只关心第 K 个的时候不要排序：养一个大小为 K 的堆，让不够格的自动掉出去。</b></div>
-<p>方向最容易记反，记住这一句就够：<b>求第 K 大，用大小为 K 的小顶堆</b>。堆顶是这 K 个里最小的，也就是全局第 K 大；新来的数比堆顶大才有资格挤掉它。求第 K 小就整体取相反数，别去手写大顶堆——Python 的 <code>heapq</code> 只有小顶堆。</p>
+<p>方向最容易记反，记住这一句就够：<b>求第 K 大，用大小为 K 的小顶堆</b>。堆顶是这 K 个里最小的，也就是全局第 K 大；新来的数比堆顶大才有资格挤掉它。求第 K 小就整体取相反数，别去手写大顶堆——Python 3.13 及以前的 <code>heapq</code> 只有小顶堆（3.14 起新增 <code>heappush_max</code> 等，先确认面试环境的版本）。</p>
 <p>复杂度是 O(n log K) 而不是排序的 O(n log n)。K 很小时差距巨大，而且它<b>天然支持数据流</b>：数字一个个来，你随时能回答，排序做不到这件事。</p>
 
 </section>
@@ -137,7 +137,7 @@ class MedianFinder:
   <h2>会写不等于不翻车</h2>
 <ol class="pits">
 <li><span class="pt">方向记反</span>——求第 K <b>大</b>用<b>小</b>顶堆。反过来（大顶堆存 K 个）踢掉的是最大的，答案全错。记法：堆顶是「守门员」，它守的是第 K 名这道门。</li>
-<li><span class="pt">Python 没有大顶堆</span>——一律取相反数入堆，出堆再取回来。对顶堆里 <code>lo</code> 存的是负值，<code>-self.lo[0]</code> 才是真正的最大值——这一步漏掉是 295 最常见的 bug。</li>
+<li><span class="pt">3.14 以前没有大顶堆</span>——一律取相反数入堆，出堆再取回来，这在所有版本都能用。Python 3.14 起可用 <code>heappush_max</code> / <code>heappop_max</code>，但面试环境常低于 3.14，先确认版本。对顶堆里 <code>lo</code> 存的是负值，<code>-self.lo[0]</code> 才是真正的最大值——这一步漏掉是 295 最常见的 bug。</li>
 <li><span class="pt">元组入堆的次级比较</span>——<code>(freq, val)</code> 里 <code>freq</code> 相同时会去比 <code>val</code>。如果 <code>val</code> 是不可比较的对象（如自定义类、字典），会直接抛 <code>TypeError</code>。塞一个序号当 tie-breaker。</li>
 <li><span class="pt"><code>heapify</code> 与逐个 push 的差别</span>——<code>heapq.heapify(list)</code> 是 O(n)，逐个 <code>heappush</code> 是 O(n log n)。已经拿到全量数据时用前者；数据流场景只能用后者。</li>
 <li><span class="pt">K 等于 n 时堆没意义</span>——K 接近 n 时 O(n log K) 已退化到 O(n log n)，直接排序更省事。面试里主动说这句，说明你知道自己在优化什么。</li>

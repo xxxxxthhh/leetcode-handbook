@@ -68,7 +68,7 @@ import sys; sys.setrecursionlimit(10**6)      # 深递归保险
 1. `[[0]*n]*m` 引用陷阱
 2. 可变默认参数 `def f(x, memo={})` 跨调用共享
 3. 递归里改外层变量要 `nonlocal`
-4. `heapq` 只有最小堆，最大堆取负
+4. `heapq` 默认是最小堆，最大堆取负（3.14 起另有 `heappush_max` 等，先确认环境版本）
 5. 没有 `++`；`x += 1`
 
 ## §3 打字复健计划（本章主体）
